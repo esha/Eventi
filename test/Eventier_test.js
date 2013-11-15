@@ -32,11 +32,8 @@
     ok(typeof Eventier !== "undefined", 'Eventier should be present');
   });
 
-  test('external', function() {
-    expect(2);
-    ok(typeof Eventier.external !== "undefined", "Eventier should be present");
-    var expected = 'Eventier v'+Eventier._.version;
-    strictEqual(Eventier.external(), expected);
+  test('internal', function() {
+    ok(typeof Eventier._ !== "undefined", "Eventier._ should be present");
   });
 
 }());

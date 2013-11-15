@@ -1,26 +1,23 @@
 /*
- * Eventier
  * https://github.com/nbubna/Eventier
  *
  * Copyright (c) 2013 ESHA Research
  * Licensed under the MIT license.
  */
-(function(window) {
+(function(document) {
     "use strict";
 
     // internal API
     var _ = {
         version: "<%= pkg.version %>",
-        internal: 'property'
+        global: document || this
     };
 
     // external API
-    var Eventier = {
-        _: _,// comment to hide internal API
-        external: function() {
-            return 'Eventier v'+_.version;
-        }
+    var Eventier = function() {
+        
     };
+    Eventier._ = _;
 
     // export Eventier
     if (typeof define === 'function' && define.amd) {
@@ -28,7 +25,7 @@
     } else if (typeof module !== 'undefined' && module.exports) {
         module.exports = Eventier;
     } else {
-        window.Eventier = Eventier;
+        this.Eventier = Eventier;
     }
 
-}(window));
+}).call(this, document);
