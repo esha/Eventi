@@ -8,44 +8,67 @@ Download the [production version][min] or the [development version][max].
 [min]: https://raw.github.com/nbubna/Eventier/master/dist/Eventier.min.js
 [max]: https://raw.github.com/nbubna/Eventier/master/dist/Eventier.js
 
+## Motive
 
-## The Plan
+* The JavaScript community lives on event-based development.
+* Environment events are often very informative.
+* Custom events (aka application events) often are not.
+* Further, support for event handling hasn't had any recent innovations.
+* It's time to change that.
+
+## Goal
+* An extensible event platform that has rich features baked in.
+* A declarative syntax for creating and handling informative events.
+* DOM and object support
+* Support for events that are sequenced, compound, numbered, and singular.
+* Robust, error tolerant listener execution
+
+## Plan
 
 #### core.js
-* DOM based custom event firing: `Eventier.fire([el, ]'type')`
-* rich event syntax (i.e. trigger.js minus declarative mapping): `Eventier.fire([el, ]"category:type['constant']#tags")`
-* event sequence support (with async friendly `e.stopSequence([promise])`)
-* optional DOM or JS configuration, if there's anything to config
+* rich event syntax parsing: `Eventier("group:kind#label='val'")` -> `{ category:'group', type:'kind', tags:['label'], label:true, detail:'val' }`
+* parser should be extensible (for supporting jQuery namespaces or keyCodes or whatever)
+* detail can be resolvable reference, string, or limited/adapted json (single quotes converted to double, no =, #, or + chars, no spaces outside strings)
+* interface sharing (pass `this` as `target` param to copied functions): `Eventier(foo)` -> `foo.fire('type')`
+* does `if (HTML) Eventier(HTML._.fn);`
 
-#### listen.js
-* on/off for simple event: `Eventier.on([el, ]'type', fn)`,`Eventier.off([el, ]['type', ][fn])`
-* filter by selector (aka delegation): `Eventier.on('selector', 'type', fn)`
-* filter by rich syntax: `Eventier.on("category:type#tag", fn)`
-* bind data w/listener: `Eventier.on('type', fn, data)`
-* listen X times: `Eventier.only(2, 'type', fn)`
-* ready-style events (call late listeners, ignore multiple firings): `Eventier.heard('type', fn)`
-* applying rich event data as listener arg(s): `Eventier.on('type', function(e, arg, arg){})`
+#### fire.js (requires core.js)
+* object or DOM custom event dispatch: `Eventier.fire(Element|object, 'type')`
+* object handlers called in next tick to avoid failure on error
+* implicit global target: `Eventier.fire('type')` === `Eventier.fire(document || this, 'type')
+* multiple target specification: `Eventier.fire(Array|NodeList, 'type')`
+* event sequence support: `Eventier.fire([target, ]'first second third')`, `e.stopSequence([promise])`
 
-#### declare.js (will require listen.js)
+#### on.js (requires core.js)
+* simple event registration: `Eventier.on([target, ]'type', fn)`
+* space delimited multiple registration: `Eventier.on([target, ]'first second third', fn)`
+* filter by selector (aka delegation): `Eventier.on([target, ]'selector', 'type', fn)`
+* filter by category and/or tag: `Eventier.on([target, ]"category:type#tag", fn)`
+* bind data w/listener: `Eventier.on([target, ]'type', fn, data)`
+* applying rich event data as listener arg(s): `Eventier.on([target, ]'type', function(e, arg, arg){})`
+
+#### off.js (requires on.js)
+* simple listener removal: `Eventier.off([target, ]['type', ][fn])`
+* multiple removal: `Eventier.off([target, ]['first second third', ][fn])`
+* remove by category and/or tag: `Eventier.off([target, ]['category:type#tag', ][fn])`
+
+#### special.js (requires on.js & off.js)
+* listen X times: `Eventier.on([target, ]2, 'type', fn)`
+* ready-style events (immediately call late listeners, ignore multiple firings): `Eventier.on([target, ]true, 'type', fn)`
+* basic compound events (call after all specified events, then reset): `Eventier.on([target, ]'first+second+third', fn)`
+
+#### declare.js (requires on.js)
 * DOM declared event mapping (i.e. trigger.js' declarative stuff)
-* DOM declared event handlers (i.e. something like on.js, with no JS in DOM)
+* DOM declared event handlers (i.e. something like old on.js, with no JS in DOM)
 
-#### html.js
-* ```HTML._.fn.fire = Eventier.fire;```
-* ```if (listen.js){ HTML._.fn.on = Eventier.on; HTML._.fn.off = Eventier.off; ... }```
-
-#### ?jquery.js?
+#### jquery.eventier.js
 * add custom properties to $.event.props
 * add namespace support to rich syntax (ick)
 * listen for events in jQuery's manual bubbling system (ick again)
-* filter $.fn.trigger, $.fn.on, $.fn.off, $.fn.one to intercept calls with Eventier syntax
-  * or add $.fn.eventierFire, $.fn.eventierOn, etc. (gross)
-  * or add a massively overloaded $.fn.eventier (yikes)
-  * or replace their ancient event handling entirely? (hah. probably asking for trouble.)
+* wrap $.fn.trigger, $.fn.on, $.fn.off, and maybe $.fn.one to intercept calls with Eventier params/syntax
 
-#### ?object.js? (seems pointless w/o listen.js)
-* non-DOM object rich event support
-* that doesn't fail to call subsequent handlers when one throws an error
+#### keys.js (requires on.js)
+* `Eventier.on([target, ]'keyup(shift-a)', fn)`
 
 ## Documentation
 _(Coming soon)_
