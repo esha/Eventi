@@ -1,7 +1,7 @@
 _.fire = function(target, sequence, props, data, _resumeIndex) {
     if (props) {
         if (typeof props !== "object" ||
-            (!('bubbles' in props) && !('detail' in props) && !('cancelable' in props)) {
+            (!('bubbles' in props) && !('detail' in props) && !('cancelable' in props))) {
             data = data ? data.unshift(props) && data : [props];
         }
     } else {
@@ -13,7 +13,7 @@ _.fire = function(target, sequence, props, data, _resumeIndex) {
 
     var event;
     if (sequence.length === 1) {
-        event = _.create(sequence[0], props));
+        event = _.create(sequence[0], props);
         _.dispatch(event);
     } else {
         props.sequence = sequence;

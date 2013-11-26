@@ -1,0 +1,22 @@
+<%= banner %>
+(function(global, document, HTML) {
+    "use strict";
+
+<%= content %>
+    _.version = "<%= pkg.version %>";
+
+    // export Eventier (AMD, commonjs, or window/env)
+    var define = global.define || _.noop;
+    define((global.exports||global).Eventier = Eventier);
+
+	// extend HTML(.js), if present and not prohibited
+    if (HTML._ && HTML.getAttribute('data-eventier-html') !== "false") {
+        _.copyTo(HTML._.fn);
+        if (_.target) {
+            var target = _.target;
+            _.target = function() {
+                return HTML._.node(target.apply(this, arguments));
+            };
+        }
+    }
+})(this, document, (document||{}).documentElement);

@@ -1,19 +1,13 @@
-// Core API
 var Eventier = function(a) {
     return a && typeof a === "string" ? _.create.apply(this, arguments) : _.copyTo(a) || a;
 },
-
-// CustomEvent or polyfill
-CustomEvent = global.CustomEvent || function(type, args) {
+AppEvent = global.CustomEvent || function(type, args) {
     args = args || {};
     var e = document.createEvent('CustomEvent');
     e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
     return e;
 },
-
-// Internal API
 _ = {
-    version: "<%= pkg.version %>",
     global: document || global,
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
@@ -21,10 +15,11 @@ _ = {
     noop: function(){},
 
     create: function(type, props) {
-        var copy = { text: type };
+        var copy = { text: type },
+            prop;
         type = _.parse(type, copy);
         if (props) {
-            for (var prop in props) {
+            for (prop in props) {
                 if (props.hasOwnProperty(prop)) {
                     copy[prop] = props[prop];
                 }
@@ -34,8 +29,8 @@ _ = {
             copy.bubbles = true;// must bubble by default
         }
 
-        var event = new CustomEvent(type, copy);
-        for (var prop in copy) {
+        var event = new AppEvent(type, copy);
+        for (prop in copy) {
             event[_.prop(prop)] = copy[prop];
         }
         _.propagation(event);
@@ -65,12 +60,11 @@ _ = {
         [/^(\w+):/, function(m, category){ this.category = category; }]//
     ],
     parse: function(type, props) {
-        for (var i=0,m=_.parsers.length; i<m; i++) {
-            var parser = _.parsers[i];
+        _.parsers.forEach(function(parser) {
             type = type.replace(parser[0], function() {
                 return parser[1].apply(props, arguments) || '';
             });
-        }
+        });
         return type;
     },
 
@@ -94,12 +88,13 @@ _ = {
             return eval('context'+(reference.charAt(0) !== '[' ? '.'+reference : reference));
         }
     },
-    fixArgs = function(expect, fn) {
+    fixArgs: function(expect, fn) {
         return function(target, sequence) {
-            var args = _.slice(arguments);
+            var args = _.slice(arguments),
+                ret;
             if (typeof target === "string") {
                 sequence = target;
-                target = !this || this === Eventier ? _.global : this
+                target = !this || this === Eventier ? _.global : this;
                 args.unshift(target);
             }
             if (args.length > expect) {

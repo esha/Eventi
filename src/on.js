@@ -29,7 +29,7 @@ _.secret = 'Eventier'+Math.random();
 _.listener = function(target) {
     var listener = target[_.secret];
     if (!listener) {
-    	listener = function(event){ return _.handle(event, listener.s[e.type]); };
+		listener = function(event){ return _.handle(event, listener.s[event.type]); };
         listener.s = {};
         Object.defineProperty(target, _.secret, {value:listener,configurable:true});
     }
@@ -37,18 +37,19 @@ _.listener = function(target) {
 };
 
 _.handle = function(event, handlers) {
-	for (var i=0, m=handlers.length, handler, error; i<m; i++) {
+	for (var i=0, m=handlers.length, handler, error, target, args; i<m; i++) {
 		if (_.handles(event, (handler = handlers[i]))) {
-			var args = [event],
-				target = _.target(handler, event.target);
-			if (event.data){ args.push.apply(args, event.data); }
-			if (handler.data){ args.unshift.apply(args, handler.data); }
-			try {
-				fn.apply(target, args);
-			} catch (e) {
-				if (!error){ error = e; }
+			if (target = _.target(handler, event.target)) {
+				args = [event];
+				if (event.data){ args.push.apply(args, event.data); }
+				if (handler.data){ args.unshift.apply(args, handler.data); }
+				try {
+					handler.fn.apply(target, args);
+				} catch (e) {
+					if (!error){ error = e; }
+				}
+				if (event.immediatePropagationStopped){ i = m; }
 			}
-			if (event.immediatePropagationStopped){ i = m; }
 		}
 	}
 	if (error) {
@@ -59,8 +60,8 @@ _.handle = function(event, handlers) {
 
 _.handles = function(event, handler) {
 	return (!handler.type || event.type === handler.type) &&
-		   (!handler.category || event.category === handler.category) &&
-		   (!handler.tags || _.subset(handler.tags, event.tags));
+			(!handler.category || event.category === handler.category) &&
+			(!handler.tags || _.subset(handler.tags, event.tags));
 };
 _.subset = function(subset, set) {
 	if (set && set.length) {
