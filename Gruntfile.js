@@ -1,6 +1,5 @@
-'use strict';
-
 module.exports = function(grunt) {
+  'use strict';
 
   // Project configuration.
   grunt.initConfig({
@@ -15,22 +14,21 @@ module.exports = function(grunt) {
     clean: {
       files: ['dist']
     },
-    concat: {
+    frame: {
       options: {
-        banner: '<%= banner %>',
-        stripBanners: true
+        frame: 'src/Eventier.frame'
       },
       dist: {
-        src: ['src/<%= pkg.name %>.js'],
-        dest: 'dist/<%= pkg.name %>.js'
-      },
+        dest: 'dist/<%= pkg.name %>.js',
+        src: ['src/core.js','src/fire.js','src/on.js','src/off.js']
+      }
     },
     uglify: {
       options: {
         banner: '<%= banner %>'
       },
       dist: {
-        src: '<%= concat.dist.dest %>',
+        src: 'dist/<%= pkg.name %>.js',
         dest: 'dist/<%= pkg.name %>.min.js'
       },
     },
@@ -49,7 +47,7 @@ module.exports = function(grunt) {
     jshint: {
       gruntfile: {
         options: {
-          jshintrc: '.jshintrc'
+          jshintrc: 'src/.jshintrc'
         },
         src: 'Gruntfile.js'
       },
@@ -57,7 +55,13 @@ module.exports = function(grunt) {
         options: {
           jshintrc: 'src/.jshintrc'
         },
-        src: ['src/**/*.js']
+        src: ['src/*.js']
+      },
+      dist: {
+        options: {
+          jshintrc: '.jshintrc'
+        },
+        src: ['dist/*.js']
       },
       test: {
         options: {
@@ -83,8 +87,8 @@ module.exports = function(grunt) {
   });
 
   // These plugins provide necessary tasks.
+  grunt.loadTasks('tasks');
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -92,6 +96,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-compress');
 
   // Default task.
-  grunt.registerTask('default', ['jshint', 'clean', 'concat', 'uglify', 'qunit', 'compress']);
+  grunt.registerTask('default', ['jshint:src', 'clean', 'frame', 'jshint:dist', 'jshint:test', 'qunit', 'uglify', 'compress']);
 
 };

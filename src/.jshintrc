@@ -1,6 +1,7 @@
 {
   "curly": true,
   "eqeqeq": true,
+  "evil": true,
   "immed": true,
   "latedef": true,
   "newcap": true,
@@ -11,5 +12,6 @@
   "boss": true,
   "eqnull": true,
   "browser": true,
-  "predef": ["module","define"]
+  "undef": false,
+  "latedef": false
 }
