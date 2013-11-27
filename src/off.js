@@ -29,6 +29,7 @@ _.clean = function(handlers, filter) {
 		if (_.cleans(handlers[i], filter)) {
 			handlers.splice(i--, 1);
 		}
+		//TODO: teach _.off to watch for handler.compound and remove part-handlers
 	}
 	if (!handlers.length && filter.target.removeEventListener) {
 		filter.target.removeEventListener(filter.type, _.listener(filter.target));

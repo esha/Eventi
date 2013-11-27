@@ -60,6 +60,7 @@ _ = {
         [/^(\w+):/, function(m, category){ this.category = category; }]//
     ],
     parse: function(type, props) {
+        props.text = type;// save original
         _.parsers.forEach(function(parser) {
             type = type.replace(parser[0], function() {
                 return parser[1].apply(props, arguments) || '';
@@ -89,21 +90,25 @@ _ = {
         }
     },
     fixArgs: function(expect, fn) {
-        return function(target, sequence) {
+        return function(target) {
             var args = _.slice(arguments),
                 ret;
-            if (typeof target === "string") {
-                sequence = target;
+            // must have a target
+            if (typeof target !== "object") {
                 target = !this || this === Eventier ? _.global : this;
                 args.unshift(target);
             }
+            // may have extraneous data args
             if (args.length > expect) {
                 args[expect] = args.slice(expect);
                 args = args.slice(0, expect);
             }
-            if (typeof sequence === "string") {
-                args[1] = sequence.split(_.splitRE);
+            // sequence may be 2nd or 3rd
+            var seqIndex = typeof args[1] === "string" ? 1 : 2;
+            if (typeof args[seqIndex] === "string") {
+                args[seqIndex] = args[seqIndex].split(_.splitRE);
             }
+            // iterate over multiple targets
             if ('length' in target) {
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(target, args);
@@ -111,6 +116,7 @@ _ = {
             } else {
                 ret = fn.apply(target, args);
             }
+            // be fluent
             return ret === undefined ? this : ret;
         };
     }
