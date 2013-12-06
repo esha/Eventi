@@ -3,7 +3,7 @@
 Powerful application events and event handling, made easy.
 
 ## Getting Started
-Download the [production version][min] or the [development version][max].
+Download the [minified version][min] or the [development version][max].
 
 [min]: https://raw.github.com/nbubna/Eventier/master/dist/Eventier.min.js
 [max]: https://raw.github.com/nbubna/Eventier/master/dist/Eventier.js
@@ -11,7 +11,7 @@ Download the [production version][min] or the [development version][max].
 ## Motive
 
 * The JavaScript community lives on event-based development.
-* Application events (aka custom events) are recommended but rarely/poorly used.
+* Application events (aka custom events) are recommended but rarely/poorly used in webapps.
 * Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types most heavy app-event users resort to.
 * App events deserve to be on an "even tier" with environment events.
 * Support for event handling in general is ripe for innovation.
@@ -20,7 +20,8 @@ Download the [production version][min] or the [development version][max].
 * An rich event platform that's easy to extend and use.
 * A declarative syntax for creating and handling informative events.
 * DOM and object support
-* Handling for events that are sequenced, compound, numbered, and singular.
+* Fire rich events (and sequences thereof)
+* Handle compound, limited/numbered, and singleton events (e.g. DOMContentLoaded).
 * Robust, error tolerant listener execution
 * Lots of solid, maintainable test code
 * Eye-catching visual demo
@@ -62,8 +63,9 @@ Download the [production version][min] or the [development version][max].
 
 #### special.js (requires on.js & off.js)
 * listen X times: `Eventier.on([target, ]2, 'type', fn)`
-* ready-style events (immediately call late listeners, ignore multiple firings): `Eventier.on([target, ]true, 'type', fn)`
+* singleton events (immediately call late listeners, ignore multiple firings): `Eventier.on([target, ]true, 'type', fn)`
 * compound events (call after all specified events, then reset): `Eventier.on([target, ]'first+second+third', fn)`
+* ? ordered, compound events: `Eventier.on([target, ]'first>second>third', fn)`
 
 #### declare.js (requires on.js)
 * DOM declared event mapping (i.e. trigger.js' declarative stuff)
