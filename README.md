@@ -75,6 +75,9 @@ Download the [production version][min] or the [development version][max].
 * listen for events in jQuery's manual bubbling system (ick again)
 * wrap $.fn.trigger, $.fn.on, $.fn.off, and maybe $.fn.one to intercept calls with Eventier params/syntax
 
+#### visual.js
+* Integration for http://www.sprymedia.co.uk/article/Visual+Event+2
+
 #### key.js (requires on.js)
 * `Eventier.on([target, ]'keyup[shift-a]', fn)`
 
