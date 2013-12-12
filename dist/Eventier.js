@@ -1,4 +1,4 @@
-/*! Eventier - v0.1.0 - 2013-11-26
+/*! Eventier - v0.1.0 - 2013-12-12
 * https://github.com/nbubna/Eventier
 * Copyright (c) 2013 ESHA Research; Licensed MIT */
 
@@ -67,6 +67,7 @@ _ = {
         [/^(\w+):/, function(m, category){ this.category = category; }]//
     ],
     parse: function(type, props) {
+        props.text = type;// save original
         _.parsers.forEach(function(parser) {
             type = type.replace(parser[0], function() {
                 return parser[1].apply(props, arguments) || '';
@@ -96,21 +97,25 @@ _ = {
         }
     },
     fixArgs: function(expect, fn) {
-        return function(target, sequence) {
+        return function(target) {
             var args = _.slice(arguments),
                 ret;
-            if (typeof target === "string") {
-                sequence = target;
+            // must have a target
+            if (typeof target !== "object") {
                 target = !this || this === Eventier ? _.global : this;
                 args.unshift(target);
             }
+            // may have extraneous data args
             if (args.length > expect) {
                 args[expect] = args.slice(expect);
                 args = args.slice(0, expect);
             }
-            if (typeof sequence === "string") {
-                args[1] = sequence.split(_.splitRE);
+            // sequence may be 2nd or 3rd
+            var seqIndex = typeof args[1] === "string" ? 1 : 2;
+            if (typeof args[seqIndex] === "string") {
+                args[seqIndex] = args[seqIndex].split(_.splitRE);
             }
+            // iterate over multiple targets
             if ('length' in target) {
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(target, args);
@@ -118,6 +123,7 @@ _ = {
             } else {
                 ret = fn.apply(target, args);
             }
+            // be fluent
             return ret === undefined ? this : ret;
         };
     }
@@ -177,33 +183,85 @@ _.sequence = function(event, props, target, stopped) {
 
 Eventier.fire = _.fixArgs(3, _.fire);
 
-_.on = function(target, sequence, selector, fn, data) {
+_.on = function(target, after, sequence, selector, fn, data) {
+	// argument resolution
+	if (Array.isArray(after)) {
+		if (fn !== undefined) {
+			data = data ? data.unshift(fn) && data : [fn];
+		}
+		fn = selector;selector = sequence;sequence = after;after = undefined;
+	}
 	if (typeof selector !== "string") {
-		data = fn;
+		if (fn !== undefined) {
+			data = data ? data.unshift(fn) && data : [fn];
+		}
 		fn = selector;
 	}
-	var listener = _.listener(target);
+	
 	for (var i=0,m=sequence.length; i<m; i++) {
-		var type = sequence[i],
-			handler = {
-				target: target,
-				selector: selector,
-				fn: fn,
-				data: data
-			};
-		type = handler.type = _.parse(type, handler);
-
-		var handlers = listener.s[type];
-		if (!handlers) {
-			handlers = listener.s[type] = [];
-			if (target.addEventListener) {
-				target.addEventListener(type, listener);
-			}
+		var handler = {
+			selector:selector, fn:fn, data:data,
+			after: _.after(after)
+		};
+		handler.type = _.parse(sequence[i], handler);
+		_.addHandler(target, handler);
+		if (handler.type.indexOf('+')) {
+			_.compound(handler);
 		}
-		handlers.push(handler);
 	}
 };
-
+_.after = function(after) {
+	switch (typeof after) {
+		case "undefined":
+		case "function": return after;
+		case "number":   return function(){ return !--after; };
+		default:         return function(){ return after; };
+		//TODO: handle late calls where after===true (i.e remember "once" events)
+	}
+};
+_.addHandler = function(target, handler) {
+	var listener = _.listener(target),
+		type = handler.type,
+		handlers = listener.s[type];
+	handler.target = target;
+	if (!handlers) {
+		handlers = listener.s[type] = [];
+		if (target.addEventListener) {
+			target.addEventListener(type, listener);
+		}
+	}
+	handlers.push(handler);
+};
+_.compound = function(handler) {
+	var types = handler.type.split('+'),
+		timeout = (handler.detail && handler.detail.timeout) || _.compound.timeout,
+		fn = handler.compound = _.compounder(types, timeout);
+	for (var i=0,m=types.length; i<m; i++) {
+		_.addHandler(handler.target, {
+			type:types[i], selector:handler.selector, fn:fn
+		});
+	}
+};
+_.compound.timeout = 1000;
+_.compounder = function(types, timeout) {
+	var need = types.slice(),
+		clear,
+		reset = function() {
+			if (clear){ clearTimeout(clear); }
+			need = types.slice();
+		};
+	return function() {
+		if (!clear){ clear = setTimeout(reset, timeout); }
+		var i = need.indexOf(this.type);
+		if (i >= 0) {
+			need.splice(i, 1);
+			if (!need.length) {
+				_.fire(this.target, this.text);
+				reset();
+			}
+		}
+	};
+};
 _.secret = 'Eventier'+Math.random();
 _.listener = function(target) {
     var listener = target[_.secret];
@@ -216,25 +274,32 @@ _.listener = function(target) {
 };
 
 _.handle = function(event, handlers) {
-	for (var i=0, m=handlers.length, handler, error, target, args; i<m; i++) {
+	for (var i=0, m=handlers.length, handler, target; i<m; i++) {
 		if (_.handles(event, (handler = handlers[i]))) {
 			if (target = _.target(handler, event.target)) {
-				args = [event];
-				if (event.data){ args.push.apply(args, event.data); }
-				if (handler.data){ args.unshift.apply(args, handler.data); }
-				try {
-					handler.fn.apply(target, args);
-				} catch (e) {
-					if (!error){ error = e; }
-				}
+				_.execute(target, event, handler);
 				if (event.immediatePropagationStopped){ i = m; }
 			}
 		}
 	}
-	if (error) {
-		throw error;
-	}
 	return !event.defaultPrevented;
+};
+_.execute = function(target, event, handler) {
+	var args = [event];
+	if (event.data){ args.push.apply(args, event.data); }
+	if (handler.data){ args.unshift.apply(args, handler.data); }
+	try {
+		handler.fn.apply(target, args);
+	} catch (e) {
+		setTimeout(function(){ throw e; }, 0);
+	}
+	if (handler.after && handler.after() === true) {
+		if (_.off) {
+			_.off(handler.target, handler.text, handler.fn);
+		} else {
+			handler.fn = _.noop;// do what we can
+		}
+	}
 };
 
 _.handles = function(event, handler) {
@@ -267,7 +332,7 @@ if (Ep) {
 	Object.defineProperty(Ep, 'matches', Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]);
 }   
 
-Eventier.on = _.fixArgs(4, _.on);
+Eventier.on = _.fixArgs(5, _.on);
 
 _.off = function(target, sequence, fn) {
 	if (!sequence) {
@@ -300,6 +365,7 @@ _.clean = function(handlers, filter) {
 		if (_.cleans(handlers[i], filter)) {
 			handlers.splice(i--, 1);
 		}
+		//TODO: teach _.off to watch for handler.compound and remove part-handlers
 	}
 	if (!handlers.length && filter.target.removeEventListener) {
 		filter.target.removeEventListener(filter.type, _.listener(filter.target));

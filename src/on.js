@@ -17,10 +17,10 @@ _.on = function(target, after, sequence, selector, fn, data) {
 		var handler = {
 			selector:selector, fn:fn, data:data,
 			after: _.after(after)
-		},
+		};
 		handler.type = _.parse(sequence[i], handler);
 		_.addHandler(target, handler);
-		if (type.indexOf('+')) {
+		if (handler.type.indexOf('+')) {
 			_.compound(handler);
 		}
 	}
@@ -30,7 +30,7 @@ _.after = function(after) {
 		case "undefined":
 		case "function": return after;
 		case "number":   return function(){ return !--after; };
-		default:         return function(){ return after; }
+		default:         return function(){ return after; };
 		//TODO: handle late calls where after===true (i.e remember "once" events)
 	}
 };
@@ -65,7 +65,7 @@ _.compounder = function(types, timeout) {
 			if (clear){ clearTimeout(clear); }
 			need = types.slice();
 		};
-	return function(i) {
+	return function() {
 		if (!clear){ clear = setTimeout(reset, timeout); }
 		var i = need.indexOf(this.type);
 		if (i >= 0) {
@@ -75,7 +75,7 @@ _.compounder = function(types, timeout) {
 				reset();
 			}
 		}
-	}
+	};
 };
 _.secret = 'Eventier'+Math.random();
 _.listener = function(target) {
@@ -93,6 +93,7 @@ _.handle = function(event, handlers) {
 		if (_.handles(event, (handler = handlers[i]))) {
 			if (target = _.target(handler, event.target)) {
 				_.execute(target, event, handler);
+				if (event.immediatePropagationStopped){ i = m; }
 			}
 		}
 	}
@@ -114,8 +115,7 @@ _.execute = function(target, event, handler) {
 			handler.fn = _.noop;// do what we can
 		}
 	}
-	if (event.immediatePropagationStopped){ i = m; }
-}
+};
 
 _.handles = function(event, handler) {
 	return (!handler.type || event.type === handler.type) &&
