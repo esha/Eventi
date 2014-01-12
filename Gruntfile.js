@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     },
     frame: {
       options: {
-        frame: 'src/Eventier.frame'
+        frame: 'src/Eventi.frame'
       },
       dist: {
         dest: 'dist/<%= pkg.name %>.js',

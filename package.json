@@ -1,24 +1,24 @@
 {
-  "name": "Eventier",
-  "title": "Eventier",
+  "name": "Eventi",
+  "title": "Eventi",
   "description": "Enjoy easy, rich, native and custom event handling.",
   "version": "0.1.0",
-  "homepage": "https://github.com/nbubna/Eventier",
+  "homepage": "https://github.com/nbubna/Eventi",
   "author": {
     "name": "ESHA Research",
     "email": "nathan@esha.com"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/nbubna/Eventier.git"
+    "url": "git://github.com/nbubna/Eventi.git"
   },
   "bugs": {
-    "url": "https://github.com/nbubna/Eventier/issues"
+    "url": "https://github.com/nbubna/Eventi/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/nbubna/Eventier/blob/master/LICENSE-MIT"
+      "url": "https://github.com/nbubna/Eventi/blob/master/LICENSE-MIT"
     }
   ],
   "engines": {

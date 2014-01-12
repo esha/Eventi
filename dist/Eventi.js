@@ -1,11 +1,11 @@
-/*! Eventier - v0.1.0 - 2013-12-12
-* https://github.com/nbubna/Eventier
+/*! Eventi - v0.1.0 - 2013-12-12
+* https://github.com/nbubna/Eventi
 * Copyright (c) 2013 ESHA Research; Licensed MIT */
 
 (function(global, document, HTML) {
     "use strict";
 
-var Eventier = function(a) {
+var Eventi = function(a) {
     return a && typeof a === "string" ? _.create.apply(this, arguments) : _.copyTo(a) || a;
 },
 AppEvent = global.CustomEvent || function(type, args) {
@@ -80,8 +80,8 @@ _ = {
 
     copyTo: function(o, p, v) {
         if (typeof o === "object") {
-            for (p in Eventier) {
-                if (Eventier.hasOwnProperty(p) && typeof (v=Eventier[p]) === "function") {
+            for (p in Eventi) {
+                if (Eventi.hasOwnProperty(p) && typeof (v=Eventi[p]) === "function") {
                     o[p] = v;
                 }
             }
@@ -96,13 +96,13 @@ _ = {
             return eval('context'+(reference.charAt(0) !== '[' ? '.'+reference : reference));
         }
     },
-    fixArgs: function(expect, fn) {
+    use: function(expect, fn) {
         return function(target) {
             var args = _.slice(arguments),
                 ret;
             // must have a target
             if (typeof target !== "object") {
-                target = !this || this === Eventier ? _.global : this;
+                target = !this || this === Eventi ? _.global : this;
                 args.unshift(target);
             }
             // may have extraneous data args
@@ -128,7 +128,7 @@ _ = {
         };
     }
 };
-Eventier._ = _;
+Eventi._ = _;
 
 _.fire = function(target, sequence, props, data, _resumeIndex) {
     if (props) {
@@ -181,7 +181,7 @@ _.sequence = function(event, props, target, stopped) {
     event.isSequenceStopped = function(){ return !!stopped; };
 };
 
-Eventier.fire = _.fixArgs(3, _.fire);
+Eventi.fire = _.wrap(3, _.fire);
 
 _.on = function(target, after, sequence, selector, fn, data) {
 	// argument resolution
@@ -262,7 +262,7 @@ _.compounder = function(types, timeout) {
 		}
 	};
 };
-_.secret = 'Eventier'+Math.random();
+_.secret = 'Eventi'+Math.random();
 _.listener = function(target) {
     var listener = target[_.secret];
     if (!listener) {
@@ -332,7 +332,7 @@ if (Ep) {
 	Object.defineProperty(Ep, 'matches', Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]);
 }   
 
-Eventier.on = _.fixArgs(5, _.on);
+Eventi.on = _.wrap(5, _.on);
 
 _.off = function(target, sequence, fn) {
 	if (!sequence) {
@@ -378,13 +378,13 @@ _.cleans = function(handler, filter) {
 		(!filter.fn || handler.fn === filter.fn);
 };
 
-Eventier.off = _.fixArgs(3, _.off);
+Eventi.off = _.wrap(3, _.off);
 
     _.version = "0.1.0";
 
-    // export Eventier (AMD, commonjs, or window/env)
+    // export Eventi (AMD, commonjs, or window/env)
     var define = global.define || _.noop;
-    define((global.exports||global).Eventier = Eventier);
+    define((global.exports||global).Eventi = Eventi);
 
 	// extend HTML(.js), if present and not prohibited
     if (HTML._ && HTML.getAttribute('data-eventier-html') !== "false") {

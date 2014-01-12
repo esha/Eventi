@@ -20,7 +20,7 @@
       throws(block, [expected], [message])
   */
 
-  module('Eventier', {
+  module('Eventi', {
     // This will run before each test in this module.
     setup: function() {
       //TODO 
@@ -29,11 +29,11 @@
 
   test('presence', function() {
     expect(1);
-    ok(typeof Eventier !== "undefined", 'Eventier should be present');
+    ok(typeof Eventi !== "undefined", 'Eventi should be present');
   });
 
   test('internal', function() {
-    ok(typeof Eventier._ !== "undefined", "Eventier._ should be present");
+    ok(typeof Eventi._ !== "undefined", "Eventi._ should be present");
   });
 
 }());

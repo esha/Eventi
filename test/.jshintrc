@@ -12,7 +12,7 @@
   "eqnull": true,
   "browser": true,
   "predef": [
-    "Eventier",
+    "Eventi",
     "QUnit",
     "module",
     "test",
