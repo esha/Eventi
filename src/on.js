@@ -10,10 +10,10 @@ _.on = function(target, events, selector, fn, data) {
 		_.handler(target, events[i], selector, fn, data);
 	}
 };
-_.handler = function(target, event, selector, fn, data) {
+_.handler = function(target, text, selector, fn, data) {
 	var handler = { target:target, selector:selector, fn:fn, data:data },
 		listener = _.listener(target),
-		type = handler.type = _.parse(events[i], handler),
+		type = handler.type = _.parse(text, handler),
 		handlers = listener.s[type];
 	if (!handlers) {
 		handlers = listener.s[type] = [];

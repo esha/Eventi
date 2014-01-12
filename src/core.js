@@ -1,4 +1,4 @@
-var Eventi = function(a){ return _.create.apply(this, arguments); },
+var Eventi = function(){ return _.create.apply(this, arguments); },
 _ = {
     global: document || global,
     noop: function(){},
@@ -96,7 +96,7 @@ _ = {
 Eventi._ = _;
 Eventi.fy = function(o, p, v) {
     for (p in Eventi) {
-        if (p != 'fy' && !(p in o) && typeof (v=Eventi[p]) === "function") {
+        if (p !== 'fy' && !(p in o) && typeof (v=Eventi[p]) === "function") {
             o[p] = v;
         }
     }

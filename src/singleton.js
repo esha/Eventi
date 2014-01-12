@@ -22,7 +22,7 @@ _._sKey = _._key+'s.e.';
 //TODO: ensure that combo.js wraps this _.handler instead of vice versa
 //      combo events should be able to include singletons, but not be singletons
 var _singleton_handler = _.handler;
-_.handler = function(target, text, selector, fn, data) {
+_.handler = function(target, text, selector, fn) {
 	var handler = _singleton_handler.apply(this, arguments);
 	if (handler.singleton) {
 		handler.after = function() {
