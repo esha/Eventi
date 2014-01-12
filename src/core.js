@@ -1,112 +1,84 @@
-var Eventier = function(a) {
-    return a && typeof a === "string" ? _.create.apply(this, arguments) : _.copyTo(a) || a;
-},
-AppEvent = global.CustomEvent || function(type, args) {
-    args = args || {};
-    var e = document.createEvent('CustomEvent');
-    e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
-    return e;
-},
+var Eventi = function(a){ return _.create.apply(this, arguments); },
 _ = {
     global: document || global,
-    slice: function(a, i){ return Array.prototype.slice.call(a, i); },
-    resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
-    splitRE: / (?![^\(\)]*\))+/g,
     noop: function(){},
-
-    create: function(type, props) {
-        var copy = { text: type },
-            prop;
-        type = _.parse(type, copy);
-        if (props) {
-            for (prop in props) {
-                if (props.hasOwnProperty(prop)) {
-                    copy[prop] = props[prop];
-                }
-            }
-        }
-        if (!('bubbles' in copy)) {
-            copy.bubbles = true;// must bubble by default
-        }
-
-        var event = new AppEvent(type, copy);
-        for (prop in copy) {
-            event[_.prop(prop)] = copy[prop];
-        }
-        _.propagation(event);
-        return event;
+    slice: function(a, i){ return Array.prototype.slice.call(a, i); },
+    copy: function(a, b, p) {
+        for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; } }
     },
-    propagation: function(event) {
-        var iFn = event.stopImmediatePropagation || _.noop;
-        event.stopImmediatePropagation = function() {
-            iFn.call(this);
-            event.immediatePropagationStopped = true;
-        };
-    },
-
-    parsers: [
-        [/^_/, function(){ this.bubbles = false; }],
-        [/\((.*)\)/, function(m, val) {
-            try {
-                this.detail = _.resolve(val) || JSON.parse(val);
-            } catch (e) {
-                this.detail = val;
-            }
-        }],
-        [/#(\w+)/g, function(m, tag) {
-            (this.tags||(this.tags=[])).push(tag);
-            this[tag] = true;
-        }],
-        [/^(\w+):/, function(m, category){ this.category = category; }]//
-    ],
-    parse: function(type, props) {
-        props.text = type;// save original
-        _.parsers.forEach(function(parser) {
-            type = type.replace(parser[0], function() {
-                return parser[1].apply(props, arguments) || '';
-            });
-        });
-        return type;
-    },
-
-    prop: function(prop){ return prop; },// only an extension hook
-
-    copyTo: function(o, p, v) {
-        if (typeof o === "object") {
-            for (p in Eventier) {
-                if (Eventier.hasOwnProperty(p) && typeof (v=Eventier[p]) === "function") {
-                    o[p] = v;
-                }
-            }
-            return o;
-        }
-    },
-
-    // common utilities
+    resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
     resolve: function(reference, context) {
         if (_.resolveRE.test(reference)) {
             context = context || global;
             return eval('context'+(reference.charAt(0) !== '[' ? '.'+reference : reference));
         }
     },
-    fixArgs: function(expect, fn) {
+
+    create: function(type, copyThese) {
+        var props = {};
+        type = _.parse(type, props);
+        _.copy(copyThese, props);
+        if (!('bubbles' in props)) {
+            props.bubbles = true;// must bubble by default
+        }
+
+        var event = new CustomEvent(type, props);
+        for (var prop in props) {
+            event[_.prop(prop)] = props[prop];
+        }
+        _.iPS(event);
+        return event;
+    },
+    prop: function(prop){ return prop; },// only an extension hook
+    iPS: function(event) {
+        var sIP = event.stopImmediatePropagation || _.noop;
+        event.stopImmediatePropagation = function() {
+            sIP.call(this);
+            event.immediatePropagationStopped = true;
+        };
+    },
+    parse: function(type, props) {
+        props.text = type;// save original
+        _.properties.forEach(function(property) {
+            type = type.replace(property[0], function() {
+                return property[1].apply(props, arguments) || '';
+            });
+        });
+        return type;
+    },
+    properties: [
+/*nobubble*/[/^_/,          function(){ this.bubbles = false; }],
+/*detail*/  [/\((.*)\)/,    function(m, val) {
+                                try {
+                                    this.detail = _.resolve(val) || JSON.parse(val);
+                                } catch (e) {
+                                    this.detail = val;
+                                }
+                            }],
+/*tags*/    [/#(\w+)/g,     function(m, tag) {
+                                (this.tags||(this.tags=[])).push(tag);
+                                this[tag] = true;
+                            }],
+/*category*/[/^(\w+):/,     function(m, category){ this.category = category; }]//
+    ],
+
+    splitRE: /( |\+|>)(?![^\(\)]*\))+/g,
+    wrap: function(fn, expect, index) {
         return function(target) {
             var args = _.slice(arguments),
                 ret;
-            // must have a target
-            if (typeof target !== "object") {
-                target = !this || this === Eventier ? _.global : this;
+            // ensure a target param
+            if (typeof target === "string") {
+                target = !this || this === Eventi ? _.global : this;
                 args.unshift(target);
             }
+            // convert event string to array
+            index = index || 1;
+            args[index] = args[index].split(_.splitRE);
             // may have extraneous data args
             if (args.length > expect) {
                 args[expect] = args.slice(expect);
                 args = args.slice(0, expect);
-            }
-            // sequence may be 2nd or 3rd
-            var seqIndex = typeof args[1] === "string" ? 1 : 2;
-            if (typeof args[seqIndex] === "string") {
-                args[seqIndex] = args[seqIndex].split(_.splitRE);
             }
             // iterate over multiple targets
             if ('length' in target) {
@@ -119,6 +91,14 @@ _ = {
             // be fluent
             return ret === undefined ? this : ret;
         };
-    }
+    }   
 };
-Eventier._ = _;
+Eventi._ = _;
+Eventi.fy = function(o, p, v) {
+    for (p in Eventi) {
+        if (p != 'fy' && !(p in o) && typeof (v=Eventi[p]) === "function") {
+            o[p] = v;
+        }
+    }
+    return o;
+};

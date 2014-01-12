@@ -1,11 +1,11 @@
-_.off = function(target, sequence, fn) {
-	if (!sequence) {
+_.off = function(target, events, fn) {
+	if (!events) {
 		return _.wipe(target);
 	}
 
 	var listeners = _.listener(target).s;
-	for (var i=0,m=sequence.length; i<m; i++) {
-		var type = sequence[i],
+	for (var i=0,m=events.length; i<m; i++) {
+		var type = events[i],
 			filter = { fn: fn, target: target };
 		type = filter.type = _.parse(type, filter);
 
@@ -27,9 +27,8 @@ _.wipe = function(target){ delete target[_.secret]; };
 _.clean = function(handlers, filter) {
 	for (var i=0,m=handlers.length; i<m; i++) {
 		if (_.cleans(handlers[i], filter)) {
-			handlers.splice(i--, 1);
+			_.cleaned(handlers.splice(i--, 1)[0]);
 		}
-		//TODO: teach _.off to watch for handler.compound and remove part-handlers
 	}
 	if (!handlers.length && filter.target.removeEventListener) {
 		filter.target.removeEventListener(filter.type, _.listener(filter.target));
@@ -41,5 +40,6 @@ _.cleans = function(handler, filter) {
 		(!filter.detail || handler.detail === filter.detail) &&
 		(!filter.fn || handler.fn === filter.fn);
 };
+_.cleaned = function(handler){};// extension hook
 
-Eventier.off = _.fixArgs(3, _.off);
+Eventi.off = _.wrap(_.off, 3);

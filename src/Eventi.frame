@@ -5,9 +5,19 @@
 <%= content %>
     _.version = "<%= pkg.version %>";
 
-    // export Eventier (AMD, commonjs, or window/env)
+    // export Eventi (AMD, commonjs, or window/env)
     var define = global.define || _.noop;
-    define((global.exports||global).Eventier = Eventier);
+    define((global.exports||global).Eventi = Eventi);
+
+    // polyfill CustomEvent constructor
+    if (!global.CustomEvent) {
+        global.CustomEvent = function(type, args) {
+            args = args || {};
+            var e = document.createEvent('CustomEvent');
+            e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
+            return e;
+        };
+    }
 
 	// extend HTML(.js), if present and not prohibited
     if (HTML._ && HTML.getAttribute('data-eventier-html') !== "false") {
