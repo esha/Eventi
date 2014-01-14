@@ -20,20 +20,22 @@
       throws(block, [expected], [message])
   */
 
-  module('Eventi', {
-    // This will run before each test in this module.
-    setup: function() {
-      //TODO 
-    }
+  var _ = Eventi._;
+  module('Eventi until');
+
+  test('3rd party/polyfill api presence', function() {
+    expect(0);
+    //TODO: include HTML.js and test HTML.until presence
   });
 
-  test('presence', function() {
-    expect(1);
-    ok(typeof Eventi !== "undefined", 'Eventi should be present');
+  test('external api presence', function() {
+    ok(typeof Eventi.until === "function", 'Eventi.until');
   });
 
-  test('internal', function() {
-    ok(typeof Eventi._ !== "undefined", "Eventi._ should be present");
+  test('internal api presence', function() {
+    ok(_.until, "_.until");
+    ok(_.untilAfter, "_.untilAfter");
+    ok(_.untilFn, "_.untilFn");
   });
 
 }());
