@@ -20,8 +20,19 @@ module.exports = function(grunt) {
       },
       dist: {
         dest: 'dist/<%= pkg.name %>.js',
-        src: ['src/core.js','src/fire.js','src/on.js','src/off.js']
-      }
+        src: ['src/core.js','src/fire.js','src/on.js',
+              'src/singleton.js', 'src/off.js',
+              'src/until.js', 'src/combo.js']
+      },
+      tall: {
+        dest: 'dist/<%= pkg.name %>.tall.js',
+        src: ['src/core.js','src/fire.js','src/on.js']
+      },
+      grande: {
+        dest: 'dist/<%= pkg.name %>.grande.js',
+        src: ['src/core.js','src/fire.js','src/on.js',
+              'src/singleton.js','src/off.js']
+      },
     },
     uglify: {
       options: {
@@ -31,6 +42,14 @@ module.exports = function(grunt) {
         src: 'dist/<%= pkg.name %>.js',
         dest: 'dist/<%= pkg.name %>.min.js'
       },
+      tall: {
+        src: 'dist/<%= pkg.name %>.tall.js',
+        dest: 'dist/<%= pkg.name %>.tall.min.js'
+      },
+      grande: {
+        src: 'dist/<%= pkg.name %>.grande.js',
+        dest: 'dist/<%= pkg.name %>.grande.min.js'
+      },
     },
     compress: {
       options: {
@@ -39,6 +58,14 @@ module.exports = function(grunt) {
       dist: {
         src: ['dist/<%= pkg.name %>.min.js'],
         dest: 'dist/<%= pkg.name %>.min.js'
+      },
+      tall: {
+        src: ['dist/<%= pkg.name %>.tall.min.js'],
+        dest: 'dist/<%= pkg.name %>.tall.min.js'
+      },
+      grande: {
+        src: ['dist/<%= pkg.name %>.grande.min.js'],
+        dest: 'dist/<%= pkg.name %>.grande.min.js'
       },
     },
     qunit: {

@@ -8,13 +8,20 @@ Download the [minified version][min] or the [development version][max].
 [min]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.min.js
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
 
+## TODO
+* Lots and lots and lots of test code :)
+* declare.js
+* key.js
+* web site/documentation
+* integrations (jQuery, Visual Event 2, etc)
+
 ## Motive
 
-* The JavaScript community lives on event-based development.
-* Application events (aka custom events) are recommended but rarely/poorly used in webapps.
-* Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types most heavy app-event users resort to.
-* App events could use that rich data, as well as a larger set of features than environment events require.
-* Support for event handling in general is ripe for innovation.
+* JavaScript development is ultimately event-based development.
+* Application events (aka custom events) are usually under-used or poorly-used in webapps.
+* Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types most heavy custom event users tolerate.
+* Custom events could use rich data, especially if there's simple ways to create and utilize it.
+* Event handling features in general need a boost to encourage use in advanced apps (particularly single page ones).
 
 ## Goal
 * A featureful event platform that's easy to use and to extend.
@@ -24,6 +31,8 @@ Download the [minified version][min] or the [development version][max].
 * Robust, error tolerant listener execution
 * Lots of solid, maintainable test code
 * Eye-catching visual demo
+* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/off, venti adds until/combo/key
+* Venti will be the default version to encourage feature use and dev.
 
 ## Code Plans
 
@@ -58,31 +67,37 @@ Download the [minified version][min] or the [development version][max].
 * alias Element.prototype.matches from the prefixed matchesSelector versions
 * implementation: one listener per target that gets registered for every handled type. the listener handles each event by looking amongst its handlers for those that match the event and executing them
 
-#### off.js (requires on.js)
-* simple listener removal: `Eventi.off([target, ]['type', ][fn])`
-* multiple removal: `Eventi.off([target, ]['first second third', ][fn])`
-* remove by category and/or tag: `Eventi.off([target, ]['category:type#tag', ][fn])`
 
-#### singleton.js (requires on.js & off.js)
+#### declare.js (requires on.js)
+* DOM declared event mapping (i.e. trigger.js' declarative stuff)
+* DOM declared event handlers (i.e. something like old on.js, with no JS in DOM)
+
+#### singleton.js (requires fire.js and on.js)
 * singleton events (immediately call late listeners, ignore multiple firings)
 * "listen" for them: `Eventi.on([target, ]'^type', fn)`
 * fire them so they're remembered: `Eventi.fire([target, ]'^type', fn)`
 * alias DOMContentLoaded to '^ready'?
 
-#### until.js (requires on.js & off.js)
+#### off.js (requires on.js)
+* simple listener removal: `Eventi.off([target, ]['type', ][fn])`
+* multiple removal: `Eventi.off([target, ]['first second third', ][fn])`
+* remove by category and/or tag: `Eventi.off([target, ]['category:type#tag', ][fn])`
+
+
+#### until.js (requires on.js)
 * countdown to zero: `Eventi.until([target, ]number, 'type', fn)`
 * test ref for boolean: `Eventi.until([target, ]'reference', 'type', fn)`
 * test function: `Eventi.until([target, ]testFn, 'type', fn)`
 
-#### combo.js (requires on.js)
+#### combo.js (requires fire.js and on.js)
 * combo events (call after all specified events, then reset): `Eventi.on([target, ]'foo+bar', fn)`
 * event sequences (ordered combos): `Eventi.on([target, ]'one>two>three', fn...)`
 * event sequence firing controls (w/async support): `e.pauseSequence([promise])`,`e.resumeSequence()`, `e.isSequencePaused()`
 * timeout support for both ordered and unordered combos
 
-#### declare.js (requires on.js)
-* DOM declared event mapping (i.e. trigger.js' declarative stuff)
-* DOM declared event handlers (i.e. something like old on.js, with no JS in DOM)
+#### key.js (requires on.js)
+* `Eventi.on([target, ]'keyup[shift-a]', fn)`
+
 
 #### jquery.eventi.js
 * add custom properties to $.event.props
@@ -92,9 +107,6 @@ Download the [minified version][min] or the [development version][max].
 
 #### visual.js
 * Integration for http://www.sprymedia.co.uk/article/Visual+Event+2
-
-#### key.js (requires on.js)
-* `Eventi.on([target, ]'keyup[shift-a]', fn)`
 
 
 ## Release History
