@@ -21,7 +21,7 @@
 
 	// extend HTML(.js), if present and not prohibited
     if (HTML._ && HTML.getAttribute('data-eventier-html') !== "false") {
-        _.copyTo(HTML._.fn);
+        Eventi.fy(HTML._.fn);
         if (_.target) {
             var target = _.target;
             _.target = function() {

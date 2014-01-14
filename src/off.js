@@ -40,6 +40,6 @@ _.cleans = function(handler, filter) {
 		(!filter.detail || handler.detail === filter.detail) &&
 		(!filter.fn || handler.fn === filter.fn);
 };
-_.cleaned = function(handler){ return handler; };// extension hook
+_.cleaned = _.noop;// extension hook (called with cleaned handler as arg)
 
 Eventi.off = _.wrap(_.off, 3);

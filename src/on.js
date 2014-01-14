@@ -89,7 +89,7 @@ _.closest = function(el, selector) {
 };
 var Ep = Element && Element.prototype, aS = 'atchesSelector';
 if (Ep) {
-	Object.defineProperty(Ep, 'matches', Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]);
+	Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
 }   
 
 Eventi.on = _.wrap(_.on, 4);

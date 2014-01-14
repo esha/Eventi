@@ -3,6 +3,7 @@ _.singletonRE = /^_?\^/;
 _.properties.splice(1,0, [_.singletonRE, function(){ this.singleton = true; }]);
 
 // wrap _.fire's _.dispatch to save singletons with node and all parents
+var _singleton_dispatch = _.dispatch;
 _.dispatch = function(target, event) {
 	_singleton_dispatch(target, event);
 	if (event.singleton) {

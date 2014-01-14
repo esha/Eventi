@@ -41,12 +41,12 @@ _.handler = function(target, event, selector) {
 		joint = event.match(_.comboRE);
 	if (joint) {
 		var types = event.split(joint[0]),
-			comboFn = handler.comboFn = _.comboFn(joint[0]==='>', types, event);
+			fn = handler.comboFn = _.comboFn(joint[0]==='>', types, event);
 		for (var i=0,m=types.length; i<m; i++) {
 			// override full type with parsed, core type for comboFn's use
-			types[i] = _.handler(target, types[i], selector, comboFn).type;
+			types[i] = _.handler(target, types[i], selector, fn).type;
 		}
-		comboFn.reset();
+		fn.reset();
 	}
 };
 _.comboTimeout = 1000;
@@ -72,14 +72,13 @@ _.comboFn = function(ordered, types, event) {
 	return fn;
 };
 
-// wrap _.off's _.cleaned to watch for handler.comboFn and remove sub-handlers
-var _combo_cleaned = _.cleaned;
-_.cleaned = function(handler) {
-	_combo_cleaned.apply(this, arguments);
-	if (handler.comboFn) {
-		var types = handler.type.split(_.comboRE);
-		for (var i=0,m=types.length; i<m; i++) {
-			_.off(handler.target, types[i], fn);
+if (_.off) {
+	// wrap _.off's _.cleaned to watch for handler.comboFn and remove sub-handlers
+	var _combo_cleaned = _.cleaned;
+	_.cleaned = function(handler) {
+		_combo_cleaned.apply(this, arguments);
+		if (handler.comboFn) {
+			_.off(handler.target, '', handler.comboFn);
 		}
-	}
-};
+	};
+}
