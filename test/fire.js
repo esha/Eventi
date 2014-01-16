@@ -32,6 +32,10 @@
     ok(typeof Eventi.fire === "function", 'Eventi.fire');
   });
 
+  test('Eventi.fy({}).fire', function() {
+    equal(Eventi.fy({}).fire, Eventi.fire, 'should get fire()');
+  });
+
   test('internal api presence', function() {
     ok(_.fire, "_.fire");
     ok(_.trigger, "_.trigger");

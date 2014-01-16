@@ -32,6 +32,10 @@
     ok(typeof Eventi.off === "function", 'Eventi.off');
   });
 
+  test('Eventi.fy({}).off', function() {
+    equal(Eventi.fy({}).off, Eventi.off, 'should get off()');
+  });
+
   test('internal api presence', function() {
     ok(_.off, "_.off");
     ok(_.empty, "_.empty");

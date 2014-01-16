@@ -32,6 +32,10 @@
     ok(typeof Eventi.on === "function", 'Eventi.on');
   });
 
+  test('Eventi.fy({}).on', function() {
+    equal(Eventi.fy({}).on, Eventi.on, 'should get on()');
+  });
+
   test('internal api presence', function() {
     ok(_.on, "_.on");
     ok(_.handler, "_.handler");

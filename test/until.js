@@ -32,6 +32,10 @@
     ok(typeof Eventi.until === "function", 'Eventi.until');
   });
 
+  test('Eventi.fy({}).until', function() {
+    equal(Eventi.fy({}).until, Eventi.until, 'should get until()');
+  });
+
   test('internal api presence', function() {
     ok(_.until, "_.until");
     ok(_.untilAfter, "_.untilAfter");
