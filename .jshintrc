@@ -12,5 +12,5 @@
   "boss": true,
   "eqnull": true,
   "node": true,
-  "predef": ["Element","document","CustomEvent"]
+  "predef": ["Element","document","CustomEvent","Event"]
 }
