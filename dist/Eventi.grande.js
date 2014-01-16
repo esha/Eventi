@@ -1,12 +1,12 @@
-/*! Eventi - v0.1.0 - 2014-01-13
+/*! Eventi - v0.1.0 - 2014-01-16
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
 (function(global, document, HTML) {
     "use strict";
 
-var Eventi = function(){ return _.create.apply(this, arguments); },
-_ = {
+function Eventi(){ return _.create.apply(this, arguments); }
+var _ = {
     global: document || global,
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -33,16 +33,13 @@ _ = {
         for (var prop in props) {
             event[_.prop(prop)] = props[prop];
         }
-        _.iPS(event);
+        event.stopImmediatePropagation = _.sIP;
         return event;
     },
     prop: function(prop){ return prop; },// only an extension hook
-    iPS: function(event) {
-        var sIP = event.stopImmediatePropagation || _.noop;
-        event.stopImmediatePropagation = function() {
-            sIP.call(this);
-            event.immediatePropagationStopped = true;
-        };
+    sIP: function() {
+        this.immediatePropagationStopped = true;
+        (Event.prototype.stopImmediatePropagation || _.noop).call(this);
     },
     parse: function(type, props) {
         props.text = type;// save original
@@ -85,7 +82,7 @@ _ = {
             // may have extraneous data args
             if (args.length > expect) {
                 args[expect] = args.slice(expect);
-                args = args.slice(0, expect);
+                args = args.slice(0, expect+1);
             }
             // iterate over multiple targets
             if ('length' in target) {
