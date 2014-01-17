@@ -16,7 +16,7 @@ var _ = {
 
     create: function(type, copyThese) {
         var props = {};
-        type = _.parse(type, props);
+        type = _.parse(type+'', props);
         _.copy(copyThese, props);
         if (!('bubbles' in props)) {
             props.bubbles = true;// must bubble by default
@@ -59,28 +59,27 @@ var _ = {
 /*category*/[/^(\w+):/,     function(m, category){ this.category = category; }]//
     ],
 
-    splitRE: /( |\+|>)(?![^\(\)]*\))+/g,
+    splitRE: / (?![^\(\)]*\))+/g,
     wrap: function(fn, expect, index) {
         return function(target) {
-            var args = _.slice(arguments),
-                ret;
-            // ensure a target param
+            var args = _.slice(arguments);
+            // ensure target param precedes event text
             if (typeof target === "string") {
                 target = !this || this === Eventi ? _.global : this;
                 args.unshift(target);
             }
-            // convert event string to array
-            index = index || 1;
-            args[index] = args[index].split(_.splitRE);
-            // may have extraneous data args
+            // convert to array of event text inputs
+            args[index||1] = args[index||1].split(_.splitRE);
+            // gather ...data the old way
             if (args.length > expect) {
                 args[expect] = args.slice(expect);
                 args = args.slice(0, expect+1);
             }
-            // iterate over multiple targets
+            // call fn for each target
+            var ret;
             if ('length' in target) {
                 for (var i=0,m=target.length; i<m; i++) {
-                    ret = fn.apply(target, args);
+                    ret = fn.apply(args[0] = target[i], args);
                 }
             } else {
                 ret = fn.apply(target, args);
