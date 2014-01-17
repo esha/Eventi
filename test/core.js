@@ -153,12 +153,20 @@
   });
 
   // ensure ordered iteration over targets
-  test('_.wrap', function() {
+  test('_.wrap multiple target order', function() {
     expect(2);
     var targets = ['a','b'];
     _.wrap(function(target) {
       equal(target, targets.shift(), 'should receive targets in correct order');
     }, 2)(targets.slice(0), 'orderTest');
+  });
+
+  test('_.wrap null event text', function() {
+    expect(2);
+    _.wrap(function(target, strings) {
+      equal(target, _.global, 'target should be _.global');
+      equal(strings[0], 'null', 'text should be "null"');
+    }, 2)(null);
   });
 
 }());
