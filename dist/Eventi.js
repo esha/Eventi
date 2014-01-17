@@ -71,12 +71,13 @@ var _ = {
         return function(target) {
             var args = _.slice(arguments);
             // ensure target param precedes event text
-            if (typeof target === "string" || target instanceof Event) {
+            if (!target || typeof target === "string") {
                 target = !this || this === Eventi ? _.global : this;
                 args.unshift(target);
             }
             // convert to array of event text inputs
-            args[index||1] = args[index||1].split(_.splitRE);
+            index = index || 1;
+            args[index] = (args[index]+'').split(_.splitRE);
             // gather ...data the old way
             if (args.length > expect) {
                 args[expect] = args.slice(expect);
