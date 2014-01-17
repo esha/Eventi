@@ -54,9 +54,10 @@
   });
 
   test('new Eventi("jsonDetail(...)")', function() {
-    var detail = new Eventi("jsonDetail([1,true,{\"foo\":\"bar\"}])").detail;
+    var evil = '#:_^ +>()',
+        detail = new Eventi("jsonDetail([1,true,{\"foo\":\""+evil+"\"}])").detail;
     ok(Array.isArray(detail), "detail should be array");
-    deepEqual(detail, [1, true, {foo:'bar'}], 'should be correctly parsed');
+    deepEqual(detail, [1, true, {foo:evil}], 'should be correctly parsed');
   });
 
   test('new Eventi("referenceDetail(Eventi.name)")', function() {
@@ -132,10 +133,10 @@
 
   test('_.wrap', function() {
     expect(14);
-    var fn = function(target, args, data) {
-      ok(Array.isArray(args), 'args should be array (of strings)');
-      equal(typeof args[0], 'string', 'args should always have at least one string');
-      if (args[0] === 'global') {
+    var fn = function(target, strings, data) {
+      ok(Array.isArray(strings), 'strings should be array (of strings)');
+      equal(typeof strings[0], 'string', 'strings should always have at least one string');
+      if (strings[0] === 'global') {
         equal(target, _.global, 'target should be global');
       } else {
         notEqual(target, _.global, 'target should not be global');
@@ -149,6 +150,15 @@
     notEqual(api, fn, 'should not return same fn');
     api('global', 'data');
     api([fn, api], 'multiple');
+  });
+
+  // ensure ordered iteration over targets
+  test('_.wrap', function() {
+    expect(2);
+    var targets = ['a','b'];
+    _.wrap(function(target) {
+      equal(target, targets.shift(), 'should receive targets in correct order');
+    }, 2)(targets.slice(0), 'orderTest');
   });
 
 }());
