@@ -1,14 +1,12 @@
 _.fire = function(target, events, props, data) {
-    if (props) {
-        if (typeof props !== "object" ||
-            (!('bubbles' in props) && !('detail' in props) && !('cancelable' in props))) {
+    if (typeof props === "object" &&
+        ('bubbles' in props || 'detail' in props || 'cancelable' in props)) {
+        props.data = data;
+    } else {
+        if (props !== undefined) {
             data = data ? data.unshift(props) && data : [props];
         }
-    } else {
-        props = {};
-    }
-    if (data && data.length) {
-        props.data = data;
+        props = { data: data };
     }
     return _.trigger(target, events, props);
 };
