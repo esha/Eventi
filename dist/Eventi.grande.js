@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-17
+/*! Eventi - v0.1.0 - 2014-01-18
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -108,16 +108,14 @@ Eventi.fy = function(o, p, v) {
 };
 
 _.fire = function(target, events, props, data) {
-    if (props) {
-        if (typeof props !== "object" ||
-            (!('bubbles' in props) && !('detail' in props) && !('cancelable' in props))) {
+    if (typeof props === "object" &&
+        ('bubbles' in props || 'detail' in props || 'cancelable' in props)) {
+        props.data = data;
+    } else {
+        if (props !== undefined) {
             data = data ? data.unshift(props) && data : [props];
         }
-    } else {
-        props = {};
-    }
-    if (data && data.length) {
-        props.data = data;
+        props = { data: data };
     }
     return _.trigger(target, events, props);
 };
@@ -133,7 +131,6 @@ _.dispatch = function(target, event) {
     (target.dispatchEvent || target[_.secret] || _.noop)(event);
 };
 Eventi.fire = _.wrap(_.fire, 3);
-
 _.on = function(target, events, selector, fn, data) {
 	// adjust for absence of selector
 	if (typeof selector !== "string") {
