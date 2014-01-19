@@ -1,5 +1,6 @@
 _.comboRE = /\+|>/;
 // overwrite fire.js' _.trigger to watch for combo events
+_.combo_trigger = _.trigger;
 _.trigger = function(target, events, props, _resumeIndex) {
     var event, sequence;
     for (var i=0; i<events.length; i++) {
@@ -35,9 +36,9 @@ _.sequence = function(event, props, target, paused) {
 
 
 // wrap _.on's _.handler to watch for combo event listeners
-var _combo_handler = _.handler;
+var _.combo_handler = _.handler;
 _.handler = function(target, event, selector) {
-	var handler = _combo_handler.apply(this, arguments),
+	var handler = _.combo_handler.apply(this, arguments),
 		joint = event.match(_.comboRE);
 	if (joint) {
 		var types = event.split(joint[0]),
@@ -74,9 +75,9 @@ _.comboFn = function(ordered, types, event) {
 
 if (_.off) {
 	// wrap _.off's _.cleaned to watch for handler.comboFn and remove sub-handlers
-	var _combo_cleaned = _.cleaned;
+	_.combo_cleaned = _.cleaned;
 	_.cleaned = function(handler) {
-		_combo_cleaned.apply(this, arguments);
+		_.combo_cleaned.apply(this, arguments);
 		if (handler.comboFn) {
 			_.off(handler.target, '', handler.comboFn);
 		}

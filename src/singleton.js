@@ -3,9 +3,9 @@ _.singletonRE = /^_?\^/;
 _.properties.splice(1,0, [_.singletonRE, function(){ this.singleton = true; }]);
 
 // wrap _.fire's _.dispatch to save singletons with node and all parents
-var _singleton_dispatch = _.dispatch;
+_.singleton_dispatch = _.dispatch;
 _.dispatch = function(target, event) {
-	_singleton_dispatch(target, event);
+	_.singleton_dispatch(target, event);
 	if (event.singleton) {
 		do {
 			var saved = target[_._sKey];
@@ -22,9 +22,9 @@ _._sKey = _._key+'s.e.';
 // wrap _.on's _.handler to execute fired singletons immediately
 //TODO: ensure that combo.js wraps this _.handler instead of vice versa
 //      combo events should be able to include singletons, but not be singletons
-var _singleton_handler = _.handler;
+_.singleton_handler = _.handler;
 _.handler = function(target, text, selector, fn) {
-	var handler = _singleton_handler.apply(this, arguments);
+	var handler = _.singleton_handler.apply(this, arguments);
 	if (handler.singleton) {
 		handler.after = function() {
 			if (_.off){ _.off(target, text, fn); }
