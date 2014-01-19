@@ -36,7 +36,7 @@ _.sequence = function(event, props, target, paused) {
 
 
 // wrap _.on's _.handler to watch for combo event listeners
-var _.combo_handler = _.handler;
+_.combo_handler = _.handler;
 _.handler = function(target, event, selector) {
 	var handler = _.combo_handler.apply(this, arguments),
 		joint = event.match(_.comboRE);
