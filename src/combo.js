@@ -4,8 +4,8 @@ _.trigger = function(target, events, props, _resumeIndex) {
     var event, sequence;
     for (var i=0; i<events.length; i++) {
 		sequence = props.sequence = events[i].split(_.comboRE);
-        for (var j=_resumeIndex||0; j < events.length && (!event||!event.isSequencePaused()); i++) {
-            if (sequence[i]) {
+        for (var j=_resumeIndex||0; j < sequence.length && (!event||!event.isSequencePaused()); j++) {
+            if (sequence[j]) {
                 props.index = j;
                 event = props.previousEvent = _.create(sequence[j], props);
                 _.sequence(event, props, target);
