@@ -50,13 +50,6 @@ Download the [minified version][min] or the [development version][max].
 * interface sharing (pass `this` as `target` param to copied functions): `Eventi.fy(foo)` -> `foo.fire('type')`
 * add stopImmediatePropagation and immediatePropagationStopped to event interface
 
-#### fire.js (requires core.js)
-* object or DOM custom event dispatch: `Eventi.fire(Node|object, 'type')`
-* handler errors caught and thrown in next tick to avoid interrupting sibling handlers or hiding errors
-* implicit global target: `Eventi.fire('type')` === `Eventi.fire(document || this, 'type')
-* multiple target specification: `Eventi.fire(Array|NodeList, 'type')`
-* fire with handler arguments `Eventi.fire([target, ]'type', data)`
-
 #### on.js (requires core.js)
 * simple event registration: `Eventi.on([target, ]'type', fn)`
 * space delimited multiple registration: `Eventi.on([target, ]'first second third', fn)`
@@ -67,6 +60,12 @@ Download the [minified version][min] or the [development version][max].
 * alias Element.prototype.matches from the prefixed matchesSelector versions
 * implementation: one listener per target that gets registered for every handled type. the listener handles each event by looking amongst its handlers for those that match the event and executing them
 
+#### fire.js (requires core.js, uses on.js)
+* object or DOM custom event dispatch: `Eventi.fire(Node|object, 'type')`
+* handler errors caught and thrown in next tick to avoid interrupting sibling handlers or hiding errors
+* implicit global target: `Eventi.fire('type')` === `Eventi.fire(document || this, 'type')
+* multiple target specification: `Eventi.fire(Array|NodeList, 'type')`
+* fire with handler arguments `Eventi.fire([target, ]'type', data)`
 
 #### declare.js (requires on.js)
 * DOM declared event mapping (i.e. trigger.js' declarative stuff)
