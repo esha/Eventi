@@ -30,10 +30,55 @@
 
   test('external api presence', function() {
     ok(typeof Eventi.fire === "function", 'Eventi.fire');
+    notEqual(Eventi.fire, _.fire, 'public fire != internal fire');
   });
 
   test('Eventi.fy({}).fire', function() {
     equal(Eventi.fy({}).fire, Eventi.fire, 'should get fire()');
+  });
+
+  test('Eventi.fire({}, "foo") is noop', function() {
+    expect(1);
+    var _noop = _.noop;
+    _.noop = function() {
+      ok(true, 'noop called');
+    };
+    Eventi.fire({}, 'foo');
+    _.noop = _noop;
+  });
+
+  test('Eventi.fire(hasSecret, "foo") is not noop', function() {
+    expect(1);
+    var _noop = _.noop,
+      target = {};
+    target[_.secret] = function(){ ok(true, '_.secret called'); };
+    _.noop = function(){ ok(false, 'noop called'); };
+    Eventi.fire(target, "foo");
+    _.noop = _noop;
+  });
+
+  test('Eventi.fire(hasDispatchEventAndSecret, "foo") uses dispatchEvent', function() {
+    expect(1);
+    var _noop = _.noop,
+      target = {};
+    target[_.secret] = function(){ ok(false, '_.secret called'); };
+    target.dispatchEvent = function(){ ok(true, 'dispatchEvent called'); };
+    _.noop = function(){ ok(false, 'noop called'); };
+    Eventi.fire(target, "foo");
+    _.noop = _noop;
+  });
+
+  test('Eventi.fire() misc', function() {
+    var target = {
+      dispatchEvent: function(e) {
+        ok(e instanceof Event, 'should receive instanceof Event');
+        equal(e.type, 'test', 'should be of type test');
+        equal(e.category, 'test', 'should be in category test');
+        equal(e.data[0], 'data', 'should get data arg');
+        equal(e.data[1], 2, 'should get second data arg');
+      }
+    };
+    Eventi.fire(target, 'test:test', 'data', 2);
   });
 
   test('internal api presence', function() {
