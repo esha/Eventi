@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-18
+/*! Eventi - v0.1.0 - 2014-01-19
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -30,6 +30,9 @@ var _ = {
         }
 
         var event = new CustomEvent(type, props);
+        delete props.bubbles;
+        delete props.cancelable;
+        delete props.detail;
         for (var prop in props) {
             event[_.prop(prop)] = props[prop];
         }
@@ -232,9 +235,9 @@ _.singletonRE = /^_?\^/;
 _.properties.splice(1,0, [_.singletonRE, function(){ this.singleton = true; }]);
 
 // wrap _.fire's _.dispatch to save singletons with node and all parents
-var _singleton_dispatch = _.dispatch;
+_.singleton_dispatch = _.dispatch;
 _.dispatch = function(target, event) {
-	_singleton_dispatch(target, event);
+	_.singleton_dispatch(target, event);
 	if (event.singleton) {
 		do {
 			var saved = target[_._sKey];
@@ -251,9 +254,9 @@ _._sKey = _._key+'s.e.';
 // wrap _.on's _.handler to execute fired singletons immediately
 //TODO: ensure that combo.js wraps this _.handler instead of vice versa
 //      combo events should be able to include singletons, but not be singletons
-var _singleton_handler = _.handler;
+_.singleton_handler = _.handler;
 _.handler = function(target, text, selector, fn) {
-	var handler = _singleton_handler.apply(this, arguments);
+	var handler = _.singleton_handler.apply(this, arguments);
 	if (handler.singleton) {
 		handler.after = function() {
 			if (_.off){ _.off(target, text, fn); }
@@ -368,6 +371,7 @@ _.untilFn = function(handler, condition) {
 Eventi.until = _.wrap(_.until, 5, 2);
 _.comboRE = /\+|>/;
 // overwrite fire.js' _.trigger to watch for combo events
+_.combo_trigger = _.trigger;
 _.trigger = function(target, events, props, _resumeIndex) {
     var event, sequence;
     for (var i=0; i<events.length; i++) {
@@ -403,9 +407,9 @@ _.sequence = function(event, props, target, paused) {
 
 
 // wrap _.on's _.handler to watch for combo event listeners
-var _combo_handler = _.handler;
+_.combo_handler = _.handler;
 _.handler = function(target, event, selector) {
-	var handler = _combo_handler.apply(this, arguments),
+	var handler = _.combo_handler.apply(this, arguments),
 		joint = event.match(_.comboRE);
 	if (joint) {
 		var types = event.split(joint[0]),
@@ -442,9 +446,9 @@ _.comboFn = function(ordered, types, event) {
 
 if (_.off) {
 	// wrap _.off's _.cleaned to watch for handler.comboFn and remove sub-handlers
-	var _combo_cleaned = _.cleaned;
+	_.combo_cleaned = _.cleaned;
 	_.cleaned = function(handler) {
-		_combo_cleaned.apply(this, arguments);
+		_.combo_cleaned.apply(this, arguments);
 		if (handler.comboFn) {
 			_.off(handler.target, '', handler.comboFn);
 		}

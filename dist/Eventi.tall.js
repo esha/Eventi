@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-18
+/*! Eventi - v0.1.0 - 2014-01-19
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -30,6 +30,9 @@ var _ = {
         }
 
         var event = new CustomEvent(type, props);
+        delete props.bubbles;
+        delete props.cancelable;
+        delete props.detail;
         for (var prop in props) {
             event[_.prop(prop)] = props[prop];
         }
