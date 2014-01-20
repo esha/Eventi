@@ -23,6 +23,9 @@ var _ = {
         }
 
         var event = new CustomEvent(type, props);
+        delete props.bubbles;
+        delete props.cancelable;
+        delete props.detail;
         for (var prop in props) {
             event[_.prop(prop)] = props[prop];
         }
