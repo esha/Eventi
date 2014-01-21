@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-19
+/*! Eventi - v0.1.0 - 2014-01-20
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -131,7 +131,13 @@ _.trigger = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event) {
-    (target.dispatchEvent || target[_.secret] || _.noop)(event);
+    /*if (target===_.global){
+        console.log('wtf',target===_.global===document);
+        console.log('dispatch',target, event, event instanceof Event, 
+                    document.dispatchEvent(event));
+    } else {*/
+    (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
+    //}
 };
 Eventi.fire = _.wrap(_.fire, 3);
 _.on = function(target, events, selector, fn, data) {

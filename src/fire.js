@@ -19,6 +19,6 @@ _.trigger = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event) {
-    (target.dispatchEvent || target[_.secret] || _.noop)(event);
+    (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
 };
 Eventi.fire = _.wrap(_.fire, 3);

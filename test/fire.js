@@ -81,6 +81,24 @@
     Eventi.fire(target, 'test:test', 'data', 2);
   });
 
+  test('Eventi.fire(type)', function() {
+    expect(2);
+    equal(_.global, document, 'qunit global should be document');
+    document.addEventListener('global', function(e) {
+      equal(e.category, 'test', 'should get event in test category');
+    });
+    Eventi.fire('test:global');
+  });
+
+  test('Eventi.fire(event, props)', function() {
+    expect(1);
+    document.addEventListener('props', function(e) {
+      equal(e.detail, 'detail', 'should have detail of "detail"');
+    });
+    Eventi.fire('props', { detail:'detail' });
+    Eventi.fire(document.documentElement, 'props', { bubbles:false });
+  });
+
   test('internal api presence', function() {
     ok(_.fire, "_.fire");
     ok(_.trigger, "_.trigger");
