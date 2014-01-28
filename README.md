@@ -27,12 +27,13 @@ Download the [minified version][min] or the [development version][max].
 * A featureful event platform that's easy to use and to extend.
 * A declarative syntax for creating and handling rich, informative events.
 * DOM and object support
-* Handling for complex event types (combos, sequences, singletons, etc).
+* Handling for complex event types (combos, async sequences, singletons, etc).
 * Robust, error tolerant listener execution
+* Support for best-practices like "signals" and declarative event mapping
 * Lots of solid, maintainable test code
-* Eye-catching visual demo
-* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/off, venti adds until/combo/key
-* Venti will be the default version to encourage feature use and dev.
+* Impressive visual and/or interactive demo (ideas, anyone?)
+* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/signal, venti adds off/until/combo/key
+* Venti will be the default version to encourage feature use/development.
 
 ## Code Plans
 
@@ -66,10 +67,15 @@ Download the [minified version][min] or the [development version][max].
 * implicit global target: `Eventi.fire('type')` === `Eventi.fire(document || this, 'type')
 * multiple target specification: `Eventi.fire(Array|NodeList, 'type')`
 * fire with handler arguments `Eventi.fire([target, ]'type', data)`
+* TODO: consider non-DOM propagation when typeof object.parent === "object"
 
-#### declare.js (requires on.js)
-* DOM declared event mapping (i.e. trigger.js' declarative stuff)
-* DOM declared event handlers (i.e. something like old on.js, with no JS in DOM)
+#### declare.js (requires on.js and fire.js)
+* elements can have `[data-]eventi="handleMe@event"` attributes
+* try to resolve handleMe at call-time on element w/attr, global (declared event handler)
+* otherwise, fire as application event (declared event mapping)
+* impl should scan document for eventi attributes on ^ready, register those listeners
+* use MutationObserver to watch for eventi attribute changes?
+* use trigger.js' intelligent click/enter-on-child interpreter
 
 #### singleton.js (requires fire.js and on.js)
 * singleton events (immediately call late listeners, ignore multiple firings)
@@ -96,6 +102,13 @@ Download the [minified version][min] or the [development version][max].
 
 #### key.js (requires on.js)
 * `Eventi.on([target, ]'keyup[shift-a]', fn)`
+
+#### signal.js (requires core)
+* provide both global signals and local signals with minimal API
+* global: `Eventi.signal([target, ]'type');` -> `Eventi.on.type([target, ]handler)`
+* local (upon ify-cation): `Eventi.fy(target, 'type', 'type2')` -> `target.until.type2(1, handler)`
+* implementation should basically insert signal type as event at proper args index (_.wrap will have to expose index, for this to work)
+* obviously, signals cannot have the same name as Function properties like 'call' or 'length'
 
 
 #### jquery.eventi.js

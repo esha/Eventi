@@ -29,7 +29,7 @@ var _ = {
         for (var prop in props) {
             event[_.prop(prop)] = props[prop];
         }
-        event.stopImmediatePropagation = _.sIP;
+        event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
     prop: function(prop){ return prop; },// only an extension hook
