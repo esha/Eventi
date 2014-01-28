@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-20
+/*! Eventi - v0.1.0 - 2014-01-27
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -36,7 +36,7 @@ var _ = {
         for (var prop in props) {
             event[_.prop(prop)] = props[prop];
         }
-        event.stopImmediatePropagation = _.sIP;
+        event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
     prop: function(prop){ return prop; },// only an extension hook
@@ -131,13 +131,7 @@ _.trigger = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event) {
-    /*if (target===_.global){
-        console.log('wtf',target===_.global===document);
-        console.log('dispatch',target, event, event instanceof Event, 
-                    document.dispatchEvent(event));
-    } else {*/
     (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
-    //}
 };
 Eventi.fire = _.wrap(_.fire, 3);
 _.on = function(target, events, selector, fn, data) {

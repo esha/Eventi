@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-20
+/*! Eventi - v0.1.0 - 2014-01-27
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -36,7 +36,7 @@ var _ = {
         for (var prop in props) {
             event[_.prop(prop)] = props[prop];
         }
-        event.stopImmediatePropagation = _.sIP;
+        event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
     prop: function(prop){ return prop; },// only an extension hook
@@ -131,13 +131,7 @@ _.trigger = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event) {
-    /*if (target===_.global){
-        console.log('wtf',target===_.global===document);
-        console.log('dispatch',target, event, event instanceof Event, 
-                    document.dispatchEvent(event));
-    } else {*/
     (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
-    //}
 };
 Eventi.fire = _.wrap(_.fire, 3);
 _.on = function(target, events, selector, fn, data) {
@@ -236,6 +230,12 @@ if (Ep) {
 
 Eventi.on = _.wrap(_.on, 4);
 
+// elements can have `[data-]eventi="handleMe@event"` attributes
+// try to resolve handleMe at call-time on element w/attr, global (declared event handler)
+// otherwise, fire as application event (declared event mapping)
+// impl should scan document for eventi attributes on ^ready, register those listeners
+// use MutationObserver to watch for eventi attribute changes?
+// use trigger.js' intelligent click/enter-on-child interpreter
 // add singleton to _.parse's supported event properties
 _.singletonRE = /^_?\^/;
 _.properties.splice(1,0, [_.singletonRE, function(){ this.singleton = true; }]);
@@ -289,51 +289,11 @@ HTML.addEventListener('DOMContentLoaded', function(e) {
 	_.fire(HTML, '^ready', e, e);
 });
 
-_.off = function(target, events, fn) {
-	if (!events) {
-		return _.wipe(target);
-	}
-
-	var listeners = _.listener(target).s;
-	for (var i=0,m=events.length; i<m; i++) {
-		var type = events[i],
-			filter = { fn: fn, target: target };
-		type = filter.type = _.parse(type, filter);
-
-		if (type) {
-			_.filter(listeners[type], filter);
-		} else {
-			for (type in listeners) {
-				_.clean(listeners[type], filter);
-			}
-			if (_.empty(listeners)) {
-				_.wipe(target);
-			}
-		}
-	}
-};
-_.empty = function(o){ for (var k in o){ return !k; } return true; };
-_.wipe = function(target){ delete target[_.secret]; };
-
-_.clean = function(handlers, filter) {
-	for (var i=0,m=handlers.length; i<m; i++) {
-		if (_.cleans(handlers[i], filter)) {
-			_.cleaned(handlers.splice(i--, 1)[0]);
-		}
-	}
-	if (!handlers.length && filter.target.removeEventListener) {
-		filter.target.removeEventListener(filter.type, _.listener(filter.target));
-		return true;
-	}
-};
-_.cleans = function(handler, filter) {
-	return _.handles(handler, filter) &&
-		(!filter.detail || handler.detail === filter.detail) &&
-		(!filter.fn || handler.fn === filter.fn);
-};
-_.cleaned = _.noop;// extension hook (called with cleaned handler as arg)
-
-Eventi.off = _.wrap(_.off, 3);
+// provide both global signals and local signals with minimal API
+// global: `Eventi.signal([target, ]'type');` -> `Eventi.on.type([target, ]handler)`
+// local (upon ify-cation): `Eventi.fy(target, 'type', 'type2')` -> `target.until.type2(1, handler)`
+// implementation should basically insert signal type as event at proper args index (_.wrap will have to expose index, for this to work)
+// obviously, signals cannot have the same name as Function properties like 'call' or 'length'
 
     _.version = "0.1.0";
 
