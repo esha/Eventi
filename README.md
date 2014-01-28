@@ -69,6 +69,7 @@ Download the [minified version][min] or the [development version][max].
 * fire with handler arguments `Eventi.fire([target, ]'type', data)`
 * TODO: consider non-DOM propagation when typeof object.parent === "object"
 
+
 #### declare.js (requires on.js and fire.js)
 * elements can have `[data-]eventi="handleMe@event"` attributes
 * try to resolve handleMe at call-time on element w/attr, global (declared event handler)
@@ -83,11 +84,18 @@ Download the [minified version][min] or the [development version][max].
 * fire them so they're remembered: `Eventi.fire([target, ]'^type', fn)`
 * alias DOMContentLoaded to '^ready'?
 
+#### signal.js (requires core)
+* provide both global signals and local signals with minimal API
+* global: `Eventi.signal([target, ]'type');` -> `Eventi.on.type([target, ]handler)`
+* local (upon ify-cation): `Eventi.fy(target, 'type', 'type2')` -> `target.until.type2(1, handler)`
+* implementation should basically insert signal type as event at proper args index (_.wrap will have to expose index, for this to work)
+* obviously, signals cannot have the same name as Function properties like 'call' or 'length'
+
+
 #### off.js (requires on.js)
 * simple listener removal: `Eventi.off([target, ]['type', ][fn])`
 * multiple removal: `Eventi.off([target, ]['first second third', ][fn])`
 * remove by category and/or tag: `Eventi.off([target, ]['category:type#tag', ][fn])`
-
 
 #### until.js (requires on.js)
 * countdown to zero: `Eventi.until([target, ]number, 'type', fn)`
@@ -102,13 +110,6 @@ Download the [minified version][min] or the [development version][max].
 
 #### key.js (requires on.js)
 * `Eventi.on([target, ]'keyup[shift-a]', fn)`
-
-#### signal.js (requires core)
-* provide both global signals and local signals with minimal API
-* global: `Eventi.signal([target, ]'type');` -> `Eventi.on.type([target, ]handler)`
-* local (upon ify-cation): `Eventi.fy(target, 'type', 'type2')` -> `target.until.type2(1, handler)`
-* implementation should basically insert signal type as event at proper args index (_.wrap will have to expose index, for this to work)
-* obviously, signals cannot have the same name as Function properties like 'call' or 'length'
 
 
 #### jquery.eventi.js
