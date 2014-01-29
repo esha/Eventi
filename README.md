@@ -86,9 +86,8 @@ Download the [minified version][min] or the [development version][max].
 
 #### signal.js (requires core)
 * provide both global signals and local signals with minimal API
-* global: `Eventi.signal([target, ]'type');` -> `Eventi.on.type([target, ]handler)`
-* local (upon ify-cation): `Eventi.fy(target, 'type', 'type2')` -> `target.until.type2(1, handler)`
-* implementation should basically insert signal type as event at proper args index (_.wrap will have to expose index, for this to work)
+* global: `Eventi.signal('type');` -> `Eventi.on.type([target, ]handler)`
+* local (after Eventi.fy(o)): `Eventi.signal(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
 * obviously, signals cannot have the same name as Function properties like 'call' or 'length'
 
 
