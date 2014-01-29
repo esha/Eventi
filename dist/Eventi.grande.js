@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-27
+/*! Eventi - v0.1.0 - 2014-01-28
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -71,7 +71,8 @@ var _ = {
 
     splitRE: / (?![^\(\)]*\))+/g,
     wrap: function(fn, expect, index) {
-        return function(target) {
+        index = index || 1;
+        var wrapper = function wrapper(target) {
             var args = _.slice(arguments);
             // ensure target param precedes event text
             if (!target || typeof target === "string") {
@@ -79,7 +80,6 @@ var _ = {
                 args.unshift(target);
             }
             // convert to array of event text inputs
-            index = index || 1;
             args[index] = (args[index]+'').split(_.splitRE);
             // gather ...data the old way
             if (args.length > expect) {
@@ -98,17 +98,20 @@ var _ = {
             // be fluent
             return ret === undefined ? this : ret;
         };
+        wrapper.index = index;
+        return wrapper;
     }   
 };
 Eventi._ = _;
-Eventi.fy = function(o, p, v) {
-    for (p in Eventi) {
-        if (p !== 'fy' && !(p in o) && typeof (v=Eventi[p]) === "function") {
-            o[p] = v;
+(Eventi.fy = function fy(o) {
+    for (var p in Eventi) {
+        var fn = Eventi[p];
+        if (typeof fn === "function" && !fn.utility) {
+            Object.defineProperty(o, p, {value:fn, writable:true, configurable:true});
         }
     }
     return o;
-};
+}).utility = true;
 
 _.fire = function(target, events, props, data) {
     if (typeof props === "object" &&
@@ -289,12 +292,43 @@ HTML.addEventListener('DOMContentLoaded', function(e) {
 	_.fire(HTML, '^ready', e, e);
 });
 
-// provide both global signals and local signals with minimal API
-// global: `Eventi.signal([target, ]'type');` -> `Eventi.on.type([target, ]handler)`
-// local (upon ify-cation): `Eventi.fy(target, 'type', 'type2')` -> `target.until.type2(1, handler)`
-// implementation should basically insert signal type as event at proper args index (_.wrap will have to expose index, for this to work)
-// obviously, signals cannot have the same name as Function properties like 'call' or 'length'
-
+// memoizes results
+_.signal = function(type) {
+	return _.signal[type] || (_.signal[type] = function signal(target) {
+		var args = _.slice(arguments),
+			index = this.index || 1;
+		if (typeof target !== "object" || !(target.dispatchEvent || target[_.secret])) {
+			index--;
+		}
+		args.splice(index, 0, type);
+		return this.apply(null, args);
+	});
+};
+// a simple, more debugging-friendly bind
+_.bind = function(o, fn) {
+	var bound = function bound(){ return fn.apply(o, arguments); };
+	bound.index = fn.index;// keep index for _.signal to use
+	return bound;
+};
+(Eventi.signal = function(o) {
+	var signals = _.slice(arguments);
+	if (typeof o === "string") {
+		o = Eventi;
+	}
+	for (var p in Eventi) {
+		var fn = o[p];
+		if (typeof fn === "function" && !fn.utility) {
+			if (o !== Eventi && fn === Eventi[p]) {
+				// use local copy of fn to bind context and avoid shared signals
+				fn = o[p] = _.bind(o, fn);
+			}
+			for (var i=0,m=signals.length; i<m; i++) {
+				var type = signals[i];
+				fn[type] = _.signal(type);
+			}
+		}
+	}
+}).utility = true;
     _.version = "0.1.0";
 
     // export Eventi (AMD, commonjs, or window/env)

@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-27
+/*! Eventi - v0.1.0 - 2014-01-28
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -71,7 +71,8 @@ var _ = {
 
     splitRE: / (?![^\(\)]*\))+/g,
     wrap: function(fn, expect, index) {
-        return function(target) {
+        index = index || 1;
+        var wrapper = function wrapper(target) {
             var args = _.slice(arguments);
             // ensure target param precedes event text
             if (!target || typeof target === "string") {
@@ -79,7 +80,6 @@ var _ = {
                 args.unshift(target);
             }
             // convert to array of event text inputs
-            index = index || 1;
             args[index] = (args[index]+'').split(_.splitRE);
             // gather ...data the old way
             if (args.length > expect) {
@@ -98,17 +98,20 @@ var _ = {
             // be fluent
             return ret === undefined ? this : ret;
         };
+        wrapper.index = index;
+        return wrapper;
     }   
 };
 Eventi._ = _;
-Eventi.fy = function(o, p, v) {
-    for (p in Eventi) {
-        if (p !== 'fy' && !(p in o) && typeof (v=Eventi[p]) === "function") {
-            o[p] = v;
+(Eventi.fy = function fy(o) {
+    for (var p in Eventi) {
+        var fn = Eventi[p];
+        if (typeof fn === "function" && !fn.utility) {
+            Object.defineProperty(o, p, {value:fn, writable:true, configurable:true});
         }
     }
     return o;
-};
+}).utility = true;
 
 _.fire = function(target, events, props, data) {
     if (typeof props === "object" &&
