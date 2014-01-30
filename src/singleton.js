@@ -48,7 +48,7 @@ _.handler = function(target, text, selector, fn) {
 };
 
 if (document) {
-	document.addEventListener('DOMContentLoaded', function ready(e) {
+	Eventi.on('DOMContentLoaded', function ready(e) {
 		_.fire(document.documentElement, ['^ready'], e, e);
 	});
 }
