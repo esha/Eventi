@@ -23,11 +23,6 @@
   var _ = Eventi._;
   module('Eventi until');
 
-  test('3rd party/polyfill api presence', function() {
-    expect(0);
-    //TODO: include HTML.js and test HTML.until presence
-  });
-
   test('external api presence', function() {
     ok(typeof Eventi.until === "function", 'Eventi.until');
   });

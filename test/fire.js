@@ -23,11 +23,6 @@
   var _ = Eventi._;
   module('Eventi fire');
 
-  test('3rd party/polyfill api presence', function() {
-    expect(0);
-    //TODO: include HTML.js and test HTML.fire presence
-  });
-
   test('external api presence', function() {
     ok(typeof Eventi.fire === "function", 'Eventi.fire');
     notEqual(Eventi.fire, _.fire, 'public fire != internal fire');

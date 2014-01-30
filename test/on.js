@@ -25,7 +25,6 @@
 
   test('3rd party/polyfill api presence', function() {
     ok(typeof Element.prototype.matches === "function", "Element.prototype.matches");
-    //TODO: include HTML.js and test HTML.on presence
   });
 
   test('external api presence', function() {
