@@ -78,8 +78,8 @@
 
   test('Eventi.fire(type)', function() {
     expect(2);
-    equal(_.global, document, 'qunit global should be document');
-    document.addEventListener('global', function(e) {
+    equal(_.global, window, 'qunit global should be window');
+    window.addEventListener('global', function(e) {
       equal(e.category, 'test', 'should get event in test category');
     });
     Eventi.fire('test:global');
@@ -87,7 +87,7 @@
 
   test('Eventi.fire(event, props)', function() {
     expect(1);
-    document.addEventListener('props', function(e) {
+    window.addEventListener('props', function(e) {
       equal(e.detail, 'detail', 'should have detail of "detail"');
     });
     Eventi.fire('props', { detail:'detail' });

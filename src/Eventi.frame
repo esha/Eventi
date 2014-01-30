@@ -11,12 +11,18 @@
 
     // polyfill CustomEvent constructor
     if (!global.CustomEvent) {
-        global.CustomEvent = function(type, args) {
+        global.CustomEvent = document ? function CustomEvent(type, args) {
             args = args || {};
             var e = document.createEvent('CustomEvent');
             e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
             return e;
+        } : function CustomEvent(type, args) {
+            args = args || {};
+            this.type = type;
+            this.bubbles = !!args.bubbles;
+            this.detail = args.detail;
+            this.timestamp = Date.now();
         };
     }
 
-})(this, document);
+})(this, this.document);

@@ -89,8 +89,9 @@ _.closest = function(el, selector) {
         el = el.parentNode;
     }
 };
-var Ep = Element && Element.prototype, aS = 'atchesSelector';
-if (Ep) {
+if (global.Element) {
+    var Ep = Element.prototype,
+        aS = 'atchesSelector';
 	Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
 }   
 

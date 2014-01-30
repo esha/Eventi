@@ -20,5 +20,8 @@ _.trigger = function(target, events, props) {
 };
 _.dispatch = function(target, event) {
     (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
+    if (target.parentObject) {
+        _.dispatch(target.parentObject, event);
+    }
 };
 Eventi.fire = _.wrap(_.fire, 3);
