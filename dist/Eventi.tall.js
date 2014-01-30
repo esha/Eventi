@@ -1,13 +1,13 @@
-/*! Eventi - v0.1.0 - 2014-01-28
+/*! Eventi - v0.1.0 - 2014-01-30
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
-(function(global, document, HTML) {
+(function(global, document) {
     "use strict";
 
 function Eventi(){ return _.create.apply(this, arguments); }
 var _ = {
-    global: document || global,
+    global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     copy: function(a, b, p) {
@@ -70,7 +70,7 @@ var _ = {
     ],
 
     splitRE: / (?![^\(\)]*\))+/g,
-    wrap: function(fn, expect, index) {
+    wrap: function(name, expect, index) {
         index = index || 1;
         var wrapper = function wrapper(target) {
             var args = _.slice(arguments);
@@ -87,8 +87,8 @@ var _ = {
                 args = args.slice(0, expect+1);
             }
             // call fn for each target
-            var ret;
-            if ('length' in target) {
+            var fn = _[name], ret;
+            if ('length' in target && target !== _.global) {
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(args[0] = target[i], args);
                 }
@@ -135,8 +135,11 @@ _.trigger = function(target, events, props) {
 };
 _.dispatch = function(target, event) {
     (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
+    if (target.parentObject) {
+        _.dispatch(target.parentObject, event);
+    }
 };
-Eventi.fire = _.wrap(_.fire, 3);
+Eventi.fire = _.wrap('fire', 3);
 _.on = function(target, events, selector, fn, data) {
 	// adjust for absence of selector
 	if (typeof selector !== "string") {
@@ -169,7 +172,9 @@ _.listener = function(target) {
     if (!listener) {
 		listener = function(event){ return _.handle(event, listener.s[event.type]); };
         listener.s = {};
-        Object.defineProperty(target, _._key, {value:listener,configurable:true});
+        Object.defineProperty(target, _._key, {
+			value:listener, writeable:false, configurable:true
+        });
     }
     return listener;
 };
@@ -226,12 +231,13 @@ _.closest = function(el, selector) {
         el = el.parentNode;
     }
 };
-var Ep = Element && Element.prototype, aS = 'atchesSelector';
-if (Ep) {
+if (global.Element) {
+    var Ep = Element.prototype,
+        aS = 'atchesSelector';
 	Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
 }   
 
-Eventi.on = _.wrap(_.on, 4);
+Eventi.on = _.wrap('on', 4);
 
     _.version = "0.1.0";
 
@@ -241,22 +247,18 @@ Eventi.on = _.wrap(_.on, 4);
 
     // polyfill CustomEvent constructor
     if (!global.CustomEvent) {
-        global.CustomEvent = function(type, args) {
+        global.CustomEvent = document ? function CustomEvent(type, args) {
             args = args || {};
             var e = document.createEvent('CustomEvent');
             e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
             return e;
+        } : function CustomEvent(type, args) {
+            args = args || {};
+            this.type = type;
+            this.bubbles = !!args.bubbles;
+            this.detail = args.detail;
+            this.timestamp = Date.now();
         };
     }
 
-	// extend HTML(.js), if present and not prohibited
-    if (HTML._ && HTML.getAttribute('data-eventier-html') !== "false") {
-        Eventi.fy(HTML._.fn);
-        if (_.target) {
-            var target = _.target;
-            _.target = function() {
-                return HTML._.node(target.apply(this, arguments));
-            };
-        }
-    }
-})(this, document, (document||{}).documentElement);
+})(this, this.document);
