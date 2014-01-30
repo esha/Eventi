@@ -1,5 +1,5 @@
 <%= banner %>
-(function(global, document, HTML) {
+(function(global, document) {
     "use strict";
 
 <%= content %>
@@ -19,14 +19,4 @@
         };
     }
 
-	// extend HTML(.js), if present and not prohibited
-    if (HTML._ && HTML.getAttribute('data-eventier-html') !== "false") {
-        Eventi.fy(HTML._.fn);
-        if (_.target) {
-            var target = _.target;
-            _.target = function() {
-                return HTML._.node(target.apply(this, arguments));
-            };
-        }
-    }
-})(this, document, (document||{}).documentElement);
+})(this, document);

@@ -41,7 +41,6 @@ Download the [minified version][min] or the [development version][max].
 * external IIFE
 * universal module definition
 * CustomEvent constructor polyfill
-* HTML.js detection/integration
 * body is resolved to build tool specified (sub)set of the following content
 
 #### core.js (not much use on its own)
@@ -97,18 +96,21 @@ Download the [minified version][min] or the [development version][max].
 * remove by category and/or tag: `Eventi.off([target, ]['category:type#tag', ][fn])`
 
 #### until.js (requires on.js)
+* this will remove handlers once the specified condition is satisfied
+* only tests condition upon matching event
 * countdown to zero: `Eventi.until([target, ]number, 'type', fn)`
-* test ref for boolean: `Eventi.until([target, ]'reference', 'type', fn)`
-* test function: `Eventi.until([target, ]testFn, 'type', fn)`
+* test ref for truthiness: `Eventi.until([target, ]'reference', 'type', fn)`
+* call function for truthiness: `Eventi.until([target, ]testFn, 'type', fn)`
 
 #### combo.js (requires fire.js and on.js)
 * combo events (call after all specified events, then reset): `Eventi.on([target, ]'foo+bar', fn)`
 * event sequences (ordered combos): `Eventi.on([target, ]'one>two>three', fn...)`
-* event sequence firing controls (w/async support): `e.pauseSequence([promise])`,`e.resumeSequence()`, `e.isSequencePaused()`
-* timeout support for both ordered and unordered combos
+* fire combos (always in sequence): `Eventi.fire([target, ]'first>second'[, data...])`
+* event sequence firing controls (w/async support via promises): `e.pauseSequence([promise])`,`e.resumeSequence()`, `e.isSequencePaused()`
+* configurable time allowed between events (for listening, not firing): `Eventi._.comboTimeout = 1000`
 
 #### key.js (requires on.js)
-* `Eventi.on([target, ]'keyup[shift-a]', fn)`
+* filter key events: `Eventi.on([target, ]'keyup[shift-a]', fn)`
 
 
 #### jquery.eventi.js
