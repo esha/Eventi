@@ -24,4 +24,4 @@ _.dispatch = function(target, event) {
         _.dispatch(target.parentObject, event);
     }
 };
-Eventi.fire = _.wrap(_.fire, 3);
+Eventi.fire = _.wrap('fire', 3);

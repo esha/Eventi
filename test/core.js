@@ -133,7 +133,7 @@
 
   test('_.wrap', function() {
     expect(14);
-    var fn = function(target, strings, data) {
+    _.fn = function(target, strings, data) {
       ok(Array.isArray(strings), 'strings should be array (of strings)');
       equal(typeof strings[0], 'string', 'strings should always have at least one string');
       if (strings[0] === 'global') {
@@ -145,28 +145,33 @@
       if (data) {
         equal(data[0], 'data', 'got extra data');
       }
-    },
-    api = _.wrap(fn, 2);
-    notEqual(api, fn, 'should not return same fn');
+    };
+    var api = _.wrap('fn', 2);
+    notEqual(api, _.fn, 'should not return same fn');
     api('global', 'data');
-    api([fn, api], 'multiple');
+    api([_.fn, api], 'multiple');
+    delete _.fn;
   });
 
   // ensure ordered iteration over targets
   test('_.wrap multiple target order', function() {
     expect(2);
     var targets = ['a','b'];
-    _.wrap(function(target) {
+    _.fn = function(target) {
       equal(target, targets.shift(), 'should receive targets in correct order');
-    }, 2)(targets.slice(0), 'orderTest');
+    };
+    _.wrap('fn', 2)(targets.slice(0), 'orderTest');
+    delete _.fn;
   });
 
   test('_.wrap null event text', function() {
     expect(2);
-    _.wrap(function(target, strings) {
+    _.fn = function(target, strings) {
       equal(target, _.global, 'target should be _.global');
       equal(strings[0], 'null', 'text should be "null"');
-    }, 2)(null);
+    };
+    _.wrap('fn', 2)(null);
+    delete _.fn;
   });
 
 }());

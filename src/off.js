@@ -42,4 +42,4 @@ _.cleans = function(handler, filter) {
 };
 _.cleaned = _.noop;// extension hook (called with cleaned handler as arg)
 
-Eventi.off = _.wrap(_.off, 3);
+Eventi.off = _.wrap('off', 3);

@@ -37,4 +37,4 @@ _.untilFn = function(handler, condition) {
 			};
 	}
 };
-Eventi.until = _.wrap(_.until, 5, 2);
+Eventi.until = _.wrap('until', 5, 2);

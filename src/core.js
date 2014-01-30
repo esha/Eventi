@@ -63,7 +63,7 @@ var _ = {
     ],
 
     splitRE: / (?![^\(\)]*\))+/g,
-    wrap: function(fn, expect, index) {
+    wrap: function(name, expect, index) {
         index = index || 1;
         var wrapper = function wrapper(target) {
             var args = _.slice(arguments);
@@ -80,8 +80,8 @@ var _ = {
                 args = args.slice(0, expect+1);
             }
             // call fn for each target
-            var ret;
-            if ('length' in target) {
+            var fn = _[name], ret;
+            if ('length' in target && target !== _.global) {
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(args[0] = target[i], args);
                 }

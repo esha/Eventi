@@ -95,4 +95,4 @@ if (global.Element) {
 	Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
 }   
 
-Eventi.on = _.wrap(_.on, 4);
+Eventi.on = _.wrap('on', 4);
