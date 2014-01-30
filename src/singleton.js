@@ -47,6 +47,6 @@ _.handler = function(target, text, selector, fn) {
 	return handler;
 };
 
-HTML.addEventListener('DOMContentLoaded', function(e) {
-	_.fire(HTML, '^ready', e, e);
+document.addEventListener('DOMContentLoaded', function(e) {
+	_.fire(document.documentElement, '^ready', e, e);
 });
