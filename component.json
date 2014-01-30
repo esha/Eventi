@@ -1,0 +1,32 @@
+{
+  "name": "eventi",
+  "repo": "nbubna/Eventi",
+  "description": "A triple shot of event features with extra sugar.",
+  "version": "0.1.0",
+  "keywords": [
+    "event",
+    "custom",
+    "application",
+    "DOM",
+    "emit",
+    "rich",
+    "fire",
+    "listener",
+    "handler",
+    "trigger",
+    "dispatch",
+    "until",
+    "emitter",
+    "pubsub",
+    "signal",
+    "declarative"
+  ],
+  "dependencies": {},
+  "development": {},
+  "license": "MIT",
+  "main": "src/component.js",
+  "scripts": [
+    "src/component.js",
+    "dist/Eventi.js"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "eventi",
+  "version": "0.1.0",
+  "homepage": "https://github.com/nbubna/Eventi",
+  "bugs": "https://github.com/nbubna/nbubna/issues",
+  "authors": [
+    "ESHA Research <nathan@esha.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com:nbubna/HTML.git"
+  },
+  "description": "A triple shot of event features with extra sugar.",
+  "main": "dist/Eventi.min.js",
+  "keywords": [
+    "event",
+    "custom",
+    "application",
+    "DOM",
+    "emit",
+    "rich",
+    "fire",
+    "listener",
+    "handler",
+    "trigger",
+    "dispatch",
+    "until",
+    "emitter",
+    "pubsub",
+    "signal",
+    "declarative"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "components",
+    "test",
+    "tests"
+  ]
+}

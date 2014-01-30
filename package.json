@@ -1,7 +1,7 @@
 {
   "name": "Eventi",
   "title": "Eventi",
-  "description": "Enjoy easy, rich, native and custom event handling.",
+  "description": "A triple shot of event features with extra sugar.",
   "version": "0.1.0",
   "homepage": "https://github.com/nbubna/Eventi",
   "author": {
@@ -38,6 +38,21 @@
     "grunt": "~0.4.1"
   },
   "keywords": [
-    "eventier"
+    "event",
+    "custom",
+    "application",
+    "DOM",
+    "emit",
+    "rich",
+    "fire",
+    "listener",
+    "handler",
+    "trigger",
+    "dispatch",
+    "until",
+    "emitter",
+    "pubsub",
+    "signal",
+    "declarative"
   ]
 }
