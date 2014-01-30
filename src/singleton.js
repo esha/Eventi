@@ -26,7 +26,7 @@ _.singleton_handler = _.handler;
 _.handler = function(target, text, selector, fn) {
 	var handler = _.singleton_handler.apply(this, arguments);
 	if (handler.singleton) {
-		handler.after = function() {
+		handler.after = function after() {
 			if (_.off){ _.off(target, text, fn); }
 			handler.fn = _.noop;
 		};
@@ -47,6 +47,6 @@ _.handler = function(target, text, selector, fn) {
 	return handler;
 };
 
-document.addEventListener('DOMContentLoaded', function(e) {
-	_.fire(document.documentElement, '^ready', e, e);
+document.addEventListener('DOMContentLoaded', function ready(e) {
+	_.fire(document.documentElement, ['^ready'], e, e);
 });
