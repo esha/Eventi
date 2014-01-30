@@ -96,7 +96,7 @@
 
   test('internal api presence', function() {
     ok(_.fire, "_.fire");
-    ok(_.trigger, "_.trigger");
+    ok(_.fireAll, "_.fireAll");
     ok(_.dispatch, "_.dispatch");
   });
 

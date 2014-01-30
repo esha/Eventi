@@ -8,9 +8,9 @@ _.fire = function(target, events, props, data) {
         }
         props = { data: data };
     }
-    return _.trigger(target, events, props);
+    return _.fireAll(target, events, props);
 };
-_.trigger = function(target, events, props) {
+_.fireAll = function(target, events, props) {
     var event;
     for (var i=0; i<events.length; i++) {
         event = _.create(events[i], props);

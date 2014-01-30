@@ -1,7 +1,7 @@
 _.comboRE = /\+|>/;
-// overwrite fire.js' _.trigger to watch for combo events
-_.combo_trigger = _.trigger;
-_.trigger = function(target, events, props, _resumeIndex) {
+// overwrite fire.js' _.fireAll to watch for combo events
+_.combo_trigger = _.fireAll;
+_.fireAll = function(target, events, props, _resumeIndex) {
     var event, sequence;
     for (var i=0; i<events.length; i++) {
 		sequence = props.sequence = events[i].split(_.comboRE);
@@ -22,7 +22,7 @@ _.sequence = function(event, props, target, paused) {
     event.resumeSequence = function(index) {
         if (paused) {
             paused = false;
-            _.trigger(target, props.sequence, props, index||props.index);
+            _.fireAll(target, props.sequence, props, index||props.index);
         }
     };
     event.pauseSequence = function(promise) {
