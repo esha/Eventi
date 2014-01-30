@@ -31,7 +31,7 @@ _.listener = function(target) {
 		listener = function(event){ return _.handle(event, listener.s[event.type]); };
         listener.s = {};
         Object.defineProperty(target, _._key, {
-        	value:listener, writeable:false, configurable:true
+			value:listener, writeable:false, configurable:true
         });
     }
     return listener;

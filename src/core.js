@@ -1,6 +1,6 @@
 function Eventi(){ return _.create.apply(this, arguments); }
 var _ = {
-    global: Function('return this')(),
+    global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     copy: function(a, b, p) {
