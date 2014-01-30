@@ -125,3 +125,7 @@ Download the [minified version][min] or the [development version][max].
 
 ## Release History
 _(Nothing yet)_
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/nbubna/eventi/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
