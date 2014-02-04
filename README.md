@@ -68,14 +68,13 @@ Download the [minified version][min] or the [development version][max].
 * fire with handler arguments `Eventi.fire([target, ]'type', data)`
 * TODO: consider non-DOM propagation when typeof object.parent === "object"
 
-
 #### declare.js (requires on.js and fire.js)
-* elements can have `[data-]eventi="handleMe@event"` attributes
-* try to resolve handleMe at call-time on element w/attr, global (declared event handler)
+* declare `data-eventi="focus keyup[del]=delete /beforeunload=quit"` on a root or container element
+* declare specific responses on descandent(s): `focus="highlight" delete="remove" quit="Utils.persist"`
+* try to resolve attr values at call-time to either element or global function (declared event handler)
 * otherwise, fire as application event (declared event mapping)
-* impl should scan document for eventi attributes on ^ready, register those listeners
-* use MutationObserver to watch for eventi attribute changes?
-* use trigger.js' intelligent click/enter-on-child interpreter
+* impl should scan document for data-eventi attributes on DOMContentLoaded, register those listeners
+* `click="..."` should be globally supported by default using trigger.js' intelligent click/enter logic
 
 #### singleton.js (requires fire.js and on.js)
 * singleton events (immediately call late listeners, ignore multiple firings)
