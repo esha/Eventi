@@ -68,9 +68,10 @@ Download the [minified version][min] or the [development version][max].
 * fire with handler arguments `Eventi.fire([target, ]'type', data)`
 * TODO: consider non-DOM propagation when typeof object.parent === "object"
 
+
 #### declare.js (requires on.js and fire.js)
-* declare `data-eventi="focus keyup[del]=delete /beforeunload=quit"` on a root or container element
-* declare specific responses on descandent(s): `focus="highlight" delete="remove" quit="Utils.persist"`
+* declare `data-eventi="submit /beforeunload=quit"` on a root or container element
+* declare specific responses on descendent(s): `submit="validate>save" quit="Utils.persist"`
 * try to resolve attr values at call-time to either element or global function (declared event handler)
 * otherwise, fire as application event (declared event mapping)
 * impl should scan document for data-eventi attributes on DOMContentLoaded, register those listeners
