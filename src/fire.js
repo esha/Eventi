@@ -1,5 +1,5 @@
 _.fire = function(target, events, props, data) {
-    if (typeof props === "object" &&
+    if (typeof props === "object" && !(props instanceof Event) &&
         ('bubbles' in props || 'detail' in props || 'cancelable' in props)) {
         props.data = data;
     } else {
