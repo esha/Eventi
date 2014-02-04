@@ -4,7 +4,7 @@ var _ = {
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     copy: function(a, b, p) {
-        for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; } }
+        if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
     resolve: function(reference, context) {
