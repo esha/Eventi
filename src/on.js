@@ -4,7 +4,7 @@ _.on = function(target, events, selector, fn, data) {
 		if (fn !== undefined) {
 			data = data ? data.unshift(fn) && data : [fn];
 		}
-		fn = selector;
+		fn = selector; selector = null;
 	}
 	for (var i=0,m=events.length; i<m; i++) {
 		_.handler(target, events[i], selector, fn, data);
