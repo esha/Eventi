@@ -11,7 +11,7 @@ var _ = {
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     copy: function(a, b, p) {
-        for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; } }
+        if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
     resolve: function(reference, context) {
@@ -114,7 +114,7 @@ Eventi._ = _;
 }).utility = true;
 
 _.fire = function(target, events, props, data) {
-    if (typeof props === "object" &&
+    if (typeof props === "object" && !(props instanceof Event) &&
         ('bubbles' in props || 'detail' in props || 'cancelable' in props)) {
         props.data = data;
     } else {
