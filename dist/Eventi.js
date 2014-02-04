@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-01-30
+/*! Eventi - v0.1.0 - 2014-02-04
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -123,9 +123,9 @@ _.fire = function(target, events, props, data) {
         }
         props = { data: data };
     }
-    return _.trigger(target, events, props);
+    return _.fireAll(target, events, props);
 };
-_.trigger = function(target, events, props) {
+_.fireAll = function(target, events, props) {
     var event;
     for (var i=0; i<events.length; i++) {
         event = _.create(events[i], props);
@@ -146,7 +146,7 @@ _.on = function(target, events, selector, fn, data) {
 		if (fn !== undefined) {
 			data = data ? data.unshift(fn) && data : [fn];
 		}
-		fn = selector;
+		fn = selector; selector = null;
 	}
 	for (var i=0,m=events.length; i<m; i++) {
 		_.handler(target, events[i], selector, fn, data);
@@ -239,19 +239,90 @@ if (global.Element) {
 
 Eventi.on = _.wrap('on', 4);
 
-// elements can have `[data-]eventi="handleMe@event"` attributes
-// try to resolve handleMe at call-time on element w/attr, global (declared event handler)
-// otherwise, fire as application event (declared event mapping)
-// impl should scan document for eventi attributes on ^ready, register those listeners
-// use MutationObserver to watch for eventi attribute changes?
-// use trigger.js' intelligent click/enter-on-child interpreter
 if (document) {
-	_.prefix = '';
+	_.init = function init() {
+		var nodes = document.querySelectorAll('[data-eventi]');
+		for (var i=0,m=nodes.length; i<m; i++) {
+			var node = nodes[i],
+				mapping = node.getAttribute('data-eventi');
+			if (mapping) {
+				_.declare(mapping, node);
+			}
+		}
+		if (nodes.length || document.querySelectorAll('[click]').length) {
+			Eventi.on('click keyup', _.check);
+		}
+	};
+	_.declare = function declare(mapping, node) {
+		var types = mapping.split(_.splitRE);
+		for (var i=0,m=types.length; i<m; i++) {
+			var type = types[i],
+				eq = type.lastIndexOf('='),
+				alias = eq > 0 ? type.substring(eq+1) : undefined,
+				global = type.charAt(0) === '/';
+			if (alias) {
+				type = type.substring(0, eq);
+			}
+			if (global) {
+				type = type.substring(1);
+				node = _.global;
+			}
+			Eventi.on(node || _.global, type, _.declared, alias);
+		}
+	};
+	_.declared = function(e, alias) {
+		var type = alias || e.type,
+			target = _.closest(e.target, '['+type+']'),
+			value = target && target.getAttribute(type);
+		if (value) {
+			_.trigger(target, value, e);
+		}
+	};
+	_.trigger = function(node, response, e) {
+		var fn = _.resolve(response, node) || _.resolve(response);
+		if (typeof fn === "function") {
+			fn.call(node, e);
+		} else {
+			Eventi.fire(node, response, e);
+		}
+	};
+    _.check = function(e) {
+		if ((e.type === 'click' && _.click(e.target)) ||
+			((e.which || e.keyCode) === 13 && _.enter(e.target))) {
+			_.declared(e, 'click');
+			// someone remind me why i've always done this?
+			if (!_.allowDefault(e)) {
+				e.preventDefault();
+			}
+		}
+	};
+	_.click = function(el) {
+		return el.getAttribute('click') || _.parentalClick(el);
+	};
+	_.enter = function(el) {
+		return el.getAttribute('click') !== "false" && _.parentalClick(el, true);
+	};
+	_.allowDefault = function(e) {
+		var inputType = e.target.type;
+		return inputType && (inputType === 'radio' || inputType === 'checkbox');
+	};
+	_.parentalClick = function(el, enter) {
+		// editables, select, textarea, non-button inputs all use click to alter focus w/o action
+		// textarea and editables use enter to add a new line w/o action
+		// a[href], buttons, button inputs all automatically dispatch 'click' on enter
+		// in all three situations, dev must declare on element, not on parent to avoid insanity
+		if (!el.isContentEditable) {
+			var name = el.nodeName.toLowerCase();
+			if (name !== 'textarea' && name !== (enter ? 'button' : 'select')) {
+				var button = _.buttonRE.test(el.type);
+				return enter ? !(button || (name === 'a' && el.getAttribute('href'))) :
+                            button || name !== 'input';
+			}
+		}
+	};
+    _.buttonRE = /^(submit|button|reset)$/;
 
-	// extend Element interface, if requested
-	if (document.documentElement.matches('[data-eventify],[eventify]')) {
-		Eventi.fy(Element.prototype);
-	}
+	Eventi.on('DOMContentLoaded', _.init);
 }
 
 // add singleton to _.parse's supported event properties
@@ -304,7 +375,7 @@ _.handler = function(target, text, selector, fn) {
 };
 
 if (document) {
-	document.addEventListener('DOMContentLoaded', function ready(e) {
+	Eventi.on('DOMContentLoaded', function ready(e) {
 		_.fire(document.documentElement, ['^ready'], e, e);
 	});
 }
@@ -432,9 +503,9 @@ _.untilFn = function(handler, condition) {
 };
 Eventi.until = _.wrap('until', 5, 2);
 _.comboRE = /\+|>/;
-// overwrite fire.js' _.trigger to watch for combo events
-_.combo_trigger = _.trigger;
-_.trigger = function(target, events, props, _resumeIndex) {
+// overwrite fire.js' _.fireAll to watch for combo events
+_.combo_trigger = _.fireAll;
+_.fireAll = function(target, events, props, _resumeIndex) {
     var event, sequence;
     for (var i=0; i<events.length; i++) {
 		sequence = props.sequence = events[i].split(_.comboRE);
@@ -455,7 +526,7 @@ _.sequence = function(event, props, target, paused) {
     event.resumeSequence = function(index) {
         if (paused) {
             paused = false;
-            _.trigger(target, props.sequence, props, index||props.index);
+            _.fireAll(target, props.sequence, props, index||props.index);
         }
     };
     event.pauseSequence = function(promise) {
