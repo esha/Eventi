@@ -49,6 +49,6 @@ _.handler = function(target, text, selector, fn) {
 
 if (document) {
 	Eventi.on('DOMContentLoaded', function ready(e) {
-		_.fire(document.documentElement, ['^ready'], e, e);
+		_.fire(document.documentElement, ['^ready'], undefined, e);
 	});
 }
