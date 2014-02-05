@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-02-04
+/*! Eventi - v0.1.0 - 2014-02-05
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -153,10 +153,12 @@ _.on = function(target, events, selector, fn, data) {
 	}
 };
 _.handler = function(target, text, selector, fn, data) {
-	var handler = { target:target, selector:selector, fn:fn, data:data },
+	var handler = { target:target, selector:selector, fn:fn, data:data, match:{} },
 		listener = _.listener(target),
-		type = handler.type = _.parse(text, handler),
+		type = handler.match.type = _.parse(text, handler.match),
 		handlers = listener.s[type];
+	delete handler.match.text;// not an event prop
+	delete handler.match.tags;// superfluous
 	if (!handlers) {
 		handlers = listener.s[type] = [];
 		if (target.addEventListener) {
@@ -181,7 +183,7 @@ _.listener = function(target) {
 
 _.handle = function(event, handlers) {
 	for (var i=0, m=handlers.length, handler, target; i<m; i++) {
-		if (_.handles(event, (handler = handlers[i]))) {
+		if (_.matches(event, (handler = handlers[i]).match)) {
 			if (target = _.target(handler, event.target)) {
 				_.execute(target, event, handler);
 				if (event.immediatePropagationStopped){ i = m; }
@@ -206,18 +208,13 @@ _.execute = function(target, event, handler) {
 	if (handler.after){ handler.after(); }
 };
 
-_.handles = function(event, handler) {
-	return (!handler.type || event.type === handler.type) &&
-			(!handler.category || event.category === handler.category) &&
-			(!handler.tags || _.subset(handler.tags, event.tags));
-};
-_.subset = function(subset, set) {
-	if (set && set.length) {
-		for (var i=0,m=subset.length; i<m; i++) {
-			if (set.indexOf(subset[i]) < 0){ return false; }
+_.matches = function(event, match) {
+	for (var key in match) {
+		if (match[key] !== event[key]) {
+			return false;
 		}
-		return true;
 	}
+	return true;
 };
 
 _.target = function(handler, target) {
@@ -253,7 +250,7 @@ if (document) {
             Eventi.on('click keyup', _.check);
         }
     };
-    _.declare = function declare(mapping, node) {
+    _.declare = function declare(mapping, node) {// register listener
         var types = mapping.split(_.splitRE);
         for (var i=0,m=types.length; i<m; i++) {
             var type = types[i],
@@ -270,7 +267,7 @@ if (document) {
             Eventi.on(node || _.global, type, _.declared, alias);
         }
     };
-    _.declared = function(e, alias) {
+    _.declared = function(e, alias) {// lookup handler
         var type = alias || e.type,
             target = _.closest(e.target, '['+type+']'),
             value = target && target.getAttribute(type);
@@ -278,7 +275,7 @@ if (document) {
             _.trigger(target, value, e);
         }
     };
-    _.trigger = function(node, response, e) {
+    _.trigger = function(node, response, e) {// execute handler
         var fn = _.resolve(response, node) || _.resolve(response);
         if (typeof fn === "function") {
             fn.call(node, e);
@@ -288,7 +285,7 @@ if (document) {
     };
     _.check = function(e) {
         if ((e.type === 'click' && _.click(e.target)) ||
-            ((e.which || e.keyCode) === 13 && _.enter(e.target))) {
+            (e.keyCode === 13 && _.enter(e.target))) {
             _.declared(e, 'click');
             // someone remind me why i've always done this?
             if (!_.allowDefault(e)) {
@@ -379,43 +376,29 @@ if (document) {
 		_.fire(document.documentElement, ['^ready'], undefined, e);
 	});
 }
-// memoizes results
-_.signal = function(type) {
-	return _.signal[type] || (_.signal[type] = function signal(target) {
-		var args = _.slice(arguments),
-			index = this.index || 1;
-		if (typeof target !== "object" || !(target.dispatchEvent || target[_.secret])) {
-			index--;
-		}
-		args.splice(index, 0, type);
-		return this.apply(null, args);
-	});
+// add key syntax to _.parse's supported event properties
+_.keyRE = /\[([a-z-0-9,\.\/\[\`\\\]\']+)\]/;
+_.properties.push([_.keyRE, function parseKey(m, name) {
+    var dash, key;
+    while ((dash = name.indexOf('-')) > 0) {
+        key = name.substring(0, dash);
+        name = name.substring(dash+1);
+        this[(_.special[key]||key)+'Key'] = true;
+    }
+    this.keyCode = _.codes[name] || parseInt(name, 10) || 0;
+}]);
+_.special = { command: 'meta', apple: 'meta' };
+_.codes = {
+    backspace:8, tab:9, enter:13, shift:16, ctrl:17, alt:18, capsLock:20, escape:27, start:91, command:224,
+    pageUp:33, pageDown:34, end:35, home:36, left:37, up:38, right:39, down:40, insert:45, 'delete':46,
+    multiply:106, plus:107, minus:109, point:110, divide:111, numLock:144,// numpad controls
+    ',':188, '.':190, '/':191, '`':192, '[':219, '\\':220, ']':221, '\'':222, space:32// symbols
 };
-// a simple, more debugging-friendly bind
-_.bind = function(o, fn) {
-	var bound = function bound(){ return fn.apply(o, arguments); };
-	bound.index = fn.index;// keep index for _.signal to use
-	return bound;
-};
-(Eventi.signal = function(o) {
-	var signals = _.slice(arguments);
-	if (typeof o === "string") {
-		o = Eventi;
-	}
-	for (var p in Eventi) {
-		var fn = o[p];
-		if (typeof fn === "function" && !fn.utility) {
-			if (o !== Eventi && fn === Eventi[p]) {
-				// use local copy of fn to bind context and avoid shared signals
-				fn = o[p] = _.bind(o, fn);
-			}
-			for (var i=0,m=signals.length; i<m; i++) {
-				var type = signals[i];
-				fn[type] = _.signal(type);
-			}
-		}
-	}
-}).utility = true;
+for (var n=0; n<10; n++){ _.codes['num'+n] = 96+n; }// numpad numbers
+for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
+'abcdefghijklmnopqrstuvwxyz 0123456789'.split('').forEach(function(c) {
+    _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
+});
     _.version = "0.1.0";
 
     // export Eventi (AMD, commonjs, or window/env)
