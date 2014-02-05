@@ -49,6 +49,7 @@ _.handler = function(target, event, selector) {
 		}
 		fn.reset();
 	}
+	return handler;
 };
 _.comboTimeout = 1000;
 _.comboFn = function(ordered, types, event) {
