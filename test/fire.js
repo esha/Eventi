@@ -46,7 +46,7 @@
     expect(1);
     var _noop = _.noop,
       target = {};
-    target[_.secret] = function(){ ok(true, '_.secret called'); };
+    target[_._key] = function(){ ok(true, '_._key called'); };
     _.noop = function(){ ok(false, 'noop called'); };
     Eventi.fire(target, "foo");
     _.noop = _noop;
@@ -56,7 +56,7 @@
     expect(1);
     var _noop = _.noop,
       target = {};
-    target[_.secret] = function(){ ok(false, '_.secret called'); };
+    target[_._key] = function(){ ok(false, '_._key called'); };
     target.dispatchEvent = function(){ ok(true, 'dispatchEvent called'); };
     _.noop = function(){ ok(false, 'noop called'); };
     Eventi.fire(target, "foo");
