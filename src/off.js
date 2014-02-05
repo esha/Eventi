@@ -22,7 +22,7 @@ _.off = function(target, events, fn) {
 	}
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
-_.wipe = function(target){ delete target[_.secret]; };
+_.wipe = function(target){ delete target[_._key]; };
 
 _.clean = function(handlers, filter) {
 	for (var i=0,m=handlers.length; i<m; i++) {

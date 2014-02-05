@@ -19,7 +19,7 @@ _.fireAll = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event) {
-    (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
+    (target.dispatchEvent || target[_._key] || _.noop).call(target, event);
     if (target.parentObject) {
         _.dispatch(target.parentObject, event);
     }
