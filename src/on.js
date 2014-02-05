@@ -11,10 +11,12 @@ _.on = function(target, events, selector, fn, data) {
 	}
 };
 _.handler = function(target, text, selector, fn, data) {
-	var handler = { target:target, selector:selector, fn:fn, data:data },
+	var handler = { target:target, selector:selector, fn:fn, data:data, match:{} },
 		listener = _.listener(target),
-		type = handler.type = _.parse(text, handler),
+		type = handler.match.type = _.parse(text, handler.match),
 		handlers = listener.s[type];
+	delete handler.match.text;// not an event prop
+	delete handler.match.tags;// superfluous
 	if (!handlers) {
 		handlers = listener.s[type] = [];
 		if (target.addEventListener) {
@@ -39,7 +41,7 @@ _.listener = function(target) {
 
 _.handle = function(event, handlers) {
 	for (var i=0, m=handlers.length, handler, target; i<m; i++) {
-		if (_.handles(event, (handler = handlers[i]))) {
+		if (_.matches(event, (handler = handlers[i]).match)) {
 			if (target = _.target(handler, event.target)) {
 				_.execute(target, event, handler);
 				if (event.immediatePropagationStopped){ i = m; }
@@ -64,18 +66,13 @@ _.execute = function(target, event, handler) {
 	if (handler.after){ handler.after(); }
 };
 
-_.handles = function(event, handler) {
-	return (!handler.type || event.type === handler.type) &&
-			(!handler.category || event.category === handler.category) &&
-			(!handler.tags || _.subset(handler.tags, event.tags));
-};
-_.subset = function(subset, set) {
-	if (set && set.length) {
-		for (var i=0,m=subset.length; i<m; i++) {
-			if (set.indexOf(subset[i]) < 0){ return false; }
+_.matches = function(event, match) {
+	for (var key in match) {
+		if (match[key] !== event[key]) {
+			return false;
 		}
-		return true;
 	}
+	return true;
 };
 
 _.target = function(handler, target) {
