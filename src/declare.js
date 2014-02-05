@@ -12,7 +12,7 @@ if (document) {
             Eventi.on('click keyup', _.check);
         }
     };
-    _.declare = function declare(mapping, node) {
+    _.declare = function declare(mapping, node) {// register listener
         var types = mapping.split(_.splitRE);
         for (var i=0,m=types.length; i<m; i++) {
             var type = types[i],
@@ -29,7 +29,7 @@ if (document) {
             Eventi.on(node || _.global, type, _.declared, alias);
         }
     };
-    _.declared = function(e, alias) {
+    _.declared = function(e, alias) {// lookup handler
         var type = alias || e.type,
             target = _.closest(e.target, '['+type+']'),
             value = target && target.getAttribute(type);
@@ -37,7 +37,7 @@ if (document) {
             _.trigger(target, value, e);
         }
     };
-    _.trigger = function(node, response, e) {
+    _.trigger = function(node, response, e) {// execute handler
         var fn = _.resolve(response, node) || _.resolve(response);
         if (typeof fn === "function") {
             fn.call(node, e);
@@ -47,7 +47,7 @@ if (document) {
     };
     _.check = function(e) {
         if ((e.type === 'click' && _.click(e.target)) ||
-            ((e.which || e.keyCode) === 13 && _.enter(e.target))) {
+            (e.keyCode === 13 && _.enter(e.target))) {
             _.declared(e, 'click');
             // someone remind me why i've always done this?
             if (!_.allowDefault(e)) {
