@@ -41,8 +41,7 @@
     ok(_.listener, "_.listener");
     ok(_.handle, "_.handle");
     ok(_.execute, "_.execute");
-    ok(_.handles, "_.handles");
-    ok(_.subset, "_.subset");
+    ok(_.matches, "_.matches");
     ok(_.target, "_.target");
     ok(_.closest, "_.closest");
   });
