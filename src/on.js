@@ -11,12 +11,11 @@ _.on = function(target, events, selector, fn, data) {
 	}
 };
 _.handler = function(target, text, selector, fn, data) {
-	var handler = { target:target, selector:selector, fn:fn, data:data, match:{} },
+	var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} },
 		listener = _.listener(target),
-		type = handler.match.type = _.parse(text, handler.match),
+		type = _.parse(text, handler.match),
 		handlers = listener.s[type];
-	delete handler.match.text;// not an event prop
-	delete handler.match.tags;// superfluous
+	delete handler.match.tags;// superfluous for matching
 	if (!handlers) {
 		handlers = listener.s[type] = [];
 		if (target.addEventListener) {

@@ -15,8 +15,8 @@ var _ = {
     },
 
     create: function(type, copyThese) {
-        var props = {};
-        type = _.parse(type+'', props);
+        var props = { text: type+'' };
+        type = _.parse(props.text, props);
         _.copy(copyThese, props);
         if (!('bubbles' in props)) {
             props.bubbles = true;// must bubble by default
@@ -38,13 +38,12 @@ var _ = {
         (Event.prototype.stopImmediatePropagation || _.noop).call(this);
     },
     parse: function(type, props) {
-        props.text = type;// save original
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
                 return property[1].apply(props, arguments) || '';
             });
         });
-        return type;
+        return props.type = type;
     },
     properties: [
 /*nobubble*/[/^_/,          function(){ this.bubbles = false; }],
