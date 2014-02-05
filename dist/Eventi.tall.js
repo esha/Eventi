@@ -22,8 +22,8 @@ var _ = {
     },
 
     create: function(type, copyThese) {
-        var props = {};
-        type = _.parse(type+'', props);
+        var props = { text: type+'' };
+        type = _.parse(props.text, props);
         _.copy(copyThese, props);
         if (!('bubbles' in props)) {
             props.bubbles = true;// must bubble by default
@@ -45,13 +45,12 @@ var _ = {
         (Event.prototype.stopImmediatePropagation || _.noop).call(this);
     },
     parse: function(type, props) {
-        props.text = type;// save original
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
                 return property[1].apply(props, arguments) || '';
             });
         });
-        return type;
+        return props.type = type;
     },
     properties: [
 /*nobubble*/[/^_/,          function(){ this.bubbles = false; }],
@@ -134,7 +133,7 @@ _.fireAll = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event) {
-    (target.dispatchEvent || target[_.secret] || _.noop).call(target, event);
+    (target.dispatchEvent || target[_._key] || _.noop).call(target, event);
     if (target.parentObject) {
         _.dispatch(target.parentObject, event);
     }
@@ -153,12 +152,11 @@ _.on = function(target, events, selector, fn, data) {
 	}
 };
 _.handler = function(target, text, selector, fn, data) {
-	var handler = { target:target, selector:selector, fn:fn, data:data, match:{} },
+	var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} },
 		listener = _.listener(target),
-		type = handler.match.type = _.parse(text, handler.match),
+		type = _.parse(text, handler.match),
 		handlers = listener.s[type];
-	delete handler.match.text;// not an event prop
-	delete handler.match.tags;// superfluous
+	delete handler.match.tags;// superfluous for matching
 	if (!handlers) {
 		handlers = listener.s[type] = [];
 		if (target.addEventListener) {
@@ -172,7 +170,7 @@ _._key = 'Eventi'+Math.random();
 _.listener = function(target) {
     var listener = target[_._key];
     if (!listener) {
-		listener = function(event){ return _.handle(event, listener.s[event.type]); };
+		listener = function(event){ _.handle(event, listener.s[event.type]||[]); };
         listener.s = {};
         Object.defineProperty(target, _._key, {
 			value:listener, writeable:false, configurable:true
@@ -190,7 +188,6 @@ _.handle = function(event, handlers) {
 			}
 		}
 	}
-	return !event.defaultPrevented;
 };
 _.execute = function(target, event, handler) {
 	var args = [event];
@@ -202,10 +199,10 @@ _.execute = function(target, event, handler) {
 	if (handler.before){ handler.before(); }
 	try {
 		handler.fn.apply(target, args);
+		if (handler.after){ handler.after(); }
 	} catch (e) {
 		setTimeout(function(){ throw e; }, 0);
 	}
-	if (handler.after){ handler.after(); }
 };
 
 _.matches = function(event, match) {
