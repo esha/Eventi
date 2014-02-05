@@ -10,8 +10,6 @@ Download the [minified version][min] or the [development version][max].
 
 ## TODO
 * Lots and lots and lots of test code :)
-* declare.js
-* key.js
 * web site/documentation
 * integrations (jQuery, Visual Event 2, etc)
 
@@ -32,7 +30,7 @@ Download the [minified version][min] or the [development version][max].
 * Support for best-practices like "signals" and declarative event mapping
 * Lots of solid, maintainable test code
 * Impressive visual and/or interactive demo (ideas, anyone?)
-* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/signal, venti adds off/until/combo/key
+* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key, venti adds off/until/combo/signal
 * Venti will be the default version to encourage feature use/development.
 
 ## Code Plans
@@ -75,7 +73,7 @@ Download the [minified version][min] or the [development version][max].
 * try to resolve attr values at call-time to either element or global function (declared event handler)
 * otherwise, fire as application event (declared event mapping)
 * impl should scan document for data-eventi attributes on DOMContentLoaded, register those listeners
-* `click="..."` should be globally supported by default using trigger.js' intelligent click/enter logic
+* `click="..."` is globally supported by default using trigger.js' intelligent click/enter logic
 
 #### singleton.js (requires fire.js and on.js)
 * singleton events (immediately call late listeners, ignore multiple firings)
@@ -83,11 +81,8 @@ Download the [minified version][min] or the [development version][max].
 * fire them so they're remembered: `Eventi.fire([target, ]'^type', fn)`
 * alias DOMContentLoaded to '^ready'?
 
-#### signal.js (requires core)
-* provide both global signals and local signals with minimal API
-* global: `Eventi.signal('type');` -> `Eventi.on.type([target, ]handler)`
-* local (after Eventi.fy(o)): `Eventi.signal(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
-* obviously, signals cannot have the same name as Function properties like 'call' or 'length'
+#### key.js (requires on.js)
+* filter key events: `Eventi.on([target, ]'keyup[shift-a]', fn)`
 
 
 #### off.js (requires on.js)
@@ -109,8 +104,11 @@ Download the [minified version][min] or the [development version][max].
 * event sequence firing controls (w/async support via promises): `e.pauseSequence([promise])`,`e.resumeSequence()`, `e.isSequencePaused()`
 * configurable time allowed between events (for listening, not firing): `Eventi._.comboTimeout = 1000`
 
-#### key.js (requires on.js)
-* filter key events: `Eventi.on([target, ]'keyup[shift-a]', fn)`
+#### signal.js (requires core)
+* provide both global signals and local signals with minimal API
+* global: `Eventi.signal('type');` -> `Eventi.on.type([target, ]handler)`
+* local (after Eventi.fy(o)): `Eventi.signal(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
+* obviously, signals cannot have the same name as Function properties like 'call' or 'length'
 
 
 #### jquery.eventi.js
