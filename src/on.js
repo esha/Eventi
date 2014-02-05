@@ -29,7 +29,7 @@ _._key = 'Eventi'+Math.random();
 _.listener = function(target) {
     var listener = target[_._key];
     if (!listener) {
-		listener = function(event){ return _.handle(event, listener.s[event.type]); };
+		listener = function(event){ _.handle(event, listener.s[event.type]||[]); };
         listener.s = {};
         Object.defineProperty(target, _._key, {
 			value:listener, writeable:false, configurable:true
@@ -47,7 +47,6 @@ _.handle = function(event, handlers) {
 			}
 		}
 	}
-	return !event.defaultPrevented;
 };
 _.execute = function(target, event, handler) {
 	var args = [event];
@@ -59,10 +58,10 @@ _.execute = function(target, event, handler) {
 	if (handler.before){ handler.before(); }
 	try {
 		handler.fn.apply(target, args);
+		if (handler.after){ handler.after(); }
 	} catch (e) {
 		setTimeout(function(){ throw e; }, 0);
 	}
-	if (handler.after){ handler.after(); }
 };
 
 _.matches = function(event, match) {
