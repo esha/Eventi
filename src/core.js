@@ -23,15 +23,15 @@ var _ = {
         }
 
         var event = new CustomEvent(type, props);
-        delete props.bubbles;
-        delete props.cancelable;
-        delete props.detail;
         for (var prop in props) {
-            event[_.prop(prop)] = props[prop];
+            if (_.skip.indexOf(prop) < 0) {
+                event[_.prop(prop)] = props[prop];
+            }
         }
         event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
+    skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     sIP: function() {
         this.immediatePropagationStopped = true;
