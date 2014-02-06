@@ -20,11 +20,20 @@
       throws(block, [expected], [message])
   */
 
-  //var _ = Eventi._;
+  var _ = Eventi._;
   module('Eventi declare');
 
   test('internal api presence', function() {
-    expect(0);
+    ok(_.init, "_.init");
+    ok(_.declare, "_.declare");
+    ok(_.declared, "_.declared");
+    ok(_.trigger, "_.trigger");
+    ok(_.check, "_.check");
+    ok(_.click, "_.click");
+    ok(_.enter, "_.enter");
+    ok(_.allowDefault, "_.allowDefault");
+    ok(_.parentalClick, "_.parentalClick");
+    ok(_.buttonRE, "_.buttonRE");
   });
 
 }());
