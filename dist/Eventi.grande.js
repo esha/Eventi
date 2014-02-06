@@ -30,15 +30,15 @@ var _ = {
         }
 
         var event = new CustomEvent(type, props);
-        delete props.bubbles;
-        delete props.cancelable;
-        delete props.detail;
         for (var prop in props) {
-            event[_.prop(prop)] = props[prop];
+            if (_.skip.indexOf(prop) < 0) {
+                event[_.prop(prop)] = props[prop];
+            }
         }
         event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
+    skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     sIP: function() {
         this.immediatePropagationStopped = true;
@@ -50,7 +50,7 @@ var _ = {
                 return property[1].apply(props, arguments) || '';
             });
         });
-        return props.type = type;
+        return type ? props.type = type : type;
     },
     properties: [
 /*nobubble*/[/^_/,          function(){ this.bubbles = false; }],
@@ -78,8 +78,8 @@ var _ = {
                 target = !this || this === Eventi ? _.global : this;
                 args.unshift(target);
             }
-            // convert to array of event text inputs
-            args[index] = (args[index]+'').split(_.splitRE);
+            // ensure array of event text inputs
+            args[index] = args[index] ? (args[index]+'').split(_.splitRE) : [''];
             // gather ...data the old way
             if (args.length > expect) {
                 args[expect] = args.slice(expect);
