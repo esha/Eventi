@@ -43,7 +43,7 @@ var _ = {
                 return property[1].apply(props, arguments) || '';
             });
         });
-        return props.type = type;
+        return type ? props.type = type : type;
     },
     properties: [
 /*nobubble*/[/^_/,          function(){ this.bubbles = false; }],
@@ -71,8 +71,8 @@ var _ = {
                 target = !this || this === Eventi ? _.global : this;
                 args.unshift(target);
             }
-            // convert to array of event text inputs
-            args[index] = (args[index]+'').split(_.splitRE);
+            // ensure array of event text inputs
+            args[index] = args[index] ? (args[index]+'').split(_.splitRE) : [''];
             // gather ...data the old way
             if (args.length > expect) {
                 args[expect] = args.slice(expect);

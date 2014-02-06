@@ -164,11 +164,11 @@
     delete _.fn;
   });
 
-  test('_.wrap null event text', function() {
+  test('_.wrap falsey event text', function() {
     expect(2);
     _.fn = function(target, strings) {
       equal(target, _.global, 'target should be _.global');
-      equal(strings[0], 'null', 'text should be "null"');
+      equal(strings[0], '', 'text should be ""');
     };
     _.wrap('fn', 2)(null);
     delete _.fn;
