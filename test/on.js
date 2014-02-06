@@ -35,6 +35,43 @@
     equal(Eventi.fy({}).on, Eventi.on, 'should get on()');
   });
 
+  test('Eventi.on(type,fn)', function() {
+    expect(4);
+    Eventi.on('type', function(e) {
+      equal(e.type, 'type', 'should get event of type');
+      equal(arguments.length, 1, 'should have only one arg here');
+    });
+    Eventi.fire('type');
+    Eventi.on('data', function(e, data) {
+      equal(e.type, 'data', 'should be a data event');
+      equal(data, 'data', 'should have right data');
+    }).fire('data', 'data');
+  });
+
+  test('Eventi.on(o,type,fn,data)', function() {
+    expect(4);
+    var o = {},
+      fn = function(e, edata, hdata) {
+        equal(e.type, 'type');
+        equal(edata, 'edata');
+        equal(hdata, 'hdata');
+        equal(this, o);
+      };
+    Eventi.on(o, 'type', fn, 'hdata').fire(o, 'type', 'edata');
+  });
+
+  test('Eventi.on(type,selector,fn)', function() {
+    var parent = document.querySelector('#test_on'),
+      kid = parent.querySelector('.closest');
+    Eventi.on('click', '#test_on', function(e, edata) {
+      equal(e.type, 'click');
+      equal(edata, 'edata');
+      equal(this, parent);
+      equal(e.target, kid);
+    });
+    Eventi.fire(kid, 'click', 'edata');
+  });
+
   test('_.listener', function() {
     var o = {},
       listener = _.listener(o);
@@ -42,9 +79,23 @@
     equal(typeof listener.s, "object", "should have 's' object");
     equal(_.listener(o), listener, 'should always get same listener back');
     for (var key in o) {
-      ok(false, 'object should not have key: '+key);
+      ok(false, 'object should not enumerate key: '+key);
     }
+  });
 
+  test('_.execute', function() {
+    expect(4);
+    var e = new Eventi('type'),
+      target = {},
+      fn = function(e, eventData, handlerData) {
+        equal(e.type, 'type', 'should get event of proper type');
+        equal(eventData, 'eventData', 'should get event data');
+        equal(handlerData, 'handlerData', 'should get handler data');
+        equal(this, target, 'should have target as context');
+      },
+      handler = { data: ['handlerData'], fn: fn };
+      e.data = ['eventData'];
+      _.execute(target, e, handler);
   });
 
   test('_.closest', function() {
