@@ -1,44 +1,42 @@
 _.off = function(target, events, fn) {
-	if (!events) {
-		return _.wipe(target);
-	}
-
-	var listeners = _.listener(target).s;
-	for (var i=0,m=events.length; i<m; i++) {
-		var type = events[i],
-			filter = { fn: fn, target: target };
-		type = filter.type = _.parse(type, filter);
-
-		if (type) {
-			_.filter(listeners[type], filter);
-		} else {
-			for (type in listeners) {
-				_.clean(listeners[type], filter);
+	var listener = target[_._key];
+	if (listener) {
+		for (var i=0, m=events.length; i<m; i++) {
+			var filter = { fn:fn },
+				type = _.parse(events[i], filter.match = {});
+			if (type) {
+				_.clean(type, filter, listener, target);
+			} else {
+				for (type in listener.s) {
+					_.clean(type, filter, listener, target);
+				}
 			}
-			if (_.empty(listeners)) {
-				_.wipe(target);
-			}
+		}
+		if (_.empty(listener.s)) {
+			delete target[_._key];
 		}
 	}
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
-_.wipe = function(target){ delete target[_._key]; };
-
-_.clean = function(handlers, filter) {
-	for (var i=0,m=handlers.length; i<m; i++) {
-		if (_.cleans(handlers[i], filter)) {
-			_.cleaned(handlers.splice(i--, 1)[0]);
+_.clean = function(type, filter, listener, target) {
+	var handlers = listener.s[type];
+	if (handlers) {
+		for (var i=0, m=handlers.length; i<m; i++) {
+			if (_.cleans(handlers[i], filter)) {
+				_.cleaned(handlers.splice(i--, 1)[0]);
+				m--;
+			}
 		}
 	}
-	if (!handlers.length && filter.target.removeEventListener) {
-		filter.target.removeEventListener(filter.type, _.listener(filter.target));
-		return true;
+	if (!handlers.length) {
+		if (target.removeEventListener) {
+			target.removeEventListener(type, listener);
+		}
+		delete listener.s[type];
 	}
 };
 _.cleans = function(handler, filter) {
-	return _.handles(handler, filter) &&
-		(!filter.detail || handler.detail === filter.detail) &&
-		(!filter.fn || handler.fn === filter.fn);
+	return _.matches(handler.match, filter.match) && (!filter.fn || handler.fn === filter.fn);
 };
 _.cleaned = _.noop;// extension hook (called with cleaned handler as arg)
 
