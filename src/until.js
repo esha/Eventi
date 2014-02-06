@@ -12,10 +12,12 @@ _.until = function(target, condition, events, selector, fn, data) {
 	}
 };
 _.untilAfter = function(handler, condition) {
-	var stop = _.untilFn(handler, condition);
-	handler.after = function() {
+	var stop = _.untilFn(handler, condition),
+		fn = handler.fn;
+	handler.fn = function() {
+		fn.apply(this, arguments);
 		if (stop()) {
-			if (_.off){ _.off(handler.target, handler.text, handler.fn); }
+			if (_.off){ _.off(handler.target, handler.text, fn); }
 			handler.fn = _.noop;
 		}
 	};

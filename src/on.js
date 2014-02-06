@@ -50,15 +50,10 @@ _.handle = function(event, handlers) {
 };
 _.execute = function(target, event, handler) {
 	var args = [event];
-	//TODO: consider putting all data args after event and
-	//      letting handler data act as defaults that event data can override
-	//      this may introduce more surprise but is more obviously useful
 	if (event.data){ args.push.apply(args, event.data); }
-	if (handler.data){ args.unshift.apply(args, handler.data); }
-	if (handler.before){ handler.before(); }
+	if (handler.data){ args.push.apply(args, handler.data); }
 	try {
 		handler.fn.apply(target, args);
-		if (handler.after){ handler.after(); }
 	} catch (e) {
 		setTimeout(function(){ throw e; }, 0);
 	}
