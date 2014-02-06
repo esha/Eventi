@@ -61,9 +61,9 @@
   });
 
   test('Eventi.on(type,selector,fn)', function() {
-    var parent = document.querySelector('#test_on'),
+    var parent = document.querySelector('#on'),
       kid = parent.querySelector('.closest');
-    Eventi.on('click', '#test_on', function(e, edata) {
+    Eventi.on('click', '#on', function(e, edata) {
       equal(e.type, 'click');
       equal(edata, 'edata');
       equal(this, parent);
@@ -100,10 +100,10 @@
 
   test('_.closest', function() {
     equal(_.closest(document, 'foo'), undefined, 'undefined for non Elements');
-    var root = document.querySelector('#test_on'),
+    var root = document.querySelector('#on'),
         div = root.querySelector('.closest');
     equal(_.closest(div, 'div'), div, 'el should prefer itself to parent');
-    equal(_.closest(div, '#test_on'), root, 'should find parent when element does not match');
+    equal(_.closest(div, '#on'), root, 'should find parent when element does not match');
   });
 
   test('_.matches', function() {
