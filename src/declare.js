@@ -47,7 +47,7 @@ if (document) {
     };
     _.check = function(e) {
         if ((e.type === 'click' && _.click(e.target)) ||
-            (e.keyCode === 13 && _.enter(e.target))) {
+            (e.keyCode === 13 && _.click(e.target, true))) {
             _.declared(e, 'click');
             // someone remind me why i've always done this?
             if (!_.allowDefault(e)) {
@@ -55,17 +55,16 @@ if (document) {
             }
         }
     };
-    _.click = function(el) {
-        return el.getAttribute('click') || _.parentalClick(el);
-    };
-    _.enter = function(el) {
-        return el.getAttribute('click') !== "false" && _.parentalClick(el, true);
-    };
     _.allowDefault = function(e) {
         var inputType = e.target.type;
         return inputType && (inputType === 'radio' || inputType === 'checkbox');
     };
-    _.parentalClick = function(el, enter) {
+    _.click = function(el, enter) {
+        // click attributes with non-false value override everything
+        var click = el.getAttribute('click');
+        if (click && click !== "false") {
+            return true;
+        }
         // editables, select, textarea, non-button inputs all use click to alter focus w/o action
         // textarea and editables use enter to add a new line w/o action
         // a[href], buttons, button inputs all automatically dispatch 'click' on enter
