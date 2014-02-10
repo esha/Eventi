@@ -46,6 +46,7 @@
       equal(e.type, 'data', 'should be a data event');
       equal(data, 'data', 'should have right data');
     }).fire('data', 'data');
+    Eventi.off('type data');
   });
 
   test('Eventi.on(o,type,fn,data)', function() {
@@ -70,6 +71,7 @@
       equal(e.target, kid);
     });
     Eventi.fire(kid, 'click', 'edata');
+    Eventi.off('click');
   });
 
   test('_.listener', function() {
