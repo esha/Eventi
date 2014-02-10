@@ -27,12 +27,12 @@ _.clean = function(type, filter, listener, target) {
 				m--;
 			}
 		}
-	}
-	if (!handlers.length) {
-		if (target.removeEventListener) {
-			target.removeEventListener(type, listener);
+		if (!handlers.length) {
+			if (target.removeEventListener) {
+				target.removeEventListener(type, listener);
+			}
+			delete listener.s[type];
 		}
-		delete listener.s[type];
 	}
 };
 _.cleans = function(handler, filter) {
