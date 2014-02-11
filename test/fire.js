@@ -79,10 +79,12 @@
   test('Eventi.fire(type)', function() {
     expect(2);
     equal(_.global, window, 'qunit global should be window');
-    window.addEventListener('global', function(e) {
+    var listener = function(e) {
       equal(e.category, 'test', 'should get event in test category');
-    });
+    };
+    window.addEventListener('global', listener);
     Eventi.fire('test:global');
+    window.removeEventListener('global', listener);
   });
 
   test('Eventi.fire(event, props)', function() {
