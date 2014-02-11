@@ -26,12 +26,11 @@
     <div id="on">
       <div class="closest"></div>
     </div>
-    <div id="declare" data-eventi="local type#rich=alias /global">
-      <span local="mapped" alias="handler" global="elementHandle">&nbsp;</span>
-      <div class="nested" data-eventi="foo#bar=alias" alias="handler.foo">
-        <button click="remove"></button>
-      </div>
+    <div id="declare" data-eventi="simple type#rich=alias /global" simple="whatever">
+      <span simple="mapped" alias="handler" global="elementHandle">&nbsp;</span>
+      <div click="remove"><button>clickme</button></div>
     </div>
+    <span global="shouldbeignoredhere"></span>
   </div>
 </body>
 </html>
