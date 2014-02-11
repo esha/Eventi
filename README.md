@@ -9,8 +9,14 @@ Download the [minified version][min] or the [development version][max].
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
 
 ## TODO
-* Lots and lots and lots of test code :)
-* web site/documentation
+* finish singleton tests
+* finish key tests
+* finish off tests
+* finish until tests
+* finish combo tests
+* finish signal tests
+* documentation
+* demo app/site
 * integrations (jQuery, Visual Event 2, etc)
 
 ## Motive
@@ -122,7 +128,9 @@ Download the [minified version][min] or the [development version][max].
 
 
 ## Release History
-_(Nothing yet)_
+* 2014-02-11 [v0.5.0][] (first public release)
+
+[v0.5.0]: https://github.com/nbubna/Eventi/tree/0.5.0
 
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/nbubna/eventi/trend.png)](https://bitdeli.com/free "Bitdeli Badge")

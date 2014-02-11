@@ -1,6 +1,6 @@
 {
   "name": "eventi",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "homepage": "https://github.com/nbubna/Eventi",
   "bugs": "https://github.com/nbubna/nbubna/issues",
   "authors": [
@@ -10,7 +10,6 @@
     "type": "git",
     "url": "https://github.com:nbubna/HTML.git"
   },
-  "description": "A triple shot of event features with extra sugar.",
   "main": "dist/Eventi.min.js",
   "keywords": [
     "event",
