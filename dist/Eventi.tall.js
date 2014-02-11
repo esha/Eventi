@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-02-05
+/*! Eventi - v0.1.0 - 2014-02-10
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 

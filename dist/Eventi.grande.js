@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-02-05
+/*! Eventi - v0.1.0 - 2014-02-10
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -242,60 +242,74 @@ if (document) {
             Eventi.on('click keyup', _.check);
         }
     };
-    _.declare = function declare(mapping, node) {// register listener
+    _.declare = function(mapping, mapper) {// register listener
         var types = mapping.split(_.splitRE);
         for (var i=0,m=types.length; i<m; i++) {
             var type = types[i],
                 eq = type.lastIndexOf('='),
                 alias = eq > 0 ? type.substring(eq+1) : undefined,
-                global = type.charAt(0) === '/';
-            if (alias) {
-                type = type.substring(0, eq);
-            }
-            if (global) {
-                type = type.substring(1);
-                node = _.global;
-            }
-            Eventi.on(node || _.global, type, _.declared, alias);
+                global = type.charAt(0) === '/',
+                context = global ? _.global : mapper;
+            mapper = mapper || document;
+            if (alias){ type = type.substring(0, eq); }
+            if (global){ type = type.substring(1); }
+            Eventi.on(context, type, _.mapped, mapper, alias);
         }
     };
-    _.declared = function(e, alias) {// lookup handler
+    _.mapped = function(e, mapper, alias) {// lookup handlers
         var type = alias || e.type,
-            target = _.closest(e.target, '['+type+']'),
-            value = target && target.getAttribute(type);
-        if (value) {
-            _.trigger(target, value, e);
+            nodes = _.declarers(mapper, type, this !== _.global && e.target);
+        for (var i=0,m=nodes.length; i<m; i++) {
+            _.declared(nodes[i], type, e);
         }
     };
-    _.trigger = function(node, response, e) {// execute handler
-        var fn = _.resolve(response, node) || _.resolve(response);
-        if (typeof fn === "function") {
-            fn.call(node, e);
-        } else {
-            Eventi.fire(node, response, e);
+    _.declarers = function(mapper, type, target) {
+        var query = '['+type+']';
+        if (target) {
+            // gather matching parents up to the mapper
+            var nodes = [];
+            while (target && target.matches && target !== mapper.parentNode) {
+                if (target.matches(query)) {
+                    nodes.push(target);
+                }
+                target = target.parentNode;
+            }
+            return nodes;
+        }
+        // gather all declarations within the mapper
+        return mapper.querySelectorAll(query);
+    };
+    _.declared = function(node, type, e) {// execute handler
+        var response = node.getAttribute(type);
+        if (response) {
+            response = _.resolve(response, node) || _.resolve(response) || response;
+            if (typeof response === "function") {
+                response.call(node, e);
+            } else {
+                Eventi.fire(node, response, e);
+            }
         }
     };
     _.check = function(e) {
         if ((e.type === 'click' && _.click(e.target)) ||
-            (e.keyCode === 13 && _.enter(e.target))) {
-            _.declared(e, 'click');
+            (e.keyCode === 13 && _.click(e.target, true))) {
+            _.mapped(e, document.documentElement, 'click');
             // someone remind me why i've always done this?
             if (!_.allowDefault(e)) {
                 e.preventDefault();
             }
         }
     };
-    _.click = function(el) {
-        return el.getAttribute('click') || _.parentalClick(el);
-    };
-    _.enter = function(el) {
-        return el.getAttribute('click') !== "false" && _.parentalClick(el, true);
-    };
     _.allowDefault = function(e) {
         var inputType = e.target.type;
         return inputType && (inputType === 'radio' || inputType === 'checkbox');
     };
-    _.parentalClick = function(el, enter) {
+    _.click = function(el, enter) {
+        // click attributes with non-false value override everything
+        var click = el.getAttribute('click');
+        if (click && click !== "false") {
+            return true;
+        }
         // editables, select, textarea, non-button inputs all use click to alter focus w/o action
         // textarea and editables use enter to add a new line w/o action
         // a[href], buttons, button inputs all automatically dispatch 'click' on enter
