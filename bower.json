@@ -32,6 +32,11 @@
   "license": "MIT",
   "ignore": [
     "**/.*",
+    "Gruntfile.js",
+    "temp",
+    "tasks",
+    "src",
+    "libs",
     "node_modules",
     "bower_components",
     "components",
