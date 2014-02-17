@@ -46,19 +46,23 @@ var _ = {
         return type ? props.type = type : type;
     },
     properties: [
-/*nobubble*/[/^_/,          function(){ this.bubbles = false; }],
-/*detail*/  [/\((.*)\)/,    function(m, val) {
-                                try {
-                                    this.detail = _.resolve(val) || JSON.parse(val);
-                                } catch (e) {
-                                    this.detail = val;
-                                }
-                            }],
-/*tags*/    [/#(\w+)/g,     function(m, tag) {
-                                (this.tags||(this.tags=[])).push(tag);
-                                this[tag] = true;
-                            }],
-/*category*/[/^(\w+):/,     function(m, category){ this.category = category; }]//
+        [/^_/, function nobubble() {
+            this.bubbles = false;
+        }],
+        [/\((.*)\)/, function detail(m, val) {
+            try {
+                this.detail = _.resolve(val) || JSON.parse(val);
+            } catch (e) {
+                this.detail = val;
+            }
+        }],
+        [/#(\w+)/g, function tags(m, tag) {
+            (this.tags||(this.tags=[])).push(tag);
+            this[tag] = true;
+        }],
+        [/^(\w+):/, function category(m, category) {//
+            this.category = category;
+        }]
     ],
 
     splitRE: / (?![^\(\)]*\))+/g,
