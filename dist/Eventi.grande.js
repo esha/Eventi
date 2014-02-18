@@ -1,4 +1,4 @@
-/*! Eventi - v0.1.0 - 2014-02-10
+/*! Eventi - v0.5.1 - 2014-02-17
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -53,19 +53,23 @@ var _ = {
         return type ? props.type = type : type;
     },
     properties: [
-/*nobubble*/[/^_/,          function(){ this.bubbles = false; }],
-/*detail*/  [/\((.*)\)/,    function(m, val) {
-                                try {
-                                    this.detail = _.resolve(val) || JSON.parse(val);
-                                } catch (e) {
-                                    this.detail = val;
-                                }
-                            }],
-/*tags*/    [/#(\w+)/g,     function(m, tag) {
-                                (this.tags||(this.tags=[])).push(tag);
-                                this[tag] = true;
-                            }],
-/*category*/[/^(\w+):/,     function(m, category){ this.category = category; }]//
+        [/^_/, function nobubble() {
+            this.bubbles = false;
+        }],
+        [/\((.*)\)/, function detail(m, val) {
+            try {
+                this.detail = _.resolve(val) || JSON.parse(val);
+            } catch (e) {
+                this.detail = val;
+            }
+        }],
+        [/#(\w+)/g, function tags(m, tag) {
+            (this.tags||(this.tags=[])).push(tag);
+            this[tag] = true;
+        }],
+        [/^(\w+):/, function category(m, cat) {//
+            this.category = cat;
+        }]
     ],
 
     splitRE: / (?![^\(\)]*\))+/g,
@@ -329,8 +333,7 @@ if (document) {
 }
 
 // add singleton to _.parse's supported event properties
-_.singletonRE = /^_?\^/;
-_.properties.splice(1,0, [_.singletonRE, function(){ this.singleton = true; }]);
+_.properties.unshift([/^_?\^/, function singleton(){ this.singleton = true; }]);
 
 // wrap _.fire's _.dispatch to save singletons with node and all parents
 _.singleton_dispatch = _.dispatch;
@@ -405,7 +408,7 @@ for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
 'abcdefghijklmnopqrstuvwxyz 0123456789'.split('').forEach(function(c) {
     _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
 });
-    _.version = "0.1.0";
+    _.version = "0.5.1";
 
     // export Eventi (AMD, commonjs, or window/env)
     var define = global.define || _.noop;
