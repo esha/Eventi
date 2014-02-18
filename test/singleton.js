@@ -24,8 +24,9 @@
   module('Eventi singleton');
 
   test('internal api presence', function() {
-    ok(_.singletonRE, "_.singletonRE");
-    equal(_.properties[1][0], _.singletonRE, '_.properties includes singleton parser');
+    var e = {};
+    _.properties[0][1].call(e);
+    ok(e.singleton, '_.properties has singleton parser up front');
   });
 
 }());

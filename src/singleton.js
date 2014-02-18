@@ -1,6 +1,5 @@
 // add singleton to _.parse's supported event properties
-_.singletonRE = /^_?\^/;
-_.properties.splice(1,0, [_.singletonRE, function(){ this.singleton = true; }]);
+_.properties.unshift([/^_?\^/, function singleton(){ this.singleton = true; }]);
 
 // wrap _.fire's _.dispatch to save singletons with node and all parents
 _.singleton_dispatch = _.dispatch;
