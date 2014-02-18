@@ -26,6 +26,6 @@
   "main": "src/component.js",
   "scripts": [
     "src/component.js",
-    "dist/Eventi.js"
+    "dist/eventi.js"
   ]
 }

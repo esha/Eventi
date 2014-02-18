@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com:nbubna/HTML.git"
   },
-  "main": "dist/Eventi.min.js",
+  "main": "dist/eventi.min.js",
   "keywords": [
     "event",
     "custom",
