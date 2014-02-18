@@ -60,8 +60,8 @@ var _ = {
             (this.tags||(this.tags=[])).push(tag);
             this[tag] = true;
         }],
-        [/^(\w+):/, function category(m, category) {//
-            this.category = category;
+        [/^(\w+):/, function category(m, cat) {//
+            this.category = cat;
         }]
     ],
 
