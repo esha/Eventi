@@ -6,6 +6,7 @@ var _ = {
     copy: function(a, b, p) {
         if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
+    async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
     resolve: function(reference, context) {
         if (_.resolveRE.test(reference)) {

@@ -2,13 +2,6 @@
 (function(global, document) {
     "use strict";
 
-<%= content %>
-    _.version = "<%= pkg.version %>";
-
-    // export Eventi (AMD, commonjs, or window/env)
-    var define = global.define || _.noop;
-    define((global.exports||global).Eventi = Eventi);
-
     // polyfill CustomEvent constructor
     if (!global.CustomEvent) {
         global.CustomEvent = document ? function CustomEvent(type, args) {
@@ -24,7 +17,12 @@
             this.timestamp = Date.now();
         };
     }
-    // just need easy way to async
-    _.next = global.setImmediate || function next(fn){ return setTimeout(fn, 0); };
+
+<%= content %>
+    _.version = "<%= pkg.version %>";
+
+    // export Eventi (AMD, commonjs, or window/env)
+    var define = global.define || _.noop;
+    define((global.exports||global).Eventi = Eventi);
 
 })(this, this.document);
