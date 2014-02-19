@@ -33,7 +33,7 @@ _.sequence = function(event, props, target, paused) {
     event.isSequencePaused = function(){ return !!paused; };
 };
 
-Eventi.on('eventi:handler#new', function comboHandler(e, handler) {
+Eventi.on(_, 'handler#new', function comboHandler(e, handler) {
 	var text = handler.text,
 		joint = text.match(_.comboRE);
 	if (joint) {
@@ -70,7 +70,7 @@ _.comboFn = function(ordered, types, text) {
 };
 
 // watch for handler.comboFn and remove sub-handlers
-Eventi.on('eventi:handler#off', function cleanedHandler(e, handler) {
+Eventi.on(_, 'handler#off', function cleanedHandler(e, handler) {
 	if (handler.comboFn) {
 		_.off(handler.target, '', handler.comboFn);
 	}

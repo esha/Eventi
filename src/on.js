@@ -23,7 +23,7 @@ _.handler = function(target, text, selector, fn, data) {
 		}
 	}
 	handlers.push(handler);
-	Eventi.fire('eventi:handler#new', handler);
+	Eventi.fire(_, 'handler#new', handler);
 	return handler;
 };
 
