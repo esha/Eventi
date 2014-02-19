@@ -23,7 +23,7 @@ _.clean = function(type, filter, listener, target) {
 	if (handlers) {
 		for (var i=0, m=handlers.length; i<m; i++) {
 			if (_.cleans(handlers[i], filter)) {
-				_.cleaned(handlers.splice(i--, 1)[0]);
+				Eventi.fire('eventi:handler#off', handlers.splice(i--, 1)[0]);
 				m--;
 			}
 		}
