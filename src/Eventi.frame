@@ -24,5 +24,7 @@
             this.timestamp = Date.now();
         };
     }
+    // just need easy way to async
+    _.next = global.setImmediate || function next(fn){ return setTimeout(fn, 0); };
 
 })(this, this.document);
