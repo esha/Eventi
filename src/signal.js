@@ -3,7 +3,7 @@ _.signal = function(type) {
 	return _.signal[type] || (_.signal[type] = function signal(target) {
 		var args = _.slice(arguments),
 			index = this.index || 1;
-		if (typeof target !== "object" || !(target.dispatchEvent || target[_._key])) {
+		if (typeof target !== "object" || !(target.dispatchEvent || target[_key])) {
 			index--;
 		}
 		args.splice(index, 0, type);

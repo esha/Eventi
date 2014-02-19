@@ -25,13 +25,13 @@ _.handler = function(target, text, selector, fn, data) {
 	handlers.push(handler);
 	return handler;
 };
-_._key = 'Eventi'+Math.random();
+var _key = _._key = '_eventi'+Date.now();
 _.listener = function(target) {
-    var listener = target[_._key];
+    var listener = target[_key];
     if (!listener) {
 		listener = function(event){ _.handle(event, listener.s[event.type]||[]); };
         listener.s = {};
-        Object.defineProperty(target, _._key, {
+        Object.defineProperty(target, _key, {
 			value:listener, writeable:false, configurable:true
         });
     }
@@ -55,7 +55,7 @@ _.execute = function(target, event, handler) {
 	try {
 		handler.fn.apply(target, args);
 	} catch (e) {
-		setTimeout(function(){ throw e; }, 0);
+		_.next(function(){ throw e; });
 	}
 };
 

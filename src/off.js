@@ -1,5 +1,5 @@
 _.off = function(target, events, fn) {
-	var listener = target[_._key];
+	var listener = target[_key];
 	if (listener) {
 		for (var i=0, m=events.length; i<m; i++) {
 			var filter = { fn:fn },
@@ -13,7 +13,7 @@ _.off = function(target, events, fn) {
 			}
 		}
 		if (_.empty(listener.s)) {
-			delete target[_._key];
+			delete target[_key];
 		}
 	}
 };
