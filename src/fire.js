@@ -20,7 +20,7 @@ _.fireAll = function(target, events, props) {
 };
 _.dispatch = function(target, event) {
     (target.dispatchEvent || target[_key] || _.noop).call(target, event);
-    if (target.parentObject) {
+    if (event.bubbles && target.parentObject) {
         _.dispatch(target.parentObject, event);
     }
 };
