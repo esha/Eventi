@@ -78,6 +78,7 @@
     ok(_.noop, "_.noop");
     ok(_.slice, "_.slice");
     ok(_.copy, "_.copy");
+    ok(_.async, "_.async");
     ok(_.resolveRE, "_.resolveRE");
     ok(_.resolve, "_.resolve");
     ok(_.create, "_.create");
@@ -105,6 +106,14 @@
     ok(!_.copy(new From(), to), '_.copy returns nothing');
     equal(to.foo, 1, 'to should have foo');
     notEqual(to.bar, 2, 'to should not have bar');
+  });
+
+  asyncTest('_.async', function() {
+    var id = _.async(function() {
+      ok(true, 'should be called');
+      start();
+    });
+    ok(id, 'should have id');
   });
 
   test('_.resolve', function() {

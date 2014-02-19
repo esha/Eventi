@@ -9,7 +9,6 @@
 
   test('internal api presence', function() {
     ok(_.version, "_.version");
-    equal(typeof _.next, "function", "_.next");
   });
 
 }());
