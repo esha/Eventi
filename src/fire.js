@@ -18,10 +18,14 @@ _.fireAll = function(target, events, props) {
     }
     return event;
 };
-_.dispatch = function(target, event) {
+_.dispatch = function(target, event, objectBubbling) {
     (target.dispatchEvent || target[_key] || _.noop).call(target, event);
-    if (event.bubbles && target.parentObject) {
-        _.dispatch(target.parentObject, event);
+    if (target.parentObject && event.bubbles && !event.propagationStopped) {
+        _.dispatch(target.parentObject, event, true);
+    }
+    // icky test/call, but lighter than wrapping or internal event
+    if (!objectBubbling && event.singleton && _.singleton) {
+        _.singleton(target, event);
     }
 };
 Eventi.fire = _.wrap('fire', 3);
