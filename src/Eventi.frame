@@ -17,6 +17,15 @@
             this.timestamp = Date.now();
         };
     }
+    CustomEvent.prototype.stopPropagation = function() {
+        this.propagationStopped = true;
+        Event.prototype.stopPropagation.call(this);
+    };
+    CustomEvent.prototype.stopImmediatePropagation = function() {
+        this.immediatePropagationStopped = true;
+        (Event.prototype.stopImmediatePropagation || _.noop).call(this);
+    };
+
 
 <%= content %>
     _.version = "<%= pkg.version %>";

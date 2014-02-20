@@ -29,15 +29,10 @@ var _ = {
                 event[_.prop(prop)] = props[prop];
             }
         }
-        event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
-    sIP: function() {
-        this.immediatePropagationStopped = true;
-        (Event.prototype.stopImmediatePropagation || _.noop).call(this);
-    },
     parse: function(type, props) {
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
