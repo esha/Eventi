@@ -83,7 +83,6 @@
     ok(_.resolve, "_.resolve");
     ok(_.create, "_.create");
     ok(_.prop, "_.prop");
-    ok(_.sIP, "_.sIP");
     ok(_.parse, "_.parse");
     ok(_.properties, "_.properties");
     ok(_.splitRE, "_.splitRE");
