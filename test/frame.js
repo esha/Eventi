@@ -3,8 +3,15 @@
   var _ = Eventi._;
   module('Eventi frame');
 
-  test('3rd party/polyfill api presence', function() {
-    ok(typeof CustomEvent === "function", "CustomEvent");
+  test('CustomEvent API/polyfill', function() {
+    equal(typeof CustomEvent, "function", "CustomEvent");
+    var ce = new CustomEvent('foo', {bubbles:true});
+    equal(ce.type, 'foo', "CustomEvent type");
+    equal(typeof ce.timeStamp, "number", "CustomEvent timeStamp");
+    ok('detail' in ce, "CustomEvent detail");
+    equal(ce.bubbles, true, "CustomEvent bubbles");
+    equal(typeof ce.stopPropagation, "function", "CustomEvent stopPropagation");
+    equal(typeof ce.stopImmediatePropagation, "function", "CustomEvent stopImmediatePropagation");
   });
 
   test('internal api presence', function() {

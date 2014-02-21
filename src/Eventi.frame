@@ -17,18 +17,20 @@
             this.timestamp = Date.now();
         };
     }
-    CustomEvent.prototype.stopPropagation = function() {
-        this.propagationStopped = true;
-        Event.prototype.stopPropagation.call(this);
-    };
-    CustomEvent.prototype.stopImmediatePropagation = function() {
-        this.immediatePropagationStopped = true;
-        (Event.prototype.stopImmediatePropagation || _.noop).call(this);
-    };
-
 
 <%= content %>
     _.version = "<%= pkg.version %>";
+
+    var sP = (Event && Event.prototype.stopPropagation) || _.noop,
+        sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    CustomEvent.prototype.stopPropagation = function() {
+        this.propagationStopped = true;
+        sP.call(this);
+    };
+    CustomEvent.prototype.stopImmediatePropagation = function() {
+        this.immediatePropagationStopped = true;
+        sIP.call(this);
+    };
 
     // export Eventi (AMD, commonjs, or window/env)
     var define = global.define || _.noop;
