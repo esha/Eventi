@@ -63,6 +63,7 @@ _.execute = function(target, event, handler) {
 		_.async(function(){ throw e; });
 	}
 };
+_.unhandle = function(handler){ handler.fn = _.noop; };
 
 _.matches = function(event, match) {
 	for (var key in match) {

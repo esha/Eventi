@@ -122,6 +122,7 @@
     ok(_.listener, "_.listener");
     ok(_.handle, "_.handle");
     ok(_.execute, "_.execute");
+    ok(_.unhandle, "_.unhandle");
     ok(_.matches, "_.matches");
     ok(_.target, "_.target");
     ok(_.closest, "_.closest");

@@ -33,10 +33,10 @@
 
   test('internal api presence', function() {
     ok(_.off, "_.off");
+    ok(_.unhandle, "_.unhandle");
     ok(_.empty, "_.empty");
     ok(_.clean, "_.clean");
     ok(_.cleans, "_.cleans");
-    ok(_.cleaned, "_.cleaned");
   });
 
 }());

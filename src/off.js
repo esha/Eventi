@@ -17,6 +17,10 @@ _.off = function(target, events, fn) {
 		}
 	}
 };
+_.unhandle = function(handler) {
+	_.off(handler.target, [handler.text], handler._fn||handler.fn);
+	handler.fn = _.noop;//TODO: remove this once we have confidence in _.off
+};
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
 _.clean = function(type, filter, listener, target) {
 	var handlers = listener.s[type];

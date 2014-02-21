@@ -13,13 +13,10 @@ _.until = function(target, condition, events, selector, fn, data) {
 };
 _.untilAfter = function(handler, condition) {
 	var stop = _.untilFn(handler, condition),
-		fn = handler.fn;
+		fn = handler._fn = handler.fn;
 	handler.fn = function() {
 		fn.apply(this, arguments);
-		if (stop()) {
-			if (_.off){ _.off(handler.target, handler.text, fn); }
-			handler.fn = _.noop;
-		}
+		if (stop()){ _.unhandle(handler); }
 	};
 };
 _.untilFn = function(handler, condition) {
@@ -30,7 +27,7 @@ _.untilFn = function(handler, condition) {
 		case "string":
 			var not = condition.charAt(0) === '!';
 			if (not){ condition = condition.substring(1); }
-			return function() {
+			return function until() {
 				var value = _.resolve(condition, handler.target);
 				if (value === undefined) {
 					value = _.resolve(condition);
