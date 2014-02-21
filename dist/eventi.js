@@ -1,9 +1,25 @@
-/*! Eventi - v0.5.1 - 2014-02-17
+/*! Eventi - v0.5.1 - 2014-02-21
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
 (function(global, document) {
     "use strict";
+
+    // polyfill CustomEvent constructor
+    if (!global.CustomEvent) {
+        global.CustomEvent = document ? function CustomEvent(type, args) {
+            args = args || {};
+            var e = document.createEvent('CustomEvent');
+            e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
+            return e;
+        } : function CustomEvent(type, args) {
+            args = args || {};
+            this.type = type;
+            this.bubbles = !!args.bubbles;
+            this.detail = args.detail;
+            this.timestamp = Date.now();
+        };
+    }
 
 function Eventi(){ return _.create.apply(this, arguments); }
 var _ = {
@@ -13,6 +29,7 @@ var _ = {
     copy: function(a, b, p) {
         if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
+    async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
     resolve: function(reference, context) {
         if (_.resolveRE.test(reference)) {
@@ -35,15 +52,10 @@ var _ = {
                 event[_.prop(prop)] = props[prop];
             }
         }
-        event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
-    sIP: function() {
-        this.immediatePropagationStopped = true;
-        (Event.prototype.stopImmediatePropagation || _.noop).call(this);
-    },
     parse: function(type, props) {
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
@@ -136,10 +148,14 @@ _.fireAll = function(target, events, props) {
     }
     return event;
 };
-_.dispatch = function(target, event) {
-    (target.dispatchEvent || target[_._key] || _.noop).call(target, event);
-    if (target.parentObject) {
-        _.dispatch(target.parentObject, event);
+_.dispatch = function(target, event, objectBubbling) {
+    (target.dispatchEvent || target[_key] || _.noop).call(target, event);
+    if (target.parentObject && event.bubbles && !event.propagationStopped) {
+        _.dispatch(target.parentObject, event, true);
+    }
+    // icky test/call, but lighter than wrapping or internal event
+    if (!objectBubbling && event.singleton && _.singleton) {
+        _.singleton(target, event);
     }
 };
 Eventi.fire = _.wrap('fire', 3);
@@ -168,15 +184,20 @@ _.handler = function(target, text, selector, fn, data) {
 		}
 	}
 	handlers.push(handler);
+	Eventi.fire(_, 'handler#new', handler);
 	return handler;
 };
-_._key = 'Eventi'+Math.random();
+
+var _key = _._key = '_eventi'+Date.now();
 _.listener = function(target) {
-    var listener = target[_._key];
+    var listener = target[_key];
     if (!listener) {
-		listener = function(event){ _.handle(event, listener.s[event.type]||[]); };
+		listener = function(event) {
+			var handlers = listener.s[event.type];
+			if (handlers){ _.handle(event, handlers); }
+		};
         listener.s = {};
-        Object.defineProperty(target, _._key, {
+        Object.defineProperty(target, _key, {
 			value:listener, writeable:false, configurable:true
         });
     }
@@ -200,9 +221,10 @@ _.execute = function(target, event, handler) {
 	try {
 		handler.fn.apply(target, args);
 	} catch (e) {
-		setTimeout(function(){ throw e; }, 0);
+		_.async(function(){ throw e; });
 	}
 };
+_.unhandle = function(handler){ handler.fn = _.noop; };
 
 _.matches = function(event, match) {
 	for (var key in match) {
@@ -333,56 +355,53 @@ if (document) {
 }
 
 // add singleton to _.parse's supported event properties
-_.properties.unshift([/^_?\^/, function singleton(){ this.singleton = true; }]);
+_.properties.unshift([/^\^/, function singleton(){ this.singleton = true; }]);
 
-// wrap _.fire's _.dispatch to save singletons with node and all parents
-_.singleton_dispatch = _.dispatch;
-_.dispatch = function(target, event) {
-	_.singleton_dispatch(target, event);
-	if (event.singleton) {
-		do {
-			var saved = target[_._sKey];
-			if (saved) {
-				saved.push(event);
-			} else {
-				Object.defineProperty(target, _._sKey, {value:[event],configurable:true});
-			}
-		} while (target = target.parentNode);
+// _.fire's _.dispatch will call this when appropriate
+_.singleton = function(target, event) {
+	_.remember(target, event);
+	if (event.bubbles && !event.propagationStopped && target !== _.global) {
+		_.singleton(target.parentNode || target.parentObject || _.global, event);
 	}
 };
-_._sKey = _._key+'s.e.';
+var _skey = _._skey = '^'+_key;
+_.remember = function remember(target, event) {
+	var saved = target[_skey] || [];
+	if (!saved.length) {
+		Object.defineProperty(target, _skey, {value:saved,configurable:true});
+	}
+	event[_skey] = true;
+	saved.push(event);
+};
 
-// wrap _.on's _.handler to execute fired singletons immediately
-//TODO: ensure that combo.js wraps this _.handler instead of vice versa
-//      combo events should be able to include singletons, but not be singletons
-_.singleton_handler = _.handler;
-_.handler = function(target, text, selector, fn) {
-	var handler = _.singleton_handler.apply(this, arguments);
-	if (handler.singleton) {
-		handler.after = function after() {
-			if (_.off){ _.off(target, text, fn); }
-			handler.fn = _.noop;
+Eventi.on(_, 'handler#new', function singletonHandler(e, handler) {
+	if (handler.match.singleton) {
+		delete handler.match.singleton;// singleton never needs matching
+		var fn = handler._fn = handler.fn,
+			target = handler.target;
+		handler.fn = function single(e) {
+			_.unhandle(handler);
+			if (!e[_skey]) {// remember this non-singleton as singleton for handler's sake
+				_.remember(target, e);
+			}
+			fn.apply(this, arguments);
 		};
+
 		// search target's saved singletons, execute handler upon match
-		var saved = target[_._sKey];
-		if (saved) {
-			for (var i=0,m=saved.length; i<m; i++) {
-				var event = saved[i];
-				if (_.handles(event, handler)) {
-					if (target = _.target(handler, event.target)) {
-						_.execute(target, event, handler);
-						break;
-					}
-				}
+		var saved = target[_skey]||[];
+		for (var i=0,m=saved.length, event, etarget; i<m; i++) {
+			event = saved[i];
+			if (_.matches(event, handler.match) &&
+				(etarget = _.target(handler, event.target))) {
+				return _.execute(etarget, event, handler);
 			}
 		}
 	}
-	return handler;
-};
+});
 
 if (document) {
 	Eventi.on('DOMContentLoaded', function ready(e) {
-		_.fire(document.documentElement, ['^ready'], undefined, e);
+		_.fire(document.documentElement, ['^ready'], undefined, [e]);
 	});
 }
 // add key syntax to _.parse's supported event properties
@@ -409,7 +428,7 @@ for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
     _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
 });
 _.off = function(target, events, fn) {
-	var listener = target[_._key];
+	var listener = target[_key];
 	if (listener) {
 		for (var i=0, m=events.length; i<m; i++) {
 			var filter = { fn:fn },
@@ -423,9 +442,13 @@ _.off = function(target, events, fn) {
 			}
 		}
 		if (_.empty(listener.s)) {
-			delete target[_._key];
+			delete target[_key];
 		}
 	}
+};
+_.unhandle = function(handler) {
+	_.off(handler.target, [handler.text], handler._fn||handler.fn);
+	handler.fn = _.noop;//TODO: remove this once we have confidence in _.off
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
 _.clean = function(type, filter, listener, target) {
@@ -433,7 +456,7 @@ _.clean = function(type, filter, listener, target) {
 	if (handlers) {
 		for (var i=0, m=handlers.length; i<m; i++) {
 			if (_.cleans(handlers[i], filter)) {
-				_.cleaned(handlers.splice(i--, 1)[0]);
+				Eventi.fire(_, 'handler#off', handlers.splice(i--, 1)[0]);
 				m--;
 			}
 		}
@@ -448,7 +471,6 @@ _.clean = function(type, filter, listener, target) {
 _.cleans = function(handler, filter) {
 	return _.matches(handler.match, filter.match) && (!filter.fn || handler.fn === filter.fn);
 };
-_.cleaned = _.noop;// extension hook (called with cleaned handler as arg)
 
 Eventi.off = _.wrap('off', 3);
 
@@ -467,13 +489,10 @@ _.until = function(target, condition, events, selector, fn, data) {
 };
 _.untilAfter = function(handler, condition) {
 	var stop = _.untilFn(handler, condition),
-		fn = handler.fn;
+		fn = handler._fn = handler.fn;
 	handler.fn = function() {
 		fn.apply(this, arguments);
-		if (stop()) {
-			if (_.off){ _.off(handler.target, handler.text, fn); }
-			handler.fn = _.noop;
-		}
+		if (stop()){ _.unhandle(handler); }
 	};
 };
 _.untilFn = function(handler, condition) {
@@ -484,7 +503,7 @@ _.untilFn = function(handler, condition) {
 		case "string":
 			var not = condition.charAt(0) === '!';
 			if (not){ condition = condition.substring(1); }
-			return function() {
+			return function until() {
 				var value = _.resolve(condition, handler.target);
 				if (value === undefined) {
 					value = _.resolve(condition);
@@ -496,7 +515,6 @@ _.untilFn = function(handler, condition) {
 Eventi.until = _.wrap('until', 5, 2);
 _.comboRE = /\+|>/;
 // overwrite fire.js' _.fireAll to watch for combo events
-_.combo_trigger = _.fireAll;
 _.fireAll = function(target, events, props, _resumeIndex) {
     var event, sequence;
     for (var i=0; i<events.length; i++) {
@@ -530,25 +548,21 @@ _.sequence = function(event, props, target, paused) {
     event.isSequencePaused = function(){ return !!paused; };
 };
 
-
-// wrap _.on's _.handler to watch for combo event listeners
-_.combo_handler = _.handler;
-_.handler = function(target, event, selector) {
-	var handler = _.combo_handler.apply(this, arguments),
-		joint = event.match(_.comboRE);
+Eventi.on(_, 'handler#new', function comboHandler(e, handler) {
+	var text = handler.text,
+		joint = text.match(_.comboRE);
 	if (joint) {
-		var types = event.split(joint[0]),
-			fn = handler.comboFn = _.comboFn(joint[0]==='>', types, event);
+		var types = text.split(joint[0]),
+			fn = handler.comboFn = _.comboFn(joint[0]==='>', types, text);
 		for (var i=0,m=types.length; i<m; i++) {
 			// override full type with parsed, core type for comboFn's use
-			types[i] = _.handler(target, types[i], selector, fn).type;
+			types[i] = _.handler(handler.target, types[i], handler.selector, fn).type;
 		}
 		fn.reset();
 	}
-	return handler;
-};
+});
 _.comboTimeout = 1000;
-_.comboFn = function(ordered, types, event) {
+_.comboFn = function(ordered, types, text) {
 	var waitingFor,
 		clear,
 		reset = function() {
@@ -561,7 +575,7 @@ _.comboFn = function(ordered, types, event) {
 			if (ordered ? i === 0 : i >= 0) {
 				waitingFor.splice(i, 1);
 				if (!waitingFor.length) {
-					_.fire(e.target, event);
+					_.fire(e.target, text);
 					reset();
 				}
 			}
@@ -570,22 +584,18 @@ _.comboFn = function(ordered, types, event) {
 	return fn;
 };
 
-if (_.off) {
-	// wrap _.off's _.cleaned to watch for handler.comboFn and remove sub-handlers
-	_.combo_cleaned = _.cleaned;
-	_.cleaned = function(handler) {
-		_.combo_cleaned.apply(this, arguments);
-		if (handler.comboFn) {
-			_.off(handler.target, '', handler.comboFn);
-		}
-	};
-}
+// watch for handler.comboFn and remove sub-handlers
+Eventi.on(_, 'handler#off', function cleanedHandler(e, handler) {
+	if (handler.comboFn) {
+		_.off(handler.target, '', handler.comboFn);
+	}
+});
 // memoizes results
 _.signal = function(type) {
 	return _.signal[type] || (_.signal[type] = function signal(target) {
 		var args = _.slice(arguments),
 			index = this.index || 1;
-		if (typeof target !== "object" || !(target.dispatchEvent || target[_._key])) {
+		if (typeof target !== "object" || !(target.dispatchEvent || target[_key])) {
 			index--;
 		}
 		args.splice(index, 0, type);
@@ -619,24 +629,19 @@ _.bind = function(o, fn) {
 }).utility = true;
     _.version = "0.5.1";
 
+    var sP = (Event && Event.prototype.stopPropagation) || _.noop,
+        sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    CustomEvent.prototype.stopPropagation = function() {
+        this.propagationStopped = true;
+        sP.call(this);
+    };
+    CustomEvent.prototype.stopImmediatePropagation = function() {
+        this.immediatePropagationStopped = true;
+        sIP.call(this);
+    };
+
     // export Eventi (AMD, commonjs, or window/env)
     var define = global.define || _.noop;
     define((global.exports||global).Eventi = Eventi);
-
-    // polyfill CustomEvent constructor
-    if (!global.CustomEvent) {
-        global.CustomEvent = document ? function CustomEvent(type, args) {
-            args = args || {};
-            var e = document.createEvent('CustomEvent');
-            e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
-            return e;
-        } : function CustomEvent(type, args) {
-            args = args || {};
-            this.type = type;
-            this.bubbles = !!args.bubbles;
-            this.detail = args.detail;
-            this.timestamp = Date.now();
-        };
-    }
 
 })(this, this.document);

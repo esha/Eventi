@@ -1,9 +1,25 @@
-/*! Eventi - v0.5.1 - 2014-02-17
+/*! Eventi - v0.5.1 - 2014-02-21
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
 (function(global, document) {
     "use strict";
+
+    // polyfill CustomEvent constructor
+    if (!global.CustomEvent) {
+        global.CustomEvent = document ? function CustomEvent(type, args) {
+            args = args || {};
+            var e = document.createEvent('CustomEvent');
+            e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
+            return e;
+        } : function CustomEvent(type, args) {
+            args = args || {};
+            this.type = type;
+            this.bubbles = !!args.bubbles;
+            this.detail = args.detail;
+            this.timestamp = Date.now();
+        };
+    }
 
 function Eventi(){ return _.create.apply(this, arguments); }
 var _ = {
@@ -13,6 +29,7 @@ var _ = {
     copy: function(a, b, p) {
         if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
+    async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
     resolve: function(reference, context) {
         if (_.resolveRE.test(reference)) {
@@ -35,15 +52,10 @@ var _ = {
                 event[_.prop(prop)] = props[prop];
             }
         }
-        event.stopImmediatePropagation = _.sIP;//TODO: consider prototype extension
         return event;
     },
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
-    sIP: function() {
-        this.immediatePropagationStopped = true;
-        (Event.prototype.stopImmediatePropagation || _.noop).call(this);
-    },
     parse: function(type, props) {
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
@@ -136,10 +148,14 @@ _.fireAll = function(target, events, props) {
     }
     return event;
 };
-_.dispatch = function(target, event) {
-    (target.dispatchEvent || target[_._key] || _.noop).call(target, event);
-    if (target.parentObject) {
-        _.dispatch(target.parentObject, event);
+_.dispatch = function(target, event, objectBubbling) {
+    (target.dispatchEvent || target[_key] || _.noop).call(target, event);
+    if (target.parentObject && event.bubbles && !event.propagationStopped) {
+        _.dispatch(target.parentObject, event, true);
+    }
+    // icky test/call, but lighter than wrapping or internal event
+    if (!objectBubbling && event.singleton && _.singleton) {
+        _.singleton(target, event);
     }
 };
 Eventi.fire = _.wrap('fire', 3);
@@ -168,15 +184,20 @@ _.handler = function(target, text, selector, fn, data) {
 		}
 	}
 	handlers.push(handler);
+	Eventi.fire(_, 'handler#new', handler);
 	return handler;
 };
-_._key = 'Eventi'+Math.random();
+
+var _key = _._key = '_eventi'+Date.now();
 _.listener = function(target) {
-    var listener = target[_._key];
+    var listener = target[_key];
     if (!listener) {
-		listener = function(event){ _.handle(event, listener.s[event.type]||[]); };
+		listener = function(event) {
+			var handlers = listener.s[event.type];
+			if (handlers){ _.handle(event, handlers); }
+		};
         listener.s = {};
-        Object.defineProperty(target, _._key, {
+        Object.defineProperty(target, _key, {
 			value:listener, writeable:false, configurable:true
         });
     }
@@ -200,9 +221,10 @@ _.execute = function(target, event, handler) {
 	try {
 		handler.fn.apply(target, args);
 	} catch (e) {
-		setTimeout(function(){ throw e; }, 0);
+		_.async(function(){ throw e; });
 	}
 };
+_.unhandle = function(handler){ handler.fn = _.noop; };
 
 _.matches = function(event, match) {
 	for (var key in match) {
@@ -234,24 +256,19 @@ Eventi.on = _.wrap('on', 4);
 
     _.version = "0.5.1";
 
+    var sP = (Event && Event.prototype.stopPropagation) || _.noop,
+        sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    CustomEvent.prototype.stopPropagation = function() {
+        this.propagationStopped = true;
+        sP.call(this);
+    };
+    CustomEvent.prototype.stopImmediatePropagation = function() {
+        this.immediatePropagationStopped = true;
+        sIP.call(this);
+    };
+
     // export Eventi (AMD, commonjs, or window/env)
     var define = global.define || _.noop;
     define((global.exports||global).Eventi = Eventi);
-
-    // polyfill CustomEvent constructor
-    if (!global.CustomEvent) {
-        global.CustomEvent = document ? function CustomEvent(type, args) {
-            args = args || {};
-            var e = document.createEvent('CustomEvent');
-            e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
-            return e;
-        } : function CustomEvent(type, args) {
-            args = args || {};
-            this.type = type;
-            this.bubbles = !!args.bubbles;
-            this.detail = args.detail;
-            this.timestamp = Date.now();
-        };
-    }
 
 })(this, this.document);
