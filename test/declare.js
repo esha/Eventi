@@ -84,7 +84,9 @@
       button = el.querySelector('button');
     if (!el.remove) {
       el.remove = function() {
-        this.parentNode.removeChild(this);
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
       };
     }
     ok(el.parentNode, 'has parent node before event');
