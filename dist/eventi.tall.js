@@ -153,7 +153,7 @@ _.dispatch = function(target, event, objectBubbling) {
     if (target.parentObject && event.bubbles && !event.propagationStopped) {
         _.dispatch(target.parentObject, event, true);
     }
-    // icky test/call, but lighter than wrapping or internal event
+    // icky test/call, but lighter than wrapping or firing internal event
     if (!objectBubbling && event.singleton && _.singleton) {
         _.singleton(target, event);
     }
@@ -184,7 +184,9 @@ _.handler = function(target, text, selector, fn, data) {
 		}
 	}
 	handlers.push(handler);
-	Eventi.fire(_, 'handler#new', handler);
+	if (target !== _) {// ignore internal events
+		Eventi.fire(_, 'handler#new', handler);
+	}
 	return handler;
 };
 
@@ -224,7 +226,7 @@ _.execute = function(target, event, handler) {
 		_.async(function(){ throw e; });
 	}
 };
-_.unhandle = function(handler){ handler.fn = _.noop; };
+_.unhandle = function noop(handler){ handler.fn = _.noop; };
 
 _.matches = function(event, match) {
 	for (var key in match) {

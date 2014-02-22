@@ -153,7 +153,7 @@ _.dispatch = function(target, event, objectBubbling) {
     if (target.parentObject && event.bubbles && !event.propagationStopped) {
         _.dispatch(target.parentObject, event, true);
     }
-    // icky test/call, but lighter than wrapping or internal event
+    // icky test/call, but lighter than wrapping or firing internal event
     if (!objectBubbling && event.singleton && _.singleton) {
         _.singleton(target, event);
     }
@@ -184,7 +184,9 @@ _.handler = function(target, text, selector, fn, data) {
 		}
 	}
 	handlers.push(handler);
-	Eventi.fire(_, 'handler#new', handler);
+	if (target !== _) {// ignore internal events
+		Eventi.fire(_, 'handler#new', handler);
+	}
 	return handler;
 };
 
@@ -224,7 +226,7 @@ _.execute = function(target, event, handler) {
 		_.async(function(){ throw e; });
 	}
 };
-_.unhandle = function(handler){ handler.fn = _.noop; };
+_.unhandle = function noop(handler){ handler.fn = _.noop; };
 
 _.matches = function(event, match) {
 	for (var key in match) {
@@ -374,26 +376,27 @@ _.remember = function remember(target, event) {
 	saved.push(event);
 };
 
-Eventi.on(_, 'handler#new', function singletonHandler(e, handler) {
+Eventi.on(_, 'handler#new', function singleton(e, handler) {
 	if (handler.match.singleton) {
 		delete handler.match.singleton;// singleton never needs matching
-		var fn = handler._fn = handler.fn,
-			target = handler.target;
-		handler.fn = function single(e) {
+		var fn = handler._fn = handler.fn;
+		handler.fn = function singleton(e) {
 			_.unhandle(handler);
 			if (!e[_skey]) {// remember this non-singleton as singleton for handler's sake
-				_.remember(target, e);
+				_.remember(handler.target, e);
 			}
 			fn.apply(this, arguments);
 		};
 
 		// search target's saved singletons, execute handler upon match
-		var saved = target[_skey]||[];
-		for (var i=0,m=saved.length, event, etarget; i<m; i++) {
-			event = saved[i];
-			if (_.matches(event, handler.match) &&
-				(etarget = _.target(handler, event.target))) {
-				return _.execute(etarget, event, handler);
+		var saved = handler.target[_skey]||[];
+		for (var i=0,m=saved.length; i<m; i++) {
+			var event = saved[i];
+			if (_.matches(event, handler.match)) {
+				var target = _.target(handler, event.target);
+				if (target) {
+					return _.execute(target, event, handler);
+				}
 			}
 		}
 	}
@@ -428,52 +431,54 @@ for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
     _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
 });
 _.off = function(target, events, fn) {
-	var listener = target[_key];
-	if (listener) {
-		for (var i=0, m=events.length; i<m; i++) {
-			var filter = { fn:fn },
-				type = _.parse(events[i], filter.match = {});
-			if (type) {
-				_.clean(type, filter, listener, target);
-			} else {
-				for (type in listener.s) {
-					_.clean(type, filter, listener, target);
-				}
-			}
-		}
-		if (_.empty(listener.s)) {
-			delete target[_key];
-		}
-	}
+    var listener = target[_key];
+    if (listener) {
+        for (var i=0, m=events.length; i<m; i++) {
+            var filter = { fn:fn },
+            type = _.parse(events[i], filter.match = {});
+            if (type) {
+                _.clean(type, filter, listener, target);
+            } else {
+                for (type in listener.s) {
+                    _.clean(type, filter, listener, target);
+                }
+            }
+        }
+        if (_.empty(listener.s)) {
+            delete target[_key];
+        }
+    }
 };
-_.unhandle = function(handler) {
-	_.off(handler.target, [handler.text], handler._fn||handler.fn);
-	handler.fn = _.noop;//TODO: remove this once we have confidence in _.off
+_.unhandle = function off(handler) {
+    _.off(handler.target, [handler.text], handler._fn||handler.fn);
+    handler.fn = _.noop;//TODO: remove this once we have confidence in _.off
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
 _.clean = function(type, filter, listener, target) {
-	var handlers = listener.s[type];
-	if (handlers) {
-		for (var i=0, m=handlers.length; i<m; i++) {
-			if (_.cleans(handlers[i], filter)) {
-				Eventi.fire(_, 'handler#off', handlers.splice(i--, 1)[0]);
-				m--;
-			}
-		}
-		if (!handlers.length) {
-			if (target.removeEventListener) {
-				target.removeEventListener(type, listener);
-			}
-			delete listener.s[type];
-		}
-	}
+    var handlers = listener.s[type];
+    if (handlers) {
+        for (var i=0, m=handlers.length; i<m; i++) {
+            if (_.cleans(handlers[i], filter)) {
+                var cleaned = handlers.splice(i--, 1)[0];
+                if (target !== _) {// ignore internal events
+                    Eventi.fire(_, 'handler#off', cleaned);
+                }
+                m--;
+            }
+        }
+        if (!handlers.length) {
+            if (target.removeEventListener) {
+                target.removeEventListener(type, listener);
+            }
+            delete listener.s[type];
+        }
+    }
 };
 _.cleans = function(handler, filter) {
-	return _.matches(handler.match, filter.match) && (!filter.fn || handler.fn === filter.fn);
+return _.matches(handler.match, filter.match) &&
+       (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
-
 Eventi.off = _.wrap('off', 3);
-
 _.until = function(target, condition, events, selector, fn, data) {
 	// adjust for absence of selector
 	if (typeof selector !== "string") {
