@@ -160,85 +160,85 @@ _.dispatch = function(target, event, objectBubbling) {
 };
 Eventi.fire = _.wrap('fire', 3);
 _.on = function(target, events, selector, fn, data) {
-	// adjust for absence of selector
-	if (typeof selector !== "string") {
-		if (fn !== undefined) {
-			data = data ? data.unshift(fn) && data : [fn];
-		}
-		fn = selector; selector = null;
-	}
-	for (var i=0,m=events.length; i<m; i++) {
-		_.handler(target, events[i], selector, fn, data);
-	}
+    // adjust for absence of selector
+    if (typeof selector !== "string") {
+        if (fn !== undefined) {
+            data = data ? data.unshift(fn) && data : [fn];
+        }
+        fn = selector; selector = null;
+    }
+    for (var i=0,m=events.length; i<m; i++) {
+        _.handler(target, events[i], selector, fn, data);
+    }
 };
 _.handler = function(target, text, selector, fn, data) {
-	var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} },
-		listener = _.listener(target),
-		type = _.parse(text, handler.match),
-		handlers = listener.s[type];
-	delete handler.match.tags;// superfluous for matching
-	if (!handlers) {
-		handlers = listener.s[type] = [];
-		if (target.addEventListener) {
-			target.addEventListener(type, listener);
-		}
-	}
-	handlers.push(handler);
-	if (target !== _) {// ignore internal events
-		Eventi.fire(_, 'handler#new', handler);
-	}
-	return handler;
+    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} },
+        listener = _.listener(target),
+        type = _.parse(text, handler.match),
+        handlers = listener.s[type];
+    delete handler.match.tags;// superfluous for matching
+    if (!handlers) {
+        handlers = listener.s[type] = [];
+        if (target.addEventListener) {
+            target.addEventListener(type, listener);
+        }
+    }
+    handlers.push(handler);
+    if (target !== _) {// ignore internal events
+        Eventi.fire(_, 'handler#new', handler);
+    }
+    return handler;
 };
 
 var _key = _._key = '_eventi'+Date.now();
 _.listener = function(target) {
     var listener = target[_key];
     if (!listener) {
-		listener = function(event) {
-			var handlers = listener.s[event.type];
-			if (handlers){ _.handle(event, handlers); }
-		};
+        listener = function(event) {
+            var handlers = listener.s[event.type];
+            if (handlers){ _.handle(event, handlers); }
+        };
         listener.s = {};
         Object.defineProperty(target, _key, {
-			value:listener, writeable:false, configurable:true
+            value:listener, writeable:false, configurable:true
         });
     }
     return listener;
 };
 
 _.handle = function(event, handlers) {
-	for (var i=0, m=handlers.length, handler, target; i<m; i++) {
-		if (_.matches(event, (handler = handlers[i]).match)) {
-			if (target = _.target(handler, event.target)) {
-				_.execute(target, event, handler);
-				if (event.immediatePropagationStopped){ i = m; }
-			}
-		}
-	}
+    for (var i=0, m=handlers.length, handler, target; i<m; i++) {
+        if (_.matches(event, (handler = handlers[i]).match)) {
+            if (target = _.target(handler, event.target)) {
+                _.execute(target, event, handler);
+                if (event.immediatePropagationStopped){ i = m; }
+            }
+        }
+    }
 };
 _.execute = function(target, event, handler) {
-	var args = [event];
-	if (event.data){ args.push.apply(args, event.data); }
-	if (handler.data){ args.push.apply(args, handler.data); }
-	try {
-		handler.fn.apply(target, args);
-	} catch (e) {
-		_.async(function(){ throw e; });
-	}
+    var args = [event];
+    if (event.data){ args.push.apply(args, event.data); }
+    if (handler.data){ args.push.apply(args, handler.data); }
+    try {
+        handler.fn.apply(target, args);
+    } catch (e) {
+        _.async(function(){ throw e; });
+    }
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
 _.matches = function(event, match) {
-	for (var key in match) {
-		if (match[key] !== event[key]) {
-			return false;
-		}
-	}
-	return true;
+    for (var key in match) {
+        if (match[key] !== event[key] && key !== 'singleton') {// more singleton bleed, ick
+            return false;
+        }
+    }
+    return true;
 };
 
 _.target = function(handler, target) {
-	return handler.selector ? _.closest(target, handler.selector) : handler.target;
+    return handler.selector ? _.closest(target, handler.selector) : handler.target;
 };
 _.closest = function(el, selector) {
     while (el && el.matches) {
@@ -251,7 +251,7 @@ _.closest = function(el, selector) {
 if (global.Element) {
     var Ep = Element.prototype,
         aS = 'atchesSelector';
-	Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
+    Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
 }   
 
 Eventi.on = _.wrap('on', 4);
@@ -378,7 +378,6 @@ _.remember = function remember(target, event) {
 
 Eventi.on(_, 'handler#new', function singleton(e, handler) {
 	if (handler.match.singleton) {
-		delete handler.match.singleton;// singleton never needs matching
 		var fn = handler._fn = handler.fn;
 		handler.fn = function singleton(e) {
 			_.unhandle(handler);
@@ -434,8 +433,8 @@ _.off = function(target, events, fn) {
     var listener = target[_key];
     if (listener) {
         for (var i=0, m=events.length; i<m; i++) {
-            var filter = { fn:fn },
-            type = _.parse(events[i], filter.match = {});
+            var filter = { fn:fn, match:{} },
+            type = _.parse(events[i], filter.match);
             if (type) {
                 _.clean(type, filter, listener, target);
             } else {
@@ -451,7 +450,6 @@ _.off = function(target, events, fn) {
 };
 _.unhandle = function off(handler) {
     _.off(handler.target, [handler.text], handler._fn||handler.fn);
-    handler.fn = _.noop;//TODO: remove this once we have confidence in _.off
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
 _.clean = function(type, filter, listener, target) {
@@ -475,8 +473,8 @@ _.clean = function(type, filter, listener, target) {
     }
 };
 _.cleans = function(handler, filter) {
-return _.matches(handler.match, filter.match) &&
-       (!filter.fn || filter.fn === (handler._fn||handler.fn));
+    return _.matches(handler.match, filter.match) &&
+           (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
 Eventi.off = _.wrap('off', 3);
 _.until = function(target, condition, events, selector, fn, data) {
