@@ -18,27 +18,26 @@ _.remember = function remember(target, event) {
 	saved.push(event);
 };
 
-Eventi.on(_, 'handler#new', function singletonHandler(e, handler) {
+Eventi.on(_, 'handler#new', function singleton(e, handler) {
 	if (handler.match.singleton) {
 		delete handler.match.singleton;// singleton never needs matching
-		var fn = handler._fn = handler.fn,
-			target = handler.target;
-		handler.fn = function single(e) {
+		var fn = handler._fn = handler.fn;
+		handler.fn = function singleton(e) {
 			_.unhandle(handler);
 			if (!e[_skey]) {// remember this non-singleton as singleton for handler's sake
-				_.remember(target, e);
+				_.remember(handler.target, e);
 			}
 			fn.apply(this, arguments);
 		};
 
 		// search target's saved singletons, execute handler upon match
-		var saved = target[_skey]||[];
+		var saved = handler.target[_skey]||[];
 		for (var i=0,m=saved.length; i<m; i++) {
 			var event = saved[i];
 			if (_.matches(event, handler.match)) {
-				var etarget = _.target(handler, event.target);
-				if (etarget) {
-					return _.execute(etarget, event, handler);
+				var target = _.target(handler, event.target);
+				if (target) {
+					return _.execute(target, event, handler);
 				}
 			}
 		}
