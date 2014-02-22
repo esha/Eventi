@@ -23,7 +23,7 @@ _.dispatch = function(target, event, objectBubbling) {
     if (target.parentObject && event.bubbles && !event.propagationStopped) {
         _.dispatch(target.parentObject, event, true);
     }
-    // icky test/call, but lighter than wrapping or internal event
+    // icky test/call, but lighter than wrapping or firing internal event
     if (!objectBubbling && event.singleton && _.singleton) {
         _.singleton(target, event);
     }
