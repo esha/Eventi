@@ -116,6 +116,26 @@
     ok(_.matches(e, {category:'cat',type:'type',tag:true,detail:'detail'}), 'should match everything');
   });
 
+  test('handler#new event', function() {
+    expect(4);
+    var target = {},
+      type = 'onevent',
+      passed,
+      fn = function(e, h) {
+        if (h.text === type) {// don't let problems with _.off bug us
+          ok(e['new']);
+          equal(e.type, 'handler');
+          passed = h;
+        }
+      };
+    Eventi.on(_, 'handler#new', fn)
+          .on(target, type, function(){})
+          .off(_, 'handler#new', fn);
+    var handler = target[_._key].s[type][0];
+    ok(handler, 'should get new handler directly');
+    ok(passed === handler, 'should pass new handler');
+  });
+
   test('internal api presence', function() {
     ok(_.on, "_.on");
     ok(_.handler, "_.handler");
