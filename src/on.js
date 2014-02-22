@@ -69,7 +69,7 @@ _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
 _.matches = function(event, match) {
     for (var key in match) {
-        if (match[key] !== event[key]) {
+        if (match[key] !== event[key] && key !== 'singleton') {// more singleton bleed, ick
             return false;
         }
     }

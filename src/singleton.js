@@ -20,7 +20,6 @@ _.remember = function remember(target, event) {
 
 Eventi.on(_, 'handler#new', function singleton(e, handler) {
 	if (handler.match.singleton) {
-		delete handler.match.singleton;// singleton never needs matching
 		var fn = handler._fn = handler.fn;
 		handler.fn = function singleton(e) {
 			_.unhandle(handler);

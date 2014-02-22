@@ -2,8 +2,8 @@ _.off = function(target, events, fn) {
     var listener = target[_key];
     if (listener) {
         for (var i=0, m=events.length; i<m; i++) {
-            var filter = { fn:fn },
-            type = _.parse(events[i], filter.match = {});
+            var filter = { fn:fn, match:{} },
+            type = _.parse(events[i], filter.match);
             if (type) {
                 _.clean(type, filter, listener, target);
             } else {
@@ -19,7 +19,6 @@ _.off = function(target, events, fn) {
 };
 _.unhandle = function off(handler) {
     _.off(handler.target, [handler.text], handler._fn||handler.fn);
-    handler.fn = _.noop;//TODO: remove this once we have confidence in _.off
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
 _.clean = function(type, filter, listener, target) {
@@ -43,7 +42,7 @@ _.clean = function(type, filter, listener, target) {
     }
 };
 _.cleans = function(handler, filter) {
-return _.matches(handler.match, filter.match) &&
-       (!filter.fn || filter.fn === (handler._fn||handler.fn));
+    return _.matches(handler.match, filter.match) &&
+           (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
 Eventi.off = _.wrap('off', 3);
