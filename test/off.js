@@ -57,14 +57,14 @@
 
   test('Eventi.off(target,type,fn)', function() {
     expect(2);
-    var fn = function(e) {
+    var fn = function() {
       strictEqual(this, document, 'should only fire on document');
     },
     type = 'offtargetfn',
     other = {},
     targets = [document, other];
     Eventi.on(targets, type, fn)
-          .on(other, type, function(e) {
+          .on(other, type, function() {
             ok(true, 'should be called once');
           })
           .off(other, type, fn)
