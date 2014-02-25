@@ -4,6 +4,7 @@ _.off = function(target, events, fn) {
         for (var i=0, m=events.length; i<m; i++) {
             var filter = { fn:fn, match:{} },
             type = _.parse(events[i], filter.match);
+            delete filter.match.tags;// superfluous for matching
             if (type) {
                 _.clean(type, filter, listener, target);
             } else {

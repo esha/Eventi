@@ -31,7 +31,7 @@
     equal(Eventi.fy({}).off, Eventi.off, 'should get off()');
   });
 
-  test('Eventi.off("test")', function() {
+  test('Eventi.off(type)', function() {
     expect(1);
     Eventi.on("test", function() {
       ok(true, 'should only be called once');
@@ -39,6 +39,32 @@
     .fire('test');
     Eventi.off("test")
           .fire('test');
+  });
+
+  test('Eventi.off("category:")', function() {
+    expect(2);
+    Eventi.on("test:foo", function() {
+      ok(true, 'should call foo once');
+    })
+    .on('test:bar', function() {
+      ok(true, 'should call bar once');
+    })
+    .fire('test:foo test:bar');
+    Eventi.off("test:")
+          .fire('test:foo test:bar');
+  });
+
+  test('Eventi.off("#tag")', function() {
+    expect(2);
+    Eventi.on("foo#test", function() {
+      ok(true, 'should call foo once');
+    })
+    .on('bar#test', function() {
+      ok(true, 'should call bar once');
+    })
+    .fire('foo#test bar#test');
+    Eventi.off("#test")
+          .fire('foo#test bar#test');
   });
 
   test('Eventi.off(type,fn)', function() {
