@@ -11,22 +11,29 @@ _.on = function(target, events, selector, fn, data) {
     }
 };
 _.handler = function(target, text, selector, fn, data) {
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} },
-        listener = _.listener(target),
-        type = _.parse(text, handler.match),
-        handlers = listener.s[type];
+    //TODO: consider moving selector into match, so we can specifically off delegates
+    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} };
+    _.parse(text, handler.match);
     delete handler.match.tags;// superfluous for matching
+    if (target !== _) {// ignore internal events
+        Eventi.fire(_, 'handler#new', handler);
+    }
+    // allow handler#new listeners to change these things
+    if (handler.fn !== _.noop) {
+        _.handlers(handler.target, handler.match.type).push(handler);
+    }
+    return handler;
+};
+_.handlers = function(target, type) {
+    var listener = _.listener(target),
+        handlers = listener.s[type];
     if (!handlers) {
         handlers = listener.s[type] = [];
         if (target.addEventListener) {
             target.addEventListener(type, listener);
         }
     }
-    handlers.push(handler);
-    if (target !== _) {// ignore internal events
-        Eventi.fire(_, 'handler#new', handler);
-    }
-    return handler;
+    return handlers;
 };
 
 var _key = _._key = '_eventi'+Date.now();

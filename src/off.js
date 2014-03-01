@@ -1,4 +1,5 @@
 _.off = function(target, events, fn) {
+    //TODO: support filtering by selector/location
     var listener = target[_key];
     if (listener) {
         for (var i=0, m=events.length; i<m; i++) {
