@@ -1,6 +1,6 @@
 _.on = function(target, events, selector, fn, data) {
     // adjust for absence of selector
-    if (typeof selector !== "string") {
+    if (typeof selector === "function") {
         if (fn !== undefined) {
             data = data ? data.unshift(fn) && data : [fn];
         }
