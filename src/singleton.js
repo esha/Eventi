@@ -37,7 +37,7 @@ Eventi.on(_, 'handler#new', function singleton(e, handler) {
 				var target = _.target(handler, event.target);
 				if (target) {
 					_.execute(target, event, handler);
-					handler.fn = _.noop;// tell on.js not to keep this
+					handler.fn = _.noop;// tell _.handler not to keep this
 					break;
 				}
 			}
