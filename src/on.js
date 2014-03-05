@@ -53,11 +53,11 @@ _.listener = function(target) {
 };
 
 _.handle = function(event, handlers) {
-    for (var i=0, m=handlers.length, handler, target; i<m; i++) {
+    for (var i=0, handler, target; i<handlers.length; i++) {
         if (_.matches(event, (handler = handlers[i]).match)) {
             if (target = _.target(handler, event.target)) {
                 _.execute(target, event, handler);
-                if (event.immediatePropagationStopped){ i = m; }
+                if (event.immediatePropagationStopped){ break; }
             }
         }
     }

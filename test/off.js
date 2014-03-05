@@ -126,6 +126,19 @@
     .fire("protected");
   });
 
+  test('Eventi.off within on nastiness', function() {
+    expect(1);
+    var type = 'bewarePrematureOptimization';
+    Eventi.on(type, function() {
+      ok(true, 'should be called');
+      Eventi.off(type);
+    })
+    .on(type, function() {
+      ok(false, 'should not be called');
+    })
+    .fire(type);
+  });
+
   test('internal api presence', function() {
     ok(_.off, "_.off");
     ok(_.unhandle, "_.unhandle");
