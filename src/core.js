@@ -45,6 +45,9 @@ var _ = {
         [/^_/, function nobubble() {
             this.bubbles = false;
         }],
+        [/^\!/, function protect() {//
+            this._protect = true;
+        }],
         [/\((.*)\)/, function detail(m, val) {
             try {
                 this.detail = _.resolve(val) || JSON.parse(val);

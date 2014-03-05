@@ -44,7 +44,7 @@ _.clean = function(type, filter, listener, target) {
     }
 };
 _.cleans = function(handler, filter) {
-    return _.matches(handler.match, filter.match) &&
+    return _.matches(handler.match, filter.match, true) &&
            (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
 Eventi.off = _.wrap('off', 3);

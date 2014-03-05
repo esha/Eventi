@@ -74,10 +74,17 @@ _.execute = function(target, event, handler) {
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
-_.matches = function(event, match) {
+_.matches = function(event, match, strict) {
     for (var key in match) {
-        if (match[key] !== event[key] && key !== 'singleton') {// more singleton bleed, ick
+        if (match[key] !== event[key] && (strict || key.charAt(0) !== '_')) {
             return false;
+        }
+    }
+    if (strict) {
+        for (key in event) {
+            if (key.charAt(0) === '_' && event[key] !== match[key]) {
+                return false;
+            }
         }
     }
     return true;

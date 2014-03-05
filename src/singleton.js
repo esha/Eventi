@@ -1,5 +1,5 @@
 // add singleton to _.parse's supported event properties
-_.properties.unshift([/^\^/, function singleton(){ this.singleton = true; }]);
+_.properties.unshift([/^\^/, function singleton(){ this._singleton = true; }]);
 
 // _.fire's _.dispatch will call this when appropriate
 _.singleton = function(target, event) {
@@ -19,7 +19,7 @@ _.remember = function remember(target, event) {
 };
 
 Eventi.on(_, 'handler#new', function singleton(e, handler) {
-	if (handler.match.singleton) {
+	if (handler.match._singleton) {
 		var fn = handler._fn = handler.fn;
 		handler.fn = function singleton(e) {
 			_.unhandle(handler);
