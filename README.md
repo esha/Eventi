@@ -9,15 +9,12 @@ Download the [minified version][min] or the [development version][max].
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
 
 ## TODO
-* finish singleton tests
 * finish key tests
-* finish off tests
 * finish until tests
 * finish combo tests
-* finish signal tests
 * documentation
 * demo app/site
-* integrations (jQuery, Visual Event 2, etc)
+* integrations (jQuery, Visual Event 2, Capo, etc)
 
 ## Motive
 
@@ -36,8 +33,10 @@ Download the [minified version][min] or the [development version][max].
 * Support for best-practices like "signals" and declarative event mapping
 * Lots of solid, maintainable test code
 * Impressive visual and/or interactive demo (ideas, anyone?)
-* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key, venti adds off/until/combo/signal
-* Venti will be the default version to encourage feature use/development.
+* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key/location, venti adds off/until/combo/signal
+* Venti is the default version to encourage much event-based awesomeness for everyone.
+* Grande includes basic webapp tools.
+* Tall could be enough for lite server work.
 
 ## Code Plans
 
@@ -85,10 +84,14 @@ Download the [minified version][min] or the [development version][max].
 * singleton events (immediately call late listeners, ignore multiple firings)
 * "listen" for them: `Eventi.on([target, ]'^type', fn)`
 * fire them so they're remembered: `Eventi.fire([target, ]'^type', fn)`
-* alias DOMContentLoaded to '^ready'?
+* alias DOMContentLoaded to '^ready'
 
 #### key.js (requires on.js)
 * filter key events: `Eventi.on([target, ]'keyup[shift-a]', fn)`
+
+#### location.js (requires on.js and fire.js)
+* Eventi.on('location', '?view={view}'||regex, function(e, url, params){ console.log(params.view); })
+* Eventi.fire('location', '?view={0}', ['foo'])
 
 
 #### off.js (requires on.js)
