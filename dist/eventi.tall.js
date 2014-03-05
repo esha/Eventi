@@ -1,4 +1,4 @@
-/*! Eventi - v0.5.1 - 2014-02-24
+/*! Eventi - v0.6.0 - 2014-03-04
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -67,6 +67,9 @@ var _ = {
     properties: [
         [/^_/, function nobubble() {
             this.bubbles = false;
+        }],
+        [/^\!/, function protect() {//
+            this._protect = true;
         }],
         [/\((.*)\)/, function detail(m, val) {
             try {
@@ -154,14 +157,14 @@ _.dispatch = function(target, event, objectBubbling) {
         _.dispatch(target.parentObject, event, true);
     }
     // icky test/call, but lighter than wrapping or firing internal event
-    if (!objectBubbling && event.singleton && _.singleton) {
+    if (!objectBubbling && event._singleton) {
         _.singleton(target, event);
     }
 };
 Eventi.fire = _.wrap('fire', 3);
 _.on = function(target, events, selector, fn, data) {
     // adjust for absence of selector
-    if (typeof selector !== "string") {
+    if (typeof selector === "function") {
         if (fn !== undefined) {
             data = data ? data.unshift(fn) && data : [fn];
         }
@@ -172,22 +175,29 @@ _.on = function(target, events, selector, fn, data) {
     }
 };
 _.handler = function(target, text, selector, fn, data) {
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} },
-        listener = _.listener(target),
-        type = _.parse(text, handler.match),
-        handlers = listener.s[type];
+    //TODO: consider moving selector into match, so we can specifically off delegates
+    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} };
+    _.parse(text, handler.match);
     delete handler.match.tags;// superfluous for matching
+    if (target !== _) {// ignore internal events
+        Eventi.fire(_, 'handler#new', handler);
+    }
+    // allow handler#new listeners to change these things
+    if (handler.fn !== _.noop) {
+        _.handlers(handler.target, handler.match.type).push(handler);
+    }
+    return handler;
+};
+_.handlers = function(target, type) {
+    var listener = _.listener(target),
+        handlers = listener.s[type];
     if (!handlers) {
         handlers = listener.s[type] = [];
         if (target.addEventListener) {
             target.addEventListener(type, listener);
         }
     }
-    handlers.push(handler);
-    if (target !== _) {// ignore internal events
-        Eventi.fire(_, 'handler#new', handler);
-    }
-    return handler;
+    return handlers;
 };
 
 var _key = _._key = '_eventi'+Date.now();
@@ -207,11 +217,11 @@ _.listener = function(target) {
 };
 
 _.handle = function(event, handlers) {
-    for (var i=0, m=handlers.length, handler, target; i<m; i++) {
+    for (var i=0, handler, target; i<handlers.length; i++) {
         if (_.matches(event, (handler = handlers[i]).match)) {
             if (target = _.target(handler, event.target)) {
                 _.execute(target, event, handler);
-                if (event.immediatePropagationStopped){ i = m; }
+                if (event.immediatePropagationStopped){ break; }
             }
         }
     }
@@ -228,10 +238,17 @@ _.execute = function(target, event, handler) {
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
-_.matches = function(event, match) {
+_.matches = function(event, match, strict) {
     for (var key in match) {
-        if (match[key] !== event[key] && key !== 'singleton') {// more singleton bleed, ick
+        if (match[key] !== event[key] && (strict || key.charAt(0) !== '_')) {
             return false;
+        }
+    }
+    if (strict) {
+        for (key in event) {
+            if (key.charAt(0) === '_' && event[key] !== match[key]) {
+                return false;
+            }
         }
     }
     return true;
@@ -256,7 +273,7 @@ if (global.Element) {
 
 Eventi.on = _.wrap('on', 4);
 
-    _.version = "0.5.1";
+    _.version = "0.6.0";
 
     var sP = (Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;

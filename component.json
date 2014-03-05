@@ -1,7 +1,7 @@
 {
   "name": "eventi",
   "repo": "nbubna/Eventi",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "keywords": [
     "event",
     "custom",
@@ -12,6 +12,8 @@
     "fire",
     "listener",
     "handler",
+    "history",
+    "location",
     "trigger",
     "dispatch",
     "until",

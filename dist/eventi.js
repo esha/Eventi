@@ -1,4 +1,4 @@
-/*! Eventi - v0.5.1 - 2014-02-24
+/*! Eventi - v0.6.0 - 2014-03-04
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -67,6 +67,9 @@ var _ = {
     properties: [
         [/^_/, function nobubble() {
             this.bubbles = false;
+        }],
+        [/^\!/, function protect() {//
+            this._protect = true;
         }],
         [/\((.*)\)/, function detail(m, val) {
             try {
@@ -154,14 +157,14 @@ _.dispatch = function(target, event, objectBubbling) {
         _.dispatch(target.parentObject, event, true);
     }
     // icky test/call, but lighter than wrapping or firing internal event
-    if (!objectBubbling && event.singleton && _.singleton) {
+    if (!objectBubbling && event._singleton) {
         _.singleton(target, event);
     }
 };
 Eventi.fire = _.wrap('fire', 3);
 _.on = function(target, events, selector, fn, data) {
     // adjust for absence of selector
-    if (typeof selector !== "string") {
+    if (typeof selector === "function") {
         if (fn !== undefined) {
             data = data ? data.unshift(fn) && data : [fn];
         }
@@ -172,22 +175,29 @@ _.on = function(target, events, selector, fn, data) {
     }
 };
 _.handler = function(target, text, selector, fn, data) {
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} },
-        listener = _.listener(target),
-        type = _.parse(text, handler.match),
-        handlers = listener.s[type];
+    //TODO: consider moving selector into match, so we can specifically off delegates
+    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} };
+    _.parse(text, handler.match);
     delete handler.match.tags;// superfluous for matching
+    if (target !== _) {// ignore internal events
+        Eventi.fire(_, 'handler#new', handler);
+    }
+    // allow handler#new listeners to change these things
+    if (handler.fn !== _.noop) {
+        _.handlers(handler.target, handler.match.type).push(handler);
+    }
+    return handler;
+};
+_.handlers = function(target, type) {
+    var listener = _.listener(target),
+        handlers = listener.s[type];
     if (!handlers) {
         handlers = listener.s[type] = [];
         if (target.addEventListener) {
             target.addEventListener(type, listener);
         }
     }
-    handlers.push(handler);
-    if (target !== _) {// ignore internal events
-        Eventi.fire(_, 'handler#new', handler);
-    }
-    return handler;
+    return handlers;
 };
 
 var _key = _._key = '_eventi'+Date.now();
@@ -207,11 +217,11 @@ _.listener = function(target) {
 };
 
 _.handle = function(event, handlers) {
-    for (var i=0, m=handlers.length, handler, target; i<m; i++) {
+    for (var i=0, handler, target; i<handlers.length; i++) {
         if (_.matches(event, (handler = handlers[i]).match)) {
             if (target = _.target(handler, event.target)) {
                 _.execute(target, event, handler);
-                if (event.immediatePropagationStopped){ i = m; }
+                if (event.immediatePropagationStopped){ break; }
             }
         }
     }
@@ -228,10 +238,17 @@ _.execute = function(target, event, handler) {
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
-_.matches = function(event, match) {
+_.matches = function(event, match, strict) {
     for (var key in match) {
-        if (match[key] !== event[key] && key !== 'singleton') {// more singleton bleed, ick
+        if (match[key] !== event[key] && (strict || key.charAt(0) !== '_')) {
             return false;
+        }
+    }
+    if (strict) {
+        for (key in event) {
+            if (key.charAt(0) === '_' && event[key] !== match[key]) {
+                return false;
+            }
         }
     }
     return true;
@@ -357,7 +374,7 @@ if (document) {
 }
 
 // add singleton to _.parse's supported event properties
-_.properties.unshift([/^\^/, function singleton(){ this.singleton = true; }]);
+_.properties.unshift([/^\^/, function singleton(){ this._singleton = true; }]);
 
 // _.fire's _.dispatch will call this when appropriate
 _.singleton = function(target, event) {
@@ -377,7 +394,7 @@ _.remember = function remember(target, event) {
 };
 
 Eventi.on(_, 'handler#new', function singleton(e, handler) {
-	if (handler.match.singleton) {
+	if (handler.match._singleton) {
 		var fn = handler._fn = handler.fn;
 		handler.fn = function singleton(e) {
 			_.unhandle(handler);
@@ -394,7 +411,9 @@ Eventi.on(_, 'handler#new', function singleton(e, handler) {
 			if (_.matches(event, handler.match)) {
 				var target = _.target(handler, event.target);
 				if (target) {
-					return _.execute(target, event, handler);
+					_.execute(target, event, handler);
+					handler.fn = _.noop;// tell _.handler not to keep this
+					break;
 				}
 			}
 		}
@@ -429,7 +448,86 @@ for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
 'abcdefghijklmnopqrstuvwxyz 0123456789'.split('').forEach(function(c) {
     _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
 });
+var h = global.history;
+_.pushState = h.pushState;
+h.pushState = function() {
+    var ret = _.pushState.apply(this, arguments);
+    _.dispatch(_.global, new Eventi('pushstate', {uri:arguments[2]}));
+    return ret;
+};
+Eventi.on('!popstate !hashchange !pushstate', _.at = function(e, uri) {
+    var l = global.location;
+    uri = uri || decodeURI(l.pathname + l.search + l.hash);
+    if (uri !== _.uri) {
+        _.dispatch(_.global, new Eventi('location', {
+            oldURI: _.uri,
+            uri: _.uri = uri,
+            srcEvent: e
+        }));
+    }
+    return uri;
+})
+.on('!location', function setUri(e, uri, fill) {
+    if (typeof uri === "string") {
+        var keys = _.keys(uri);
+        if (keys) {
+            uri = keys.reduce(function(s, key) {
+                return s.replace(new RegExp('\\{'+key+'\\}',"g"),
+                                 fill[key] || global.location[key] || '');
+            }, uri);
+        }
+        if (uri !== _.uri) {
+            h.pushState(null,null, encodeURI(uri));
+        }
+    }
+})
+.on(_, 'handler#new', function location(e, handler) {
+    if (handler.match.type === "location") {
+        // overloading on.js' selector argument with uri template/regex
+        var re = handler.selector;
+        delete handler.selector;
+        if (typeof re === "string") {
+            re = re.replace(/([.*+?^=!:$(|\[\/\\])/g, "\\$1");
+            if (handler.keys = _.keys(re)) {
+                re = re.replace(/\{\w+\}/g, "([^\/?#]+)");
+            } else {
+                re.replace(/\{/g, '\\{');
+            }
+            re = new RegExp(re);
+        }
+        handler.regexp = re;
+        // always listen on window, but use given target as context
+        handler._target = handler.target;
+        handler.target = _.global;
+        handler._fn = handler.fn;
+        handler.fn = function(e){ _.location(e.uri, handler, arguments); };
+        // try for current uri match immediately
+        _.execute(null, new Eventi('location',{uri:_.uri}), handler);
+    }
+});
+_.keys = function(tmpl) {
+    var keys = tmpl.match(/\{\w+\}/g);
+    return keys && keys.map(function(key) {
+        return key.substring(1, key.length-1);
+    });
+};
+_.location = function(uri, handler, args) {
+    var matches = uri.match(handler.regexp);
+    if (matches) {
+        args = _.slice(args);
+        args.splice.apply(args, [1,0].concat(matches));
+        if (handler.keys) {
+            // put key/match object in place of full match
+            args[1] = handler.keys.reduce(function(o, key) {
+                o[key] = matches.shift();
+                return o;
+            }, { match: matches.shift() });
+        }
+        handler._fn.apply(handler._target, args);
+    }
+};
 _.off = function(target, events, fn) {
+    //TODO: support filtering by selector/location
     var listener = target[_key];
     if (listener) {
         for (var i=0, m=events.length; i<m; i++) {
@@ -474,7 +572,7 @@ _.clean = function(type, filter, listener, target) {
     }
 };
 _.cleans = function(handler, filter) {
-    return _.matches(handler.match, filter.match) &&
+    return _.matches(handler.match, filter.match, true) &&
            (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
 Eventi.off = _.wrap('off', 3);
@@ -631,7 +729,7 @@ _.bind = function(o, fn) {
 		}
 	}
 }).utility = true;
-    _.version = "0.5.1";
+    _.version = "0.6.0";
 
     var sP = (Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
