@@ -114,6 +114,18 @@
           .fire(targets, type);
   });
 
+  test('Eventi.off("!protected")', function() {
+    expect(2);
+    Eventi.on("!protected", function(e) {
+      equal(e.type, 'protected');
+      equal(e._protect, undefined);
+    })
+    .off("protected")// should fail to turn it off
+    .fire("protected");
+    Eventi.off("!protected")
+    .fire("protected");
+  });
+
   test('internal api presence', function() {
     ok(_.off, "_.off");
     ok(_.unhandle, "_.unhandle");
