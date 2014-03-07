@@ -90,8 +90,9 @@ Download the [minified version][min] or the [development version][max].
 * filter key events: `Eventi.on([target, ]'keyup[shift-a]', fn)`
 
 #### location.js (requires on.js and fire.js)
-* Eventi.on('location', '?view={view}'||regex, function(e, url, params){ console.log(params.view); })
-* Eventi.fire('location', '?view={0}', ['foo'])
+* event-based routing: `Eventi.on('location', '?view={view}'||regex, function(e, url, params){ console.log(params.view); })`
+* event-based history.pushState: `Eventi.fire('location', '?view={0}', ['foo'])`
+* consistent event for all popstate/hashchange/pushstate changes: `Eventi.on('location', function(e){ console.log(e.uri, e.oldURI, e.srcEvent); })`
 
 
 #### off.js (requires on.js)
@@ -132,8 +133,10 @@ Download the [minified version][min] or the [development version][max].
 
 ## Release History
 * 2014-02-11 [v0.5.0][] (first public release)
+* 2014-03-06 [v0.6.1][] (location events, many fixes)
 
 [v0.5.0]: https://github.com/nbubna/Eventi/tree/0.5.0
+[v0.6.1]: https://github.com/nbubna/Eventi/tree/0.6.1
 
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/nbubna/eventi/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
