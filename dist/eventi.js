@@ -1,4 +1,4 @@
-/*! Eventi - v0.6.2 - 2014-03-07
+/*! Eventi - v0.6.3 - 2014-03-07
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -342,8 +342,7 @@ if (document) {
                     (e.keyCode === 13 && _.click(e.target, true));
         if (click) {
             _.mapped(e, document.documentElement, 'click');
-            // someone remind me why i've always done this?
-            if (click === 'noDefault' || !_.allowDefault(e.target)) {
+            if (click === 'noDefault' && !_.allowDefault(e.target)) {
                 e.preventDefault();
             }
         }
@@ -739,7 +738,7 @@ _.bind = function(o, fn) {
 		}
 	}
 }).utility = true;
-    _.version = "0.6.2";
+    _.version = "0.6.3";
 
     var sP = (Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
