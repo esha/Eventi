@@ -104,7 +104,9 @@ _.closest = function(el, selector) {
 if (global.Element) {
     var Ep = Element.prototype,
         aS = 'atchesSelector';
-    Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
+    if (!Ep['matches']) {
+        Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
+    }
 }   
 
 Eventi.on = _.wrap('on', 4);
