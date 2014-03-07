@@ -65,8 +65,7 @@ if (document) {
                     (e.keyCode === 13 && _.click(e.target, true));
         if (click) {
             _.mapped(e, document.documentElement, 'click');
-            // someone remind me why i've always done this?
-            if (click === 'noDefault' || !_.allowDefault(e.target)) {
+            if (click === 'noDefault' && !_.allowDefault(e.target)) {
                 e.preventDefault();
             }
         }
