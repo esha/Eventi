@@ -1,4 +1,4 @@
-/*! Eventi - v0.6.0 - 2014-03-06
+/*! Eventi - v0.6.2 - 2014-03-07
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -338,24 +338,24 @@ if (document) {
         }
     };
     _.check = function(e) {
-        if ((e.type === 'click' && _.click(e.target)) ||
-            (e.keyCode === 13 && _.click(e.target, true))) {
+        var click = (e.type === 'click' && _.click(e.target)) ||
+                    (e.keyCode === 13 && _.click(e.target, true));
+        if (click) {
             _.mapped(e, document.documentElement, 'click');
             // someone remind me why i've always done this?
-            if (!_.allowDefault(e)) {
+            if (click === 'noDefault' || !_.allowDefault(e.target)) {
                 e.preventDefault();
             }
         }
     };
-    _.allowDefault = function(e) {
-        var inputType = e.target.type;
-        return inputType && (inputType === 'radio' || inputType === 'checkbox');
+    _.allowDefault = function(el) {
+        return el.type === 'radio' || el.type === 'checkbox';
     };
     _.click = function(el, enter) {
         // click attributes with non-false value override everything
         var click = el.getAttribute('click');
         if (click && click !== "false") {
-            return true;
+            return 'noDefault';
         }
         // editables, select, textarea, non-button inputs all use click to alter focus w/o action
         // textarea and editables use enter to add a new line w/o action
@@ -363,11 +363,12 @@ if (document) {
         // in all three situations, dev must declare on element, not on parent to avoid insanity
         if (!el.isContentEditable) {
             var name = el.nodeName.toLowerCase();
-            if (name !== 'textarea' && name !== (enter ? 'button' : 'select')) {
-                var button = _.buttonRE.test(el.type);
-                return enter ? !(button || (name === 'a' && el.getAttribute('href'))) :
-                            button || name !== 'input';
-            }
+            return name !== 'textarea' &&
+                   (name !== 'select' || enter) &&
+                   (enter ? (name !== 'a' || !el.getAttribute('href')) &&
+                            name !== 'button' &&
+                            (name !== 'input' || !_.buttonRE.test(el.type))
+                          : name !== 'input' || _.buttonRE.test(el.type));
         }
     };
     _.buttonRE = /^(submit|button|reset)$/;
@@ -535,7 +536,7 @@ _.location = function(uri, handler, args) {
         handler._fn.apply(handler._target, args);
     }
 };
-    _.version = "0.6.0";
+    _.version = "0.6.2";
 
     var sP = (Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
