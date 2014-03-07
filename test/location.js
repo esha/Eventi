@@ -24,7 +24,12 @@
     home = location.pathname;
   Eventi._.pushState.call(history, null,null,home);
 
-  module('Eventi location');
+  module('Eventi location', {
+    teardown: function() {
+      Eventi.off('location');
+      history.pushState(null,'teardown',home);
+    }
+  });
 
   test('location Eventi.html', function() {
     expect(3);
@@ -94,11 +99,20 @@
     history.back();
   });*/
 
+  test('all location listener', function() {
+    expect(1);
+    Eventi.on('location#all', function(e) {
+      equal(e.uri, _.uri, 'should have current uri');
+      Eventi.off('location#all');
+    });
+  });
+
   test('location pushstate', function() {
-    expect(2);
+    expect(3);
     Eventi.on('location', '?search', function(e) {
       Eventi.off('location');
       ok(e.srcEvent, 'should have srcEvent');
+      equal(e.srcEvent.type, 'pushstate','should be pushstate source');
       equal(e.uri, location.pathname+'?search', 'should have correct e.uri');
       history.pushState(null,null,home);
     });
@@ -133,6 +147,16 @@
       history.pushState(null,null,home);
     });
     history.pushState(null, null, '?search#hashes');
+  });
+
+  test('alternate target', function() {
+    var target = {};
+    Eventi.on(target, 'location', '#target', function() {
+      equal(this, target, 'should have target context');
+      Eventi.off('location');
+      history.pushState(null,null,home);
+    });
+    history.pushState(null,'target', '#target');
   });
 
   module('Eventi location internals');
