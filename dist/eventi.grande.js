@@ -329,9 +329,9 @@ if (document) {
     _.declared = function(node, type, e) {// execute handler
         var response = node.getAttribute(type);
         if (response) {
-            response = _.resolve(response, node) || _.resolve(response) || response;
-            if (typeof response === "function") {
-                response.call(node, e);
+            var fn = _.resolve(response, node) || _.resolve(response);
+            if (typeof fn === "function") {
+                fn.call(node, e);
             } else {
                 Eventi.fire(node, response, e);
             }
