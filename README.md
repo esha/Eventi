@@ -134,8 +134,8 @@ Download the [minified version][min] or the [development version][max].
 ## Release History
 * 2014-02-11 [v0.5.0][] (first public release)
 * 2014-03-07 [v0.6.3][] (location events, crucial fixes)
-* 2014-03-13 [v0.7.0][] (s/signal/types, crucial fixes)
+* 2014-03-13 [v0.7.1][] (s/signal/types, crucial fixes)
 
 [v0.5.0]: https://github.com/nbubna/Eventi/tree/0.5.0
 [v0.6.3]: https://github.com/nbubna/Eventi/tree/0.6.3
-[v0.7.0]: https://github.com/nbubna/Eventi/tree/0.7.0
+[v0.7.1]: https://github.com/nbubna/Eventi/tree/0.7.1
