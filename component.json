@@ -10,6 +10,7 @@
     "emit",
     "rich",
     "fire",
+    "type",
     "listener",
     "handler",
     "history",
@@ -19,7 +20,7 @@
     "until",
     "emitter",
     "pubsub",
-    "signal",
+    "signals",
     "declarative"
   ],
   "dependencies": {},
