@@ -30,10 +30,10 @@ Download the [minified version][min] or the [development version][max].
 * DOM and object support
 * Handling for complex event types (combos, async sequences, singletons, etc).
 * Robust, error tolerant listener execution
-* Support for best-practices like "signals" and declarative event mapping
+* Support for best-practices like "signals" (aka pre-defined types) and declarative event mapping
 * Lots of solid, maintainable test code
 * Impressive visual and/or interactive demo (ideas, anyone?)
-* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key/location, venti adds off/until/combo/signal
+* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key/location, venti adds off/until/combo/types
 * Venti is the default version to encourage much event-based awesomeness for everyone.
 * Grande includes basic webapp tools.
 * Tall could be enough for lite server work.
@@ -114,11 +114,11 @@ Download the [minified version][min] or the [development version][max].
 * event sequence firing controls (w/async support via promises): `e.pauseSequence([promise])`,`e.resumeSequence()`, `e.isSequencePaused()`
 * configurable time allowed between events (for listening, not firing): `Eventi._.comboTimeout = 1000`
 
-#### signal.js (requires core)
-* provide both global signals and local signals with minimal API
-* global: `Eventi.signal('type');` -> `Eventi.on.type([target, ]handler)`
-* local (after Eventi.fy(o)): `Eventi.signal(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
-* obviously, signals cannot have the same name as Function properties like 'call' or 'length'
+#### types.js (requires core)
+* provide both global and local type specification with minimal API
+* global: `Eventi.types('type');` -> `Eventi.on.type([target, ]handler)`
+* local (after Eventi.fy(o)): `Eventi.types(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
+* obviously, types cannot have the same name as Function properties like 'call' or 'length'
 
 
 #### jquery.eventi.js

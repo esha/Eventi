@@ -19,6 +19,7 @@
     "emit",
     "rich",
     "fire",
+    "type",
     "listener",
     "history",
     "location",
@@ -28,7 +29,7 @@
     "until",
     "emitter",
     "pubsub",
-    "signal",
+    "signals",
     "declarative"
   ],
   "license": "MIT",
