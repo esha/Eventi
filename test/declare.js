@@ -153,6 +153,16 @@
       equal(e.type, 'global');
     };
     declared('global', 'globalFn');
+    delete window.globalFn;
+  });
+
+  test('_.declared nested fn', function() {
+    expect(1);
+    window.ns = {fn: function(e) {
+      equal(e.type, 'nested');
+    }}
+;    declared('nested', 'ns.fn');
+    delete window.ns;
   });
 
   function click(name, attrs, enter) {

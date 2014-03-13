@@ -11,7 +11,9 @@ var _ = {
     resolve: function(reference, context) {
         if (_.resolveRE.test(reference)) {
             context = context || global;
-            return eval('context'+(reference.charAt(0) !== '[' ? '.'+reference : reference));
+            try {
+                return eval('context'+(reference.charAt(0) !== '[' ? '.'+reference : reference));
+            } catch (e) {}
         }
     },
 
