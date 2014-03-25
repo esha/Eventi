@@ -1,4 +1,4 @@
-/*! Eventi - v0.7.1 - 2014-03-13
+/*! Eventi - v0.7.1 - 2014-03-25
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -42,10 +42,10 @@ var _ = {
 
     create: function(type, copyThese) {
         var props = { text: type+'' };
-        type = _.parse(props.text, props);
+        type = _.parse(props.text, props, props);
         _.copy(copyThese, props);
         if (!('bubbles' in props)) {
-            props.bubbles = true;// must bubble by default
+            props.bubbles = true;// we bubble by default around here
         }
 
         var event = new CustomEvent(type, props);
@@ -58,34 +58,36 @@ var _ = {
     },
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
-    parse: function(type, props) {
+    parse: function(type, event, handler) {
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
-                return property[1].apply(props, arguments) || '';
+                var args = _.slice(arguments, 1);
+                args.unshift(event, handler);
+                return property[1].apply(event, args) || '';
             });
         });
-        return type ? props.type = type : type;
+        return type ? event.type = type : type;
     },
     properties: [
-        [/^_/, function nobubble() {
-            this.bubbles = false;
+        [/^\!/, function important(e, handler) {//
+            handler.important = true;
         }],
-        [/^\!/, function protect() {//
-            this._protect = true;
+        [/^_/, function nobubble(event) {
+            event.bubbles = false;
         }],
-        [/\((.*)\)/, function detail(m, val) {
+        [/\((.*)\)/, function detail(event, handler, val) {
             try {
-                this.detail = _.resolve(val) || JSON.parse(val);
+                event.detail = _.resolve(val) || JSON.parse(val);
             } catch (e) {
-                this.detail = val;
+                event.detail = val;
             }
         }],
-        [/#(\w+)/g, function tags(m, tag) {
-            (this.tags||(this.tags=[])).push(tag);
-            this[tag] = true;
+        [/#(\w+)/g, function tags(event, handler, tag) {
+            (event.tags||(event.tags=[])).push(tag);
+            event[tag] = true;
         }],
-        [/^(\w+):/, function category(m, cat) {//
-            this.category = cat;
+        [/^(\w+):/, function category(event, handler, cat) {//
+            event.category = cat;
         }]
     ],
 
@@ -159,7 +161,7 @@ _.dispatch = function(target, event, objectBubbling) {
         _.dispatch(target.parentObject, event, true);
     }
     // icky test/call, but lighter than wrapping or firing internal event
-    if (!objectBubbling && event._singleton) {
+    if (!objectBubbling && event.singleton) {
         _.singleton(target, event);
     }
 };
@@ -177,16 +179,15 @@ _.on = function(target, events, selector, fn, data) {
     }
 };
 _.handler = function(target, text, selector, fn, data) {
-    //TODO: consider moving selector into match, so we can specifically off delegates
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} };
-    _.parse(text, handler.match);
-    delete handler.match.tags;// superfluous for matching
+    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, event:{} };
+    _.parse(text, handler.event, handler);
+    delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
         Eventi.fire(_, 'handler#new', handler);
     }
     // allow handler#new listeners to change these things
     if (handler.fn !== _.noop) {
-        _.handlers(handler.target, handler.match.type).push(handler);
+        _.handlers(handler.target, handler.event.type).push(handler);
     }
     return handler;
 };
@@ -220,7 +221,7 @@ _.listener = function(target) {
 
 _.handle = function(event, handlers) {
     for (var i=0, handler, target; i<handlers.length; i++) {
-        if (_.matches(event, (handler = handlers[i]).match)) {
+        if (_.matches(event, (handler = handlers[i]).event)) {
             if (target = _.target(handler, event.target)) {
                 _.execute(target, event, handler);
                 if (event.immediatePropagationStopped){ break; }
@@ -240,17 +241,10 @@ _.execute = function(target, event, handler) {
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
-_.matches = function(event, match, strict) {
+_.matches = function(event, match) {
     for (var key in match) {
-        if (match[key] !== event[key] && (strict || key.charAt(0) !== '_')) {
+        if (match[key] !== event[key]) {
             return false;
-        }
-    }
-    if (strict) {
-        for (key in event) {
-            if (key.charAt(0) === '_' && event[key] !== match[key]) {
-                return false;
-            }
         }
     }
     return true;

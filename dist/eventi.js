@@ -1,4 +1,4 @@
-/*! Eventi - v0.7.1 - 2014-03-13
+/*! Eventi - v0.7.1 - 2014-03-25
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -42,10 +42,10 @@ var _ = {
 
     create: function(type, copyThese) {
         var props = { text: type+'' };
-        type = _.parse(props.text, props);
+        type = _.parse(props.text, props, props);
         _.copy(copyThese, props);
         if (!('bubbles' in props)) {
-            props.bubbles = true;// must bubble by default
+            props.bubbles = true;// we bubble by default around here
         }
 
         var event = new CustomEvent(type, props);
@@ -58,34 +58,36 @@ var _ = {
     },
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
-    parse: function(type, props) {
+    parse: function(type, event, handler) {
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
-                return property[1].apply(props, arguments) || '';
+                var args = _.slice(arguments, 1);
+                args.unshift(event, handler);
+                return property[1].apply(event, args) || '';
             });
         });
-        return type ? props.type = type : type;
+        return type ? event.type = type : type;
     },
     properties: [
-        [/^_/, function nobubble() {
-            this.bubbles = false;
+        [/^\!/, function important(e, handler) {//
+            handler.important = true;
         }],
-        [/^\!/, function protect() {//
-            this._protect = true;
+        [/^_/, function nobubble(event) {
+            event.bubbles = false;
         }],
-        [/\((.*)\)/, function detail(m, val) {
+        [/\((.*)\)/, function detail(event, handler, val) {
             try {
-                this.detail = _.resolve(val) || JSON.parse(val);
+                event.detail = _.resolve(val) || JSON.parse(val);
             } catch (e) {
-                this.detail = val;
+                event.detail = val;
             }
         }],
-        [/#(\w+)/g, function tags(m, tag) {
-            (this.tags||(this.tags=[])).push(tag);
-            this[tag] = true;
+        [/#(\w+)/g, function tags(event, handler, tag) {
+            (event.tags||(event.tags=[])).push(tag);
+            event[tag] = true;
         }],
-        [/^(\w+):/, function category(m, cat) {//
-            this.category = cat;
+        [/^(\w+):/, function category(event, handler, cat) {//
+            event.category = cat;
         }]
     ],
 
@@ -159,7 +161,7 @@ _.dispatch = function(target, event, objectBubbling) {
         _.dispatch(target.parentObject, event, true);
     }
     // icky test/call, but lighter than wrapping or firing internal event
-    if (!objectBubbling && event._singleton) {
+    if (!objectBubbling && event.singleton) {
         _.singleton(target, event);
     }
 };
@@ -177,16 +179,15 @@ _.on = function(target, events, selector, fn, data) {
     }
 };
 _.handler = function(target, text, selector, fn, data) {
-    //TODO: consider moving selector into match, so we can specifically off delegates
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} };
-    _.parse(text, handler.match);
-    delete handler.match.tags;// superfluous for matching
+    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, event:{} };
+    _.parse(text, handler.event, handler);
+    delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
         Eventi.fire(_, 'handler#new', handler);
     }
     // allow handler#new listeners to change these things
     if (handler.fn !== _.noop) {
-        _.handlers(handler.target, handler.match.type).push(handler);
+        _.handlers(handler.target, handler.event.type).push(handler);
     }
     return handler;
 };
@@ -220,7 +221,7 @@ _.listener = function(target) {
 
 _.handle = function(event, handlers) {
     for (var i=0, handler, target; i<handlers.length; i++) {
-        if (_.matches(event, (handler = handlers[i]).match)) {
+        if (_.matches(event, (handler = handlers[i]).event)) {
             if (target = _.target(handler, event.target)) {
                 _.execute(target, event, handler);
                 if (event.immediatePropagationStopped){ break; }
@@ -240,17 +241,10 @@ _.execute = function(target, event, handler) {
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
-_.matches = function(event, match, strict) {
+_.matches = function(event, match) {
     for (var key in match) {
-        if (match[key] !== event[key] && (strict || key.charAt(0) !== '_')) {
+        if (match[key] !== event[key]) {
             return false;
-        }
-    }
-    if (strict) {
-        for (key in event) {
-            if (key.charAt(0) === '_' && event[key] !== match[key]) {
-                return false;
-            }
         }
     }
     return true;
@@ -378,7 +372,9 @@ if (document) {
 }
 
 // add singleton to _.parse's supported event properties
-_.properties.unshift([/^\^/, function singleton(){ this._singleton = true; }]);
+_.properties.unshift([/^\^/, function singleton(event, handler) {
+	handler.singleton = true;
+}]);
 
 // _.fire's _.dispatch will call this when appropriate
 _.singleton = function(target, event) {
@@ -398,7 +394,7 @@ _.remember = function remember(target, event) {
 };
 
 Eventi.on(_, 'handler#new', function singleton(e, handler) {
-	if (handler.match._singleton) {
+	if (handler.singleton) {
 		var fn = handler._fn = handler.fn;
 		handler.fn = function singleton(e) {
 			_.unhandle(handler);
@@ -412,7 +408,7 @@ Eventi.on(_, 'handler#new', function singleton(e, handler) {
 		var saved = handler.target[_skey]||[];
 		for (var i=0,m=saved.length; i<m; i++) {
 			var event = saved[i];
-			if (_.matches(event, handler.match)) {
+			if (_.matches(event, handler.event)) {
 				var target = _.target(handler, event.target);
 				if (target) {
 					_.execute(target, event, handler);
@@ -489,7 +485,7 @@ Eventi.on('!popstate !hashchange !pushstate', _.at = function(e, uri) {
     }
 })
 .on(_, 'handler#new', function location(e, handler) {
-    if (handler.match.type === "location") {
+    if (handler.event.type === "location") {
         // always listen on window, but save given target to use as context
         handler._target = handler.target;
         handler.target = _.global;
@@ -542,9 +538,9 @@ _.off = function(target, events, fn) {
     var listener = target[_key];
     if (listener) {
         for (var i=0, m=events.length; i<m; i++) {
-            var filter = { fn:fn, match:{} },
-            type = _.parse(events[i], filter.match);
-            delete filter.match.tags;// superfluous for matching
+            var filter = { event:{}, handler:{}, fn:fn, text:events[i] },
+            type = _.parse(events[i], filter.event, filter.handler);
+            delete filter.event.tags;// superfluous for matching
             if (type) {
                 _.clean(type, filter, listener, target);
             } else {
@@ -583,7 +579,10 @@ _.clean = function(type, filter, listener, target) {
     }
 };
 _.cleans = function(handler, filter) {
-    return _.matches(handler.match, filter.match, true) &&
+    return _.matches(handler.event, filter.event) &&
+           _.matches(handler, filter.handler) &&
+           (!handler.important || (filter.handler.important &&
+                                   _.matches(filter.event, handler.event))) &&
            (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
 Eventi.off = _.wrap('off', 3);
