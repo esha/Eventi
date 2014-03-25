@@ -43,7 +43,7 @@
   });
 
   test('new Eventi("_!category:type#tag#label(\'detail\')")', function() {
-    var e = new Eventi("_!category:type#tag#label(\"detail\")");
+    var e = new Eventi("_category:type#tag#label(\"detail\")");
     equal(e.bubbles, false, 'should not be set to bubble');
     equal(e.category, 'category', 'should be in category');
     equal(e.type, 'type', 'should be of type');
@@ -51,7 +51,6 @@
     ok(e.tag, 'tag property should be true');
     ok(e.label, 'label property should be true');
     equal(e.detail, 'detail', 'should have detail');
-    equal(e._protect, true, 'should be protected');
   });
 
   test('new Eventi("jsonDetail(...)")', function() {

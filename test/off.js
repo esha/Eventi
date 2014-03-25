@@ -114,16 +114,17 @@
           .fire(targets, type);
   });
 
-  test('Eventi.off("!protected")', function() {
+  test('Eventi.off("!important#tag")', function() {
     expect(2);
-    Eventi.on("!protected", function(e) {
-      equal(e.type, 'protected');
-      equal(e._protect, undefined);
+    Eventi.on("!important#tag", function(e) {
+      equal(e.type, 'important');
+      equal(e.important, undefined);
     })
-    .off("protected")// should fail to turn it off
-    .fire("protected");
-    Eventi.off("!protected")
-    .fire("protected");
+    .off("important")
+    .off('important#tag')
+    .fire("important#tag");
+    Eventi.off("!important#tag")
+    .fire("important#tag");
   });
 
   test('Eventi.off within on nastiness', function() {
@@ -152,7 +153,7 @@
     var target = {},
       type = 'offevent',
       fn = function(e, h) {
-        if (h.match.type === type) {
+        if (h.event.type === type) {
           ok(e.off);
           equal(e.type, 'handler');
           ok(h === handler, 'should pass off\'ed handler');

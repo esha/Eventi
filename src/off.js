@@ -3,9 +3,9 @@ _.off = function(target, events, fn) {
     var listener = target[_key];
     if (listener) {
         for (var i=0, m=events.length; i<m; i++) {
-            var filter = { fn:fn, match:{} },
-            type = _.parse(events[i], filter.match);
-            delete filter.match.tags;// superfluous for matching
+            var filter = { event:{}, handler:{}, fn:fn, text:events[i] },
+            type = _.parse(events[i], filter.event, filter.handler);
+            delete filter.event.tags;// superfluous for matching
             if (type) {
                 _.clean(type, filter, listener, target);
             } else {
@@ -44,7 +44,10 @@ _.clean = function(type, filter, listener, target) {
     }
 };
 _.cleans = function(handler, filter) {
-    return _.matches(handler.match, filter.match, true) &&
+    return _.matches(handler.event, filter.event) &&
+           _.matches(handler, filter.handler) &&
+           (!handler.important || (filter.handler.important &&
+                                   _.matches(filter.event, handler.event))) &&
            (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
 Eventi.off = _.wrap('off', 3);

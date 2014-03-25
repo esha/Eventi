@@ -35,7 +35,7 @@ Eventi.on('!popstate !hashchange !pushstate', _.at = function(e, uri) {
     }
 })
 .on(_, 'handler#new', function location(e, handler) {
-    if (handler.match.type === "location") {
+    if (handler.event.type === "location") {
         // always listen on window, but save given target to use as context
         handler._target = handler.target;
         handler.target = _.global;

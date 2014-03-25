@@ -27,7 +27,7 @@
     expect(3);
     Eventi.on('^ready', function(e, oe) {
       equal(e.type, 'ready');
-      ok(e._singleton);
+      ok(e.singleton);
       equal(oe.type, 'DOMContentLoaded');
     });
   });
@@ -37,7 +37,7 @@
     var target = Eventi.fy({});
     target.on('^once', function(e) {// early listener
       equal(e.type, 'once');
-      ok(!e._singleton);
+      ok(!e.singleton);
       equal(e[_._skey], true);
     });
 
@@ -80,9 +80,6 @@
   });
 
   test('internal api presence', function() {
-    var e = {};
-    _.properties[0][1].call(e);
-    ok(e._singleton, '_.properties has singleton parser up front');
     ok(_.singleton, '_.singleton');
     ok(_._skey, '_._key');
     ok(_.remember, '_.remember');

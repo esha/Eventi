@@ -24,7 +24,7 @@ _.dispatch = function(target, event, objectBubbling) {
         _.dispatch(target.parentObject, event, true);
     }
     // icky test/call, but lighter than wrapping or firing internal event
-    if (!objectBubbling && event._singleton) {
+    if (!objectBubbling && event.singleton) {
         _.singleton(target, event);
     }
 };

@@ -11,16 +11,15 @@ _.on = function(target, events, selector, fn, data) {
     }
 };
 _.handler = function(target, text, selector, fn, data) {
-    //TODO: consider moving selector into match, so we can specifically off delegates
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, match:{} };
-    _.parse(text, handler.match);
-    delete handler.match.tags;// superfluous for matching
+    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, event:{} };
+    _.parse(text, handler.event, handler);
+    delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
         Eventi.fire(_, 'handler#new', handler);
     }
     // allow handler#new listeners to change these things
     if (handler.fn !== _.noop) {
-        _.handlers(handler.target, handler.match.type).push(handler);
+        _.handlers(handler.target, handler.event.type).push(handler);
     }
     return handler;
 };
@@ -54,7 +53,7 @@ _.listener = function(target) {
 
 _.handle = function(event, handlers) {
     for (var i=0, handler, target; i<handlers.length; i++) {
-        if (_.matches(event, (handler = handlers[i]).match)) {
+        if (_.matches(event, (handler = handlers[i]).event)) {
             if (target = _.target(handler, event.target)) {
                 _.execute(target, event, handler);
                 if (event.immediatePropagationStopped){ break; }
@@ -74,17 +73,10 @@ _.execute = function(target, event, handler) {
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
 
-_.matches = function(event, match, strict) {
+_.matches = function(event, match) {
     for (var key in match) {
-        if (match[key] !== event[key] && (strict || key.charAt(0) !== '_')) {
+        if (match[key] !== event[key]) {
             return false;
-        }
-    }
-    if (strict) {
-        for (key in event) {
-            if (key.charAt(0) === '_' && event[key] !== match[key]) {
-                return false;
-            }
         }
     }
     return true;

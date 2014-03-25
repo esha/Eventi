@@ -19,10 +19,10 @@ var _ = {
 
     create: function(type, copyThese) {
         var props = { text: type+'' };
-        type = _.parse(props.text, props);
+        type = _.parse(props.text, props, props);
         _.copy(copyThese, props);
         if (!('bubbles' in props)) {
-            props.bubbles = true;// must bubble by default
+            props.bubbles = true;// we bubble by default around here
         }
 
         var event = new CustomEvent(type, props);
@@ -35,34 +35,36 @@ var _ = {
     },
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
-    parse: function(type, props) {
+    parse: function(type, event, handler) {
         _.properties.forEach(function(property) {
             type = type.replace(property[0], function() {
-                return property[1].apply(props, arguments) || '';
+                var args = _.slice(arguments, 1);
+                args.unshift(event, handler);
+                return property[1].apply(event, args) || '';
             });
         });
-        return type ? props.type = type : type;
+        return type ? event.type = type : type;
     },
     properties: [
-        [/^_/, function nobubble() {
-            this.bubbles = false;
+        [/^\!/, function important(e, handler) {//
+            handler.important = true;
         }],
-        [/^\!/, function protect() {//
-            this._protect = true;
+        [/^_/, function nobubble(event) {
+            event.bubbles = false;
         }],
-        [/\((.*)\)/, function detail(m, val) {
+        [/\((.*)\)/, function detail(event, handler, val) {
             try {
-                this.detail = _.resolve(val) || JSON.parse(val);
+                event.detail = _.resolve(val) || JSON.parse(val);
             } catch (e) {
-                this.detail = val;
+                event.detail = val;
             }
         }],
-        [/#(\w+)/g, function tags(m, tag) {
-            (this.tags||(this.tags=[])).push(tag);
-            this[tag] = true;
+        [/#(\w+)/g, function tags(event, handler, tag) {
+            (event.tags||(event.tags=[])).push(tag);
+            event[tag] = true;
         }],
-        [/^(\w+):/, function category(m, cat) {//
-            this.category = cat;
+        [/^(\w+):/, function category(event, handler, cat) {//
+            event.category = cat;
         }]
     ],
 
