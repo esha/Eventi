@@ -31,8 +31,8 @@ var _ = {
     },
     async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
-    resolve: function(reference, context) {
-        if (_.resolveRE.test(reference)) {
+    resolve: function(reference, context, tested) {
+        if (tested || _.resolveRE.test(reference)) {
             context = context || global;
             try {
                 return eval('context'+(reference.charAt(0) !== '[' ? '.'+reference : reference));
@@ -237,6 +237,10 @@ _.execute = function(target, event, handler) {
         handler.fn.apply(target, args);
     } catch (e) {
         _.async(function(){ throw e; });
+    } finally {
+        if (handler.end && handler.end.apply(target, args)) {
+            _.unhandle(handler);
+        }
     }
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };

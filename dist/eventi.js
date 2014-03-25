@@ -31,8 +31,8 @@ var _ = {
     },
     async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
-    resolve: function(reference, context) {
-        if (_.resolveRE.test(reference)) {
+    resolve: function(reference, context, tested) {
+        if (tested || _.resolveRE.test(reference)) {
             context = context || global;
             try {
                 return eval('context'+(reference.charAt(0) !== '[' ? '.'+reference : reference));
@@ -237,6 +237,10 @@ _.execute = function(target, event, handler) {
         handler.fn.apply(target, args);
     } catch (e) {
         _.async(function(){ throw e; });
+    } finally {
+        if (handler.end && handler.end.apply(target, args)) {
+            _.unhandle(handler);
+        }
     }
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
@@ -586,45 +590,29 @@ _.cleans = function(handler, filter) {
            (!filter.fn || filter.fn === (handler._fn||handler.fn));
 };
 Eventi.off = _.wrap('off', 3);
-_.until = function(target, condition, events, selector, fn, data) {
-	// adjust for absence of selector
-	if (typeof selector !== "string") {
-		if (fn !== undefined) {
-			data = data ? data.unshift(fn) && data : [fn];
-		}
-		fn = selector;
-	}
-	for (var i=0,m=events.length; i<m; i++) {
-		var handler = _.handler(target, events[i], selector, fn, data);
-		_.untilAfter(handler, condition);
-	}
+_.properties.unshift([/\$\!?(\w+(\.\w+)*)/, function end(event, handler, condition) {
+    handler.end = _.endTest(condition);
+}]);
+_.endTest = function(condition) {
+    var callsLeft = parseInt(condition, 10);
+    if (callsLeft) {
+        return function(){ return !--callsLeft; };
+    }
+    var not = condition.charAt(0) === '!';
+    if (not){ condition = condition.substring(1); }
+    if (condition && _.resolveRE.test(condition)) {
+        return function endRef() {
+            var value = _.resolve(condition, this, true);
+            if (value === undefined) {
+                value = _.resolve(condition, true);
+            }
+            if (typeof value === "function") {
+                value = value.apply(this, arguments);
+            }
+            return not ? !value : value;
+        };
+    }
 };
-_.untilAfter = function(handler, condition) {
-	var stop = _.untilFn(handler, condition),
-		fn = handler._fn = handler.fn;
-	handler.fn = function() {
-		fn.apply(this, arguments);
-		if (stop()){ _.unhandle(handler); }
-	};
-};
-_.untilFn = function(handler, condition) {
-	switch (typeof condition) {
-		case "undefined":
-		case "function": return condition;
-		case "number":   return function(){ return !--condition; };
-		case "string":
-			var not = condition.charAt(0) === '!';
-			if (not){ condition = condition.substring(1); }
-			return function until() {
-				var value = _.resolve(condition, handler.target);
-				if (value === undefined) {
-					value = _.resolve(condition);
-				}
-				return not ? !value : value;
-			};
-	}
-};
-Eventi.until = _.wrap('until', 5, 2);
 _.comboRE = /\+|>/;
 // overwrite fire.js' _.fireAll to watch for combo events
 _.fireAll = function(target, events, props, _resumeIndex) {
