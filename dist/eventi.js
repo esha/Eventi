@@ -166,20 +166,13 @@ _.dispatch = function(target, event, objectBubbling) {
     }
 };
 Eventi.fire = _.wrap('fire', 3);
-_.on = function(target, events, selector, fn, data) {
-    // adjust for absence of selector
-    if (typeof selector === "function") {
-        if (fn !== undefined) {
-            data = data ? data.unshift(fn) && data : [fn];
-        }
-        fn = selector; selector = null;
-    }
+_.on = function(target, events, fn, data) {
     for (var i=0,m=events.length; i<m; i++) {
-        _.handler(target, events[i], selector, fn, data);
+        _.handler(target, events[i], fn, data);
     }
 };
-_.handler = function(target, text, selector, fn, data) {
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, event:{} };
+_.handler = function(target, text, fn, data) {
+    var handler = { target:target, fn:fn, data:data, text:text, event:{} };
     _.parse(text, handler.event, handler);
     delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
@@ -218,33 +211,39 @@ _.listener = function(target) {
     }
     return listener;
 };
-
 _.handle = function(event, handlers) {
-    for (var i=0, handler, target; i<handlers.length; i++) {
+    for (var i=0, handler; i<handlers.length; i++) {
         if (_.matches(event, (handler = handlers[i]).event)) {
-            if (target = _.target(handler, event.target)) {
-                _.execute(target, event, handler);
-                if (event.immediatePropagationStopped){ break; }
-            }
+            _.execute(event, handler);
+            if (event.immediatePropagationStopped){ break; }
         }
     }
 };
-_.execute = function(target, event, handler) {
-    var args = [event];
+_.execute = function(event, handler) {
+    var args = [event],
+        fn = handler.fn,
+        call = { context: handler.target, args:args };
     if (event.data){ args.push.apply(args, event.data); }
     if (handler.data){ args.push.apply(args, handler.data); }
-    try {
-        handler.fn.apply(target, args);
-    } catch (e) {
-        _.async(function(){ throw e; });
-    } finally {
-        if (handler.end && handler.end.apply(target, args)) {
-            _.unhandle(handler);
+    if (handler.filters) {
+        for (var i=0,m=handler.filters.length; i<m; i++) {
+            handler.filters[i].call(call, event, handler);
         }
     }
+    try {
+        fn.apply(call.context, call.args);
+    } catch (e) {
+        _.async(function(){ throw e; });
+    }
+    if (handler.end && handler.end.apply(call.context, call.args)) {
+        _.unhandle(handler);
+    }
+};
+_.filter = function(handler, fn) {
+    handler.filters = handler.filters || [];
+    handler.filters.push(fn);
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
-
 _.matches = function(event, match) {
     for (var key in match) {
         if (match[key] !== event[key]) {
@@ -254,26 +253,31 @@ _.matches = function(event, match) {
     return true;
 };
 
-_.target = function(handler, target) {
-    return handler.selector ? _.closest(target, handler.selector) : handler.target;
-};
-_.closest = function(el, selector) {
-    while (el && el.matches) {
-        if (el.matches(selector)) {
-            return el;
-        }
-        el = el.parentNode;
-    }
-};
+Eventi.on = _.wrap('on', 3);
+
 if (global.Element) {
+    _.properties.unshift([/<(.+)>/, function delegate(event, handler, selector) {
+        handler.selector = selector;
+        _.filter(handler, _.delegate);
+    }]);
+    _.delegate = function delegate(event, handler) {
+        this.context = _.closest(event.target, handler.selector) || handler.target;
+    };
+    _.closest = function(el, selector) {
+        while (el && el.matches) {
+            if (el.matches(selector)) {
+                return el;
+            }
+            el = el.parentNode;
+        }
+    };
+
     var Ep = Element.prototype,
         aS = 'atchesSelector';
     if (!Ep['matches']) {
         Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
     }
 }   
-
-Eventi.on = _.wrap('on', 4);
 
 if (document) {
     _.init = function init() {
@@ -378,6 +382,9 @@ if (document) {
 // add singleton to _.parse's supported event properties
 _.properties.unshift([/^\^/, function singleton(event, handler) {
 	handler.singleton = true;
+	if (event !== handler) {
+		_.filter(handler, _.before);
+	}
 }]);
 
 // _.fire's _.dispatch will call this when appropriate
@@ -396,29 +403,23 @@ _.remember = function remember(target, event) {
 	event[_skey] = true;
 	saved.push(event);
 };
+_.before = function singleton(event, handler) {
+	_.unhandle(handler);
+	handler.fn = _.noop;// tell _.handler not to keep this
+	if (!event[_skey]) {// remember this non-singleton as singleton for handler's sake
+		_.remember(this.context, event);
+	}
+};
 
 Eventi.on(_, 'handler#new', function singleton(e, handler) {
 	if (handler.singleton) {
-		var fn = handler._fn = handler.fn;
-		handler.fn = function singleton(e) {
-			_.unhandle(handler);
-			if (!e[_skey]) {// remember this non-singleton as singleton for handler's sake
-				_.remember(handler.target, e);
-			}
-			fn.apply(this, arguments);
-		};
-
 		// search target's saved singletons, execute handler upon match
 		var saved = handler.target[_skey]||[];
 		for (var i=0,m=saved.length; i<m; i++) {
 			var event = saved[i];
 			if (_.matches(event, handler.event)) {
-				var target = _.target(handler, event.target);
-				if (target) {
-					_.execute(target, event, handler);
-					handler.fn = _.noop;// tell _.handler not to keep this
-					break;
-				}
+				_.execute(event, handler);
+				break;
 			}
 		}
 	}
@@ -513,7 +514,7 @@ Eventi.on('!popstate !hashchange !pushstate', _.at = function(e, uri) {
         handler._fn = handler.fn;
         handler.fn = function(e){ _.location(e.uri, handler, arguments); };
         // try for current uri match immediately
-        _.execute(null, new Eventi('location',{uri:_.uri||_.at()}), handler);
+        _.execute(new Eventi('location',{uri:_.uri||_.at()}), handler);
     }
 });
 _.keys = function(tmpl) {

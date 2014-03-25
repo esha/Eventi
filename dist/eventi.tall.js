@@ -166,20 +166,13 @@ _.dispatch = function(target, event, objectBubbling) {
     }
 };
 Eventi.fire = _.wrap('fire', 3);
-_.on = function(target, events, selector, fn, data) {
-    // adjust for absence of selector
-    if (typeof selector === "function") {
-        if (fn !== undefined) {
-            data = data ? data.unshift(fn) && data : [fn];
-        }
-        fn = selector; selector = null;
-    }
+_.on = function(target, events, fn, data) {
     for (var i=0,m=events.length; i<m; i++) {
-        _.handler(target, events[i], selector, fn, data);
+        _.handler(target, events[i], fn, data);
     }
 };
-_.handler = function(target, text, selector, fn, data) {
-    var handler = { target:target, selector:selector, fn:fn, data:data, text:text, event:{} };
+_.handler = function(target, text, fn, data) {
+    var handler = { target:target, fn:fn, data:data, text:text, event:{} };
     _.parse(text, handler.event, handler);
     delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
@@ -218,33 +211,39 @@ _.listener = function(target) {
     }
     return listener;
 };
-
 _.handle = function(event, handlers) {
-    for (var i=0, handler, target; i<handlers.length; i++) {
+    for (var i=0, handler; i<handlers.length; i++) {
         if (_.matches(event, (handler = handlers[i]).event)) {
-            if (target = _.target(handler, event.target)) {
-                _.execute(target, event, handler);
-                if (event.immediatePropagationStopped){ break; }
-            }
+            _.execute(event, handler);
+            if (event.immediatePropagationStopped){ break; }
         }
     }
 };
-_.execute = function(target, event, handler) {
-    var args = [event];
+_.execute = function(event, handler) {
+    var args = [event],
+        fn = handler.fn,
+        call = { context: handler.target, args:args };
     if (event.data){ args.push.apply(args, event.data); }
     if (handler.data){ args.push.apply(args, handler.data); }
-    try {
-        handler.fn.apply(target, args);
-    } catch (e) {
-        _.async(function(){ throw e; });
-    } finally {
-        if (handler.end && handler.end.apply(target, args)) {
-            _.unhandle(handler);
+    if (handler.filters) {
+        for (var i=0,m=handler.filters.length; i<m; i++) {
+            handler.filters[i].call(call, event, handler);
         }
     }
+    try {
+        fn.apply(call.context, call.args);
+    } catch (e) {
+        _.async(function(){ throw e; });
+    }
+    if (handler.end && handler.end.apply(call.context, call.args)) {
+        _.unhandle(handler);
+    }
+};
+_.filter = function(handler, fn) {
+    handler.filters = handler.filters || [];
+    handler.filters.push(fn);
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
-
 _.matches = function(event, match) {
     for (var key in match) {
         if (match[key] !== event[key]) {
@@ -254,26 +253,7 @@ _.matches = function(event, match) {
     return true;
 };
 
-_.target = function(handler, target) {
-    return handler.selector ? _.closest(target, handler.selector) : handler.target;
-};
-_.closest = function(el, selector) {
-    while (el && el.matches) {
-        if (el.matches(selector)) {
-            return el;
-        }
-        el = el.parentNode;
-    }
-};
-if (global.Element) {
-    var Ep = Element.prototype,
-        aS = 'atchesSelector';
-    if (!Ep['matches']) {
-        Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
-    }
-}   
-
-Eventi.on = _.wrap('on', 4);
+Eventi.on = _.wrap('on', 3);
 
     _.version = "0.7.1";
 
