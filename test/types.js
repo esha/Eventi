@@ -45,7 +45,7 @@
   });
 
   test('Eventi.types(Eventi.fy({}), "local", "signal") API additions', function() {
-    expect(13);
+    expect(10);
     var o = Eventi.fy({}),
       signal = _.types('signal');
     equal(o.fire.signal, undefined, 'should not have signal yet');
