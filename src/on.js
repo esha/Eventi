@@ -69,6 +69,10 @@ _.execute = function(target, event, handler) {
         handler.fn.apply(target, args);
     } catch (e) {
         _.async(function(){ throw e; });
+    } finally {
+        if (handler.end && handler.end.apply(target, args)) {
+            _.unhandle(handler);
+        }
     }
 };
 _.unhandle = function noop(handler){ handler.fn = _.noop; };
