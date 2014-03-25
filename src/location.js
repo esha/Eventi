@@ -59,7 +59,7 @@ Eventi.on('!popstate !hashchange !pushstate', _.at = function(e, uri) {
         handler._fn = handler.fn;
         handler.fn = function(e){ _.location(e.uri, handler, arguments); };
         // try for current uri match immediately
-        _.execute(null, new Eventi('location',{uri:_.uri||_.at()}), handler);
+        _.execute(new Eventi('location',{uri:_.uri||_.at()}), handler);
     }
 });
 _.keys = function(tmpl) {

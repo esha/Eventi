@@ -1,6 +1,9 @@
 // add singleton to _.parse's supported event properties
 _.properties.unshift([/^\^/, function singleton(event, handler) {
 	handler.singleton = true;
+	if (event !== handler) {
+		_.filter(handler, _.before);
+	}
 }]);
 
 // _.fire's _.dispatch will call this when appropriate
@@ -19,29 +22,23 @@ _.remember = function remember(target, event) {
 	event[_skey] = true;
 	saved.push(event);
 };
+_.before = function singleton(event, handler) {
+	_.unhandle(handler);
+	handler.fn = _.noop;// tell _.handler not to keep this
+	if (!event[_skey]) {// remember this non-singleton as singleton for handler's sake
+		_.remember(this.context, event);
+	}
+};
 
 Eventi.on(_, 'handler#new', function singleton(e, handler) {
 	if (handler.singleton) {
-		var fn = handler._fn = handler.fn;
-		handler.fn = function singleton(e) {
-			_.unhandle(handler);
-			if (!e[_skey]) {// remember this non-singleton as singleton for handler's sake
-				_.remember(handler.target, e);
-			}
-			fn.apply(this, arguments);
-		};
-
 		// search target's saved singletons, execute handler upon match
 		var saved = handler.target[_skey]||[];
 		for (var i=0,m=saved.length; i<m; i++) {
 			var event = saved[i];
 			if (_.matches(event, handler.event)) {
-				var target = _.target(handler, event.target);
-				if (target) {
-					_.execute(target, event, handler);
-					handler.fn = _.noop;// tell _.handler not to keep this
-					break;
-				}
+				_.execute(event, handler);
+				break;
 			}
 		}
 	}

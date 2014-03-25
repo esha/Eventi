@@ -23,10 +23,6 @@
   var _ = Eventi._;
   module('Eventi on');
 
-  test('3rd party/polyfill api presence', function() {
-    ok(typeof Element.prototype.matches === "function", "Element.prototype.matches");
-  });
-
   test('external api presence', function() {
     ok(typeof Eventi.on === "function", 'Eventi.on');
   });
@@ -61,19 +57,6 @@
     Eventi.on(o, 'type', fn, 'hdata').fire(o, 'type', 'edata');
   });
 
-  test('Eventi.on(type,selector,fn)', function() {
-    var parent = document.querySelector('#on'),
-      kid = parent.querySelector('.closest');
-    Eventi.on('click', '#on', function(e, edata) {
-      equal(e.type, 'click');
-      equal(edata, 'edata');
-      equal(this, parent);
-      equal(e.target, kid);
-    });
-    Eventi.fire(kid, 'click', 'edata');
-    Eventi.off('click');
-  });
-
   test('_.listener', function() {
     var o = {},
       listener = _.listener(o);
@@ -95,18 +78,13 @@
         equal(handlerData, 'handlerData', 'should get handler data');
         equal(this, target, 'should have target as context');
       },
-      handler = { data: ['handlerData'], fn: fn };
+      handler = { target:target, data: ['handlerData'], fn: fn, filters:[] };
       e.data = ['eventData'];
-      _.execute(target, e, handler);
+      _.execute(e, handler);
   });
 
-  test('_.closest', function() {
-    equal(_.closest(document, 'foo'), undefined, 'undefined for non Elements');
-    var root = document.querySelector('#on'),
-        div = root.querySelector('.closest');
-    equal(_.closest(div, 'div'), div, 'el should prefer itself to parent');
-    equal(_.closest(div, '#on'), root, 'should find parent when element does not match');
-  });
+  //TODO: test handler.filters
+  //TODO: test handler.end
 
   test('_.matches', function() {
     var e = new Eventi('cat:type#tag(detail)');
@@ -144,8 +122,6 @@
     ok(_.execute, "_.execute");
     ok(_.unhandle, "_.unhandle");
     ok(_.matches, "_.matches");
-    ok(_.target, "_.target");
-    ok(_.closest, "_.closest");
   });
 
 }());

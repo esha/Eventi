@@ -21,7 +21,7 @@ module.exports = function(grunt) {
       dist: {
         dest: 'dist/<%= pkg.name %>.js',
         src: ['src/core.js','src/fire.js','src/on.js',
-              'src/declare.js', 'src/singleton.js', 'src/key.js', 'src/location.js',
+              'src/delegate.js', 'src/declare.js', 'src/singleton.js', 'src/key.js', 'src/location.js',
               'src/off.js', 'src/end.js', 'src/combo.js', 'src/types.js']
       },
       tall: {
@@ -31,7 +31,7 @@ module.exports = function(grunt) {
       grande: {
         dest: 'dist/<%= pkg.name %>.grande.js',
         src: ['src/core.js','src/fire.js','src/on.js',
-              'src/declare.js', 'src/singleton.js','src/key.js', 'src/location.js']
+              'src/delegate.js', 'src/declare.js', 'src/singleton.js','src/key.js', 'src/location.js']
       },
     },
     uglify: {

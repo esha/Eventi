@@ -34,7 +34,7 @@
   test('location Eventi.html', function() {
     expect(3);
     var uri = 'Eventi.html';
-    Eventi.on('location', uri, function(e, match) {
+    Eventi.on('location<'+uri+'>', function(e, match) {
       equal(e.type, 'location');
       ok(e.uri, 'event should have uri');
       equal(match, uri);
@@ -42,7 +42,7 @@
       history.pushState(null,null,home);
     });
   });
-
+/*
   test('location regex', function() {
     expect(2);
     Eventi.on('location', /(\w+)\.html/, function(e, match, file) {
@@ -52,10 +52,10 @@
       history.pushState(null,null,home);
     });
   });
-
+*/
   test('location template', function() {
     expect(4);
-    Eventi.on('location', '{file}.html', function(e, vals, file) {
+    Eventi.on('location<{file}.html>', function(e, vals, file) {
       equal(typeof vals, "object", "should have match object");
       equal(vals.file, 'Eventi');
       equal(vals.match, 'Eventi.html');
@@ -67,7 +67,7 @@
 
   test('location handler data after match data', function() {
     expect(2);
-    Eventi.on('location', 'test', function(e, match, hdata) {
+    Eventi.on('location<test>', function(e, match, hdata) {
       equal(match, 'test');
       equal(hdata, 'hdata');
       Eventi.off('location');
@@ -109,7 +109,7 @@
 
   test('location pushstate', function() {
     expect(3);
-    Eventi.on('location', '?search', function(e) {
+    Eventi.on('location<?search>', function(e) {
       Eventi.off('location');
       ok(e.srcEvent, 'should have srcEvent');
       equal(e.srcEvent.type, 'pushstate','should be pushstate source');
@@ -123,7 +123,7 @@
     expect(5);
     var uri = _.uri,
       fired = false;
-    Eventi.on('location', '?view={view}', function(e, match) {
+    Eventi.on('location<?view={view}>', function(e, match) {
       equal(e.oldURI, uri);
       equal(e.uri, location.pathname + '?view=foo');
       equal(e.srcEvent && e.srcEvent.type, 'pushstate');
@@ -138,10 +138,10 @@
 
   test('location multiple handlers', function() {
     expect(2);
-    Eventi.on('location', '?search', function(e) {
+    Eventi.on('location<?search>', function(e) {
       ok(e.uri.indexOf('?search') > 0);
     })
-    .on('location', '#hashes', function(e) {
+    .on('location<#hashes>', function(e) {
       ok(e.uri.indexOf('#hashes') > 0);
       Eventi.off('location');
       history.pushState(null,null,home);
@@ -151,7 +151,7 @@
 
   test('alternate target', function() {
     var target = {};
-    Eventi.on(target, 'location', '#target', function() {
+    Eventi.on(target, 'location<#target>', function() {
       equal(this, target, 'should have target context');
       Eventi.off('location');
       history.pushState(null,null,home);
