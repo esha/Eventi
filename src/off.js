@@ -22,7 +22,7 @@ _.off = function(target, events, fn) {
     }
 };
 _.unhandle = function off(handler) {
-    _.off(handler.target, [handler.text], handler._fn||handler.fn);
+    _.off(handler.target, [handler.text], handler.fn);
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
 _.clean = function(type, filter, listener, target) {
@@ -50,6 +50,6 @@ _.cleans = function(handler, filter) {
            _.matches(handler, filter.handler) &&
            (!handler.important || (filter.handler.important &&
                                    _.matches(filter.event, handler.event))) &&
-           (!filter.fn || filter.fn === (handler._fn||handler.fn));
+           (!filter.fn || filter.fn === handler.fn);
 };
 Eventi.off = _.wrap('off', 3);
