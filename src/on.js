@@ -1,3 +1,7 @@
+_.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
+    handler.important = true;
+    return other;
+}]);
 _.on = function(target, events, fn, data) {
     for (var i=0,m=events.length; i<m; i++) {
         _.handler(target, events[i], fn, data);
@@ -8,11 +12,12 @@ _.handler = function(target, text, fn, data) {
     _.parse(text, handler.event, handler);
     delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
-        Eventi.fire(_, 'handler#new', handler);
+        Eventi.fire(_, 'on:handler', handler);
     }
-    // allow handler#new listeners to change these things
+    // allow on:handler listeners to change these things
     if (handler.fn !== _.noop) {
-        _.handlers(handler.target, handler.event.type).push(handler);
+        target = handler.global === true ? _.global : handler.target;
+        _.handlers(target, handler.event.type).push(handler);
     }
     return handler;
 };
@@ -54,21 +59,23 @@ _.handle = function(event, handlers) {
 _.execute = function(event, handler) {
     var args = [event],
         fn = handler.fn,
-        call = { context: handler.target, args:args };
+        call = { target: handler.target, args:args };
     if (event.data){ args.push.apply(args, event.data); }
     if (handler.data){ args.push.apply(args, handler.data); }
     if (handler.filters) {
-        for (var i=0,m=handler.filters.length; i<m; i++) {
+        for (var i=0,m=handler.filters.length; i<m && call.target; i++) {
             handler.filters[i].call(call, event, handler);
         }
     }
-    try {
-        fn.apply(call.context, call.args);
-    } catch (e) {
-        _.async(function(){ throw e; });
-    }
-    if (handler.end && handler.end.apply(call.context, call.args)) {
-        _.unhandle(handler);
+    if (call.target) {
+        try {
+            fn.apply(call.target, call.args);
+        } catch (e) {
+            _.async(function(){ throw e; });
+        }
+        if (handler.end && handler.end.apply(call.target, call.args)) {
+            _.unhandle(handler);
+        }
     }
 };
 _.filter = function(handler, fn) {

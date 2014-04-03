@@ -94,21 +94,21 @@
     ok(_.matches(e, {category:'cat',type:'type',tag:true,detail:'detail'}), 'should match everything');
   });
 
-  test('handler#new event', function() {
+  test('on:handler event', function() {
     expect(4);
     var target = {},
       type = 'onevent',
       passed,
       fn = function(e, h) {
         if (h.text === type) {// don't let problems with _.off bug us
-          ok(e['new']);
           equal(e.type, 'handler');
+          equal(e.category, 'on');
           passed = h;
         }
       };
-    Eventi.on(_, 'handler#new', fn)
+    Eventi.on(_, 'on:handler', fn)
           .on(target, type, function(){})
-          .off(_, 'handler#new', fn);
+          .off(_, 'on:handler', fn);
     var handler = target[_._key].s[type][0];
     ok(handler, 'should get new handler directly');
     ok(passed === handler, 'should pass new handler');
