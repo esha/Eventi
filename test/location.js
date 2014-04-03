@@ -34,28 +34,28 @@
   test('location Eventi.html', function() {
     expect(3);
     var uri = 'Eventi.html';
-    Eventi.on('location<'+uri+'>', function(e, match) {
+    Eventi.on('location@'+uri, function(e, match) {
       equal(e.type, 'location');
-      ok(e.uri, 'event should have uri');
+      ok(e.location, 'event should have uri');
       equal(match, uri);
       Eventi.off('location');
       history.pushState(null,null,home);
     });
   });
-/*
+
   test('location regex', function() {
     expect(2);
-    Eventi.on('location', /(\w+)\.html/, function(e, match, file) {
+    Eventi.on('location@`(\\w+)\\.html`', function(e, match, file) {
       equal(match, 'Eventi.html');
       equal(file, 'Eventi');
       Eventi.off('location');
       history.pushState(null,null,home);
     });
   });
-*/
+
   test('location template', function() {
     expect(4);
-    Eventi.on('location<{file}.html>', function(e, vals, file) {
+    Eventi.on('location@{file}.html', function(e, vals, file) {
       equal(typeof vals, "object", "should have match object");
       equal(vals.file, 'Eventi');
       equal(vals.match, 'Eventi.html');
@@ -67,7 +67,7 @@
 
   test('location handler data after match data', function() {
     expect(2);
-    Eventi.on('location<test>', function(e, match, hdata) {
+    Eventi.on('location@test', function(e, match, hdata) {
       equal(match, 'test');
       equal(hdata, 'hdata');
       Eventi.off('location');
@@ -78,7 +78,7 @@
   /*test('location hashchange', function() {
     expect(1);
     Eventi.on('location', '#hashed', function(e) {
-      equal(e.uri, location.pathname+location.search+'#hashed');
+      equal(e.location, location.pathname+location.search+'#hashed');
       Eventi.off('location');
       history.pushState(null,null,home);
     });
@@ -102,18 +102,18 @@
   test('all location listener', function() {
     expect(1);
     Eventi.on('location#all', function(e) {
-      equal(e.uri, _.uri, 'should have current uri');
+      equal(e.location, _.location(), 'should have current uri');
       Eventi.off('location#all');
     });
   });
 
   test('location pushstate', function() {
     expect(3);
-    Eventi.on('location<?search>', function(e) {
+    Eventi.on('location@?search', function(e) {
       Eventi.off('location');
       ok(e.srcEvent, 'should have srcEvent');
       equal(e.srcEvent.type, 'pushstate','should be pushstate source');
-      equal(e.uri, location.pathname+'?search', 'should have correct e.uri');
+      equal(e.location, location.pathname+'?search', 'should have correct e.location');
       history.pushState(null,null,home);
     });
     history.pushState(null,null,'?search');
@@ -121,11 +121,11 @@
 
   test('location set via event', function() {
     expect(5);
-    var uri = _.uri,
+    var uri = _.location(),
       fired = false;
-    Eventi.on('location<?view={view}>', function(e, match) {
-      equal(e.oldURI, uri);
-      equal(e.uri, location.pathname + '?view=foo');
+    Eventi.on('location@?view={view}', function(e, match) {
+      equal(e.oldLocation, uri);
+      equal(e.location, location.pathname + '?view=foo');
       equal(e.srcEvent && e.srcEvent.type, 'pushstate');
       equal(match.view, 'foo');
       ok(!fired);
@@ -138,11 +138,11 @@
 
   test('location multiple handlers', function() {
     expect(2);
-    Eventi.on('location<?search>', function(e) {
-      ok(e.uri.indexOf('?search') > 0);
+    Eventi.on('location@?search', function(e) {
+      ok(e.location.indexOf('?search') > 0);
     })
-    .on('location<#hashes>', function(e) {
-      ok(e.uri.indexOf('#hashes') > 0);
+    .on('location@#hashes', function(e) {
+      ok(e.location.indexOf('#hashes') > 0);
       Eventi.off('location');
       history.pushState(null,null,home);
     });
@@ -151,7 +151,7 @@
 
   test('alternate target', function() {
     var target = {};
-    Eventi.on(target, 'location<#target>', function() {
+    Eventi.on(target, 'location@#target', function() {
       equal(this, target, 'should have target context');
       Eventi.off('location');
       history.pushState(null,null,home);
@@ -162,13 +162,16 @@
   module('Eventi location internals');
 
   test('internal api presence', function() {
-    equal(typeof _.at, "function", "_.at");
-    equal(typeof _.keys, "function", "_.keys");
+    equal(typeof _.pushState, "function", "_.pushState");
     equal(typeof _.location, "function", "_.location");
+    equal(typeof _.keys, "function", "_.keys");
+    equal(typeof _.setLocation, "function", "_.setLocation");
+    equal(typeof _.locationHandler, "function", "_.locationHandler");
+    equal(typeof _.locationFilter, "function", "_.locationFilter");
   });
 
-  test('_.at', function() {
-    equal(_.at(), decodeURI(location.pathname+location.search+location.hash));
+  test('_.location', function() {
+    equal(_.location(), decodeURI(location.pathname+location.search+location.hash));
   });
 
   test('_.keys', function() {
