@@ -1,56 +1,61 @@
+_.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
+    handler.alias = alias;
+    if (handler !== event) {
+        handler.data = handler.data || [];
+        handler.data.push(alias);
+    }
+}]);
 if (document) {
     _.init = function init() {
         var nodes = document.querySelectorAll('[data-eventi]');
         for (var i=0,m=nodes.length; i<m; i++) {
-            var node = nodes[i],
-                mapping = node.getAttribute('data-eventi');
-            if (mapping) {
-                _.declare(mapping, node);
+            var target = nodes[i],
+                mapping = target.getAttribute('data-eventi');
+            if (mapping !== target.eventi) {
+                if (_.off && target.eventi) {
+                    Eventi.off(target, target.eventi, _.declared);
+                }
+                target.eventi = mapping;
+                _.declare(target, mapping);
             }
         }
         if (nodes.length || document.querySelectorAll('[click]').length) {
             Eventi.on('click keyup', _.check);
         }
     };
-    _.declare = function(mapping, mapper) {// register listener
-        var types = mapping.split(_.splitRE);
-        for (var i=0,m=types.length; i<m; i++) {
-            var type = types[i],
-                eq = type.lastIndexOf('='),
-                alias = eq > 0 ? type.substring(eq+1) : undefined,
-                global = type.charAt(0) === '/',
-                context = global ? _.global : mapper;
-            mapper = mapper || document;
-            if (alias){ type = type.substring(0, eq); }
-            if (global){ type = type.substring(1); }
-            Eventi.on(context, type, _.mapped, mapper, alias);
+    _.declare = function(target, mapping) {// register listener
+        var texts = _.split.ter(mapping);
+        for (var i=0,m=texts.length; i<m; i++) {
+            Eventi.on(target, texts[i], _.declared);
         }
     };
-    _.mapped = function(e, mapper, alias) {// lookup handlers
-        var type = alias || e.type,
-            nodes = _.declarers(mapper, type, this !== _.global && e.target);
+    _.declared = function(e, alias) {// lookup handlers
+        alias = typeof alias === "string" ? alias : e.type;
+        var nodes = _.declarers(this, alias, e.target);
         for (var i=0,m=nodes.length; i<m; i++) {
-            _.declared(nodes[i], type, e);
+            _.respond(nodes[i], alias, e);
         }
     };
-    _.declarers = function(mapper, type, target) {
-        var query = '['+type+']';
-        if (target) {
-            // gather matching parents up to the mapper
-            var nodes = [];
-            while (target && target.matches && target !== mapper.parentNode) {
-                if (target.matches(query)) {
-                    nodes.push(target);
-                }
-                target = target.parentNode;
+    _.declarers = function(target, alias, node) {
+        var query = '['+alias+']',
+            // gather matching parents up to the target
+            nodes = [],
+            descendant = false;
+        while (node && node.matches) {
+            if (node.matches(query)) {
+                nodes.push(node);
             }
-            return nodes;
+            if (node === target) {
+                descendant = true;
+                break;
+            }
+            node = node.parentNode;
         }
-        // gather all declarations within the mapper
-        return mapper.querySelectorAll(query);
+        // if node isn't a descendant of target, handler must be global
+        return descendant ? nodes : target.querySelectorAll(query);
     };
-    _.declared = function(node, type, e) {// execute handler
-        var response = node.getAttribute(type);
+    _.respond = function(node, alias, e) {// execute handler
+        var response = node.getAttribute(alias);
         if (response) {
             var fn = _.resolve(response, node) || _.resolve(response);
             if (typeof fn === "function") {
@@ -64,7 +69,7 @@ if (document) {
         var click = (e.type === 'click' && _.click(e.target)) ||
                     (e.keyCode === 13 && _.click(e.target, true));
         if (click) {
-            _.mapped(e, document.documentElement, 'click');
+            _.declared.call(document.documentElement, e, 'click');
             if (click === 'noDefault' && !_.allowDefault(e.target)) {
                 e.preventDefault();
             }

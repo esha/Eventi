@@ -32,11 +32,11 @@
     var el = document.querySelector('#declare'),
       attr = el.getAttribute('data-eventi'),
       listener = el[_._key];
-    equal(attr, 'simple type#rich=alias /global', 'should have right attribute');
+    equal(attr, 'simple type#rich=>alias /glocal', 'should have right attribute');
     ok(listener, 'should have a listener');
     ok(listener.s.simple, 'should listen for simple');
     ok(listener.s.type, 'should listen for type');
-    ok(!listener.s.global, 'should not listen for global');
+    ok(!listener.s.glocal, 'should not listen for glocal');
   });
 
   test('simple="mapped"', function() {
@@ -66,15 +66,15 @@
     delete window.handler;
   });
 
-  test('/global="elementHandle"', function() {
+  test('/glocal="elementHandle"', function() {
     expect(2);
     var parent = document.getElementById('declare'),
       el = parent.children[0];
     el.elementHandle = function(e) {
-      equal(e.type, 'global');
-      equal(this, el);// global event gets declared context
+      equal(e.type, 'glocal');
+      equal(this, el);// glocal event gets declared context
     };
-    Eventi.fire(document.body, 'global');
+    Eventi.fire(document.body, 'glocal');
     delete el.elementHandle;
   });
 
@@ -97,7 +97,7 @@
   test('internal api presence', function() {
     ok(_.init, "_.init");
     ok(_.declare, "_.declare");
-    ok(_.mapped, "_.mapped");
+    ok(_.respond, "_.respond");
     ok(_.declarers, "_.declarers");
     ok(_.declared, "_.declared");
     ok(_.check, "_.check");
@@ -114,54 +114,54 @@
     equal(nodes[1], mapper);
   });
 
-  test('_.declarers global', function() {
+  test('_.declarers glocal', function() {
     var mapper = document.getElementById('declare'),
-      nodes = _.declarers(mapper, 'global', false);
+      nodes = _.declarers(mapper, 'glocal', false);
     equal(nodes.length, 1);
-    equal(nodes[0], document.querySelector('#declare [global]'));
+    equal(nodes[0], document.querySelector('#declare [glocal]'));
   });
 
-  function declared(type, value, fn) {
+  function respond(type, value, fn) {
     var node = document.createElement('span');
     node.setAttribute(type, value);
     if (fn) {
       node[value] = fn;
     }
     document.getElementById('qunit-fixture').appendChild(node);
-    _.declared(node, type, new CustomEvent(type));
+    _.respond(node, type, new CustomEvent(type));
   }
 
-  test('_.declared mapped event', function() {
+  test('_.respond mapped event', function() {
     expect(1);
     Eventi.on('type', function(e, oe) {
       equal(oe.type, 'mapped');
     });
-    declared('mapped', 'type');
+    respond('mapped', 'type');
     Eventi.off('type');
   });
 
-  test('_.declared local fn', function() {
+  test('_.respond local fn', function() {
     expect(1);
-    declared('local', 'elementFn', function(e) {
+    respond('local', 'elementFn', function(e) {
       equal(e.type, 'local');
     });
   });
 
-  test('_.declared global fn', function() {
+  test('_.respond global fn', function() {
     expect(1);
     window.globalFn = function(e) {
       equal(e.type, 'global');
     };
-    declared('global', 'globalFn');
+    respond('global', 'globalFn');
     delete window.globalFn;
   });
 
-  test('_.declared nested fn', function() {
+  test('_.respond nested fn', function() {
     expect(1);
     window.ns = {fn: function(e) {
       equal(e.type, 'nested');
-    }}
-;    declared('nested', 'ns.fn');
+    }};
+    respond('nested', 'ns.fn');
     delete window.ns;
   });
 
