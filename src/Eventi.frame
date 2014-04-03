@@ -16,13 +16,14 @@
             this.detail = args.detail;
             this.timestamp = Date.now();
         };
+        if (!global.Event){ global.Event = global.CustomEvent; }
     }
 
 <%= content %>
     _.version = "<%= pkg.version %>";
 
-    var sP = (Event && Event.prototype.stopPropagation) || _.noop,
-        sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
+        sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
     CustomEvent.prototype.stopPropagation = function() {
         this.propagationStopped = true;
         sP.call(this);
