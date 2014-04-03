@@ -4,13 +4,7 @@
     module('Eventi end');
 
     test('internal api presence', function() {
-        expect(2);
         ok(_.endTest, "_.endTest");
-        _.properties.forEach(function(parser) {
-        if (parser[1].name === 'end') {
-            ok(true, 'have parser in _.properties');
-        }
-        });
     });
 
     test('_.endTest count', function() {

@@ -1,10 +1,13 @@
-if (global.Element) {
-    _.properties.unshift([/<(.+)>/, function delegate(event, handler, selector) {
-        handler.selector = selector;
+_.split.guard['<'] = '>';
+_.parsers.unshift([/<(.+)>/, function(event, handler, selector) {
+    handler.selector = selector;
+    if (_.delegate && event !== handler) {
         _.filter(handler, _.delegate);
-    }]);
+    }
+}]);
+if (global.Element) {
     _.delegate = function delegate(event, handler) {
-        this.context = _.closest(event.target, handler.selector) || handler.target;
+        this.target = _.closest(event.target, handler.selector);
     };
     _.closest = function(el, selector) {
         while (el && el.matches) {

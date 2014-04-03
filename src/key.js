@@ -1,13 +1,13 @@
 // add key syntax to _.parse's supported event properties
 _.keyRE = /\[([a-z-0-9,\.\/\[\`\\\]\']+)\]/;
-_.properties.push([_.keyRE, function parseKey(m, name) {
+_.parsers.push([_.keyRE, function(event, handler, name) {
     var dash, key;
     while ((dash = name.indexOf('-')) > 0) {
         key = name.substring(0, dash);
         name = name.substring(dash+1);
-        this[(_.special[key]||key)+'Key'] = true;
+        event[(_.special[key]||key)+'Key'] = true;
     }
-    this.keyCode = _.codes[name] || parseInt(name, 10) || 0;
+    event.keyCode = _.codes[name] || parseInt(name, 10) || 0;
 }]);
 _.special = { command: 'meta', apple: 'meta' };
 _.codes = {
