@@ -8,6 +8,7 @@
   <script src="../libs/qunit/qunit.js"></script>
   <!-- Load local lib and tests. -->
   <script src="../dist/eventi.js"></script>
+  <script src="phantom.shim.js" type="text/javascript"></script>
   <script src="frame.js"></script>
   <script src="core.js"></script>
   <script src="on.js"></script>
@@ -15,12 +16,13 @@
   <script src="delegate.js"></script>
   <script src="declare.js"></script>
   <script src="singleton.js"></script>
-  <script src="types.js"></script>
+  <script src="key.js"></script>
+  <script src="location.js"></script>
   <script src="off.js"></script>
   <script src="end.js"></script>
   <script src="combo.js"></script>
-  <script src="key.js"></script>
-  <script src="location.js"></script>
+  <script src="sequence.js"></script>
+  <script src="alias.js"></script>
 </head>
 <body>
   <div id="qunit"></div>
@@ -28,8 +30,8 @@
     <div id="on">
       <div class="closest"></div>
     </div>
-    <div id="declare" data-eventi="simple type#rich=alias /global" simple="whatever">
-      <span simple="mapped" alias="handler" global="elementHandle">&nbsp;</span>
+    <div id="declare" data-eventi="simple type#rich=>alias /glocal" simple="whatever">
+      <span simple="mapped" alias="handler" glocal="elementHandle">&nbsp;</span>
       <div click="remove"><button>clickme</button></div>
     </div>
     <span global="shouldbeignoredhere"></span>
