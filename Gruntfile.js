@@ -22,7 +22,7 @@ module.exports = function(grunt) {
         dest: 'dist/<%= pkg.name %>.js',
         src: ['src/core.js','src/fire.js','src/on.js',
               'src/delegate.js', 'src/declare.js', 'src/singleton.js', 'src/key.js', 'src/location.js',
-              'src/off.js', 'src/end.js', 'src/combo.js', 'src/types.js']
+              'src/off.js', 'src/end.js', 'src/sequence.js', 'src/combo.js', 'src/alias.js']
       },
       tall: {
         dest: 'dist/<%= pkg.name %>.tall.js',

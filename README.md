@@ -9,34 +9,40 @@ Download the [minified version][min] or the [development version][max].
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
 
 ## TODO
+* teach on.js to do `Eventi.on("type", "referenced.handler")` for more declare.js parity
+* batch registration for on.js: `Eventi.on({ 'type': handler, 'other': otherFn });`
 * finish key tests
-* finish until tests
-* finish combo tests
+* finish end tests
 * documentation
 * demo app/site
 * integrations (jQuery, Visual Event 2, Capo, etc)
+* consider limited grouping syntax for types with partial overlap: `group:{type#tag other$1}#tag2` but probably don't bother due to incompatibility w/aliasing and current parsing
+* consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality. but resist doing it, as this could get out of hand...
+
 
 ## Motive
 
 * JavaScript development is ultimately event-based development.
 * Application events (aka custom events) are usually under-used or poorly-used in webapps.
-* Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types most heavy custom event users tolerate.
-* Custom events could use rich data, especially if there's simple ways to create and utilize it.
-* Event handling features in general need a boost to encourage use in advanced apps (particularly single page ones).
+* Events are the best way to decouple modules and components without isolating them entirely.
+* DOM event bubbling, in particular, has much potential for meaningful event based interfaces.
+* Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types with poor data that most heavy custom event users end up using.
+* Custom events can be awesome, especially when you have rich features and patterns that are simple to use.
+* Declarative events are completely unsupported out there. This is a travesty.
 
 ## Goal
-* A featureful event platform that's easy to use and to extend.
-* A declarative syntax for creating and handling rich, informative events.
+* A rich event platform that's easy to use and to extend.
+* A declarative syntax for working with rich, informative events.
 * DOM and object support
 * Handling for complex event types (combos, async sequences, singletons, etc).
 * Robust, error tolerant listener execution
 * Support for best-practices like "signals" (aka pre-defined types) and declarative event mapping
 * Lots of solid, maintainable test code
-* Impressive visual and/or interactive demo (ideas, anyone?)
+* Impressive, interactive demo (ideas, anyone?)
 * Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key/location, venti adds off/until/combo/types
 * Venti is the default version to encourage much event-based awesomeness for everyone.
 * Grande includes basic webapp tools.
-* Tall could be enough for lite server work.
+* Tall could be enough for light server-side work.
 
 ## Code Plans
 
@@ -56,11 +62,9 @@ Download the [minified version][min] or the [development version][max].
 #### on.js (requires core.js)
 * simple event registration: `Eventi.on([target, ]'type', fn)`
 * space delimited multiple registration: `Eventi.on([target, ]'first second third', fn)`
-* filter by selector (aka delegation): `Eventi.on([target, ]'selector', 'type', fn)`
 * filter by category and/or tag: `Eventi.on([target, ]"category:type#tag", fn)`
 * bind data w/listener: `Eventi.on([target, ]'type', fn, data)`
 * applying rich event data as listener arg(s): `Eventi.on([target, ]'type', function(e, arg, arg){})`
-* alias Element.prototype.matches from the prefixed matchesSelector versions
 * implementation: one listener per target that gets registered for every handled type. the listener handles each event by looking amongst its handlers for those that match the event and executing them
 
 #### fire.js (requires core.js, uses on.js)
@@ -71,6 +75,10 @@ Download the [minified version][min] or the [development version][max].
 * fire with handler arguments `Eventi.fire([target, ]'type', data)`
 * TODO: consider non-DOM propagation when typeof object.parent === "object"
 
+
+#### delegate.js (requires on.js)
+* alias Element.prototype.matches from the prefixed matchesSelector versions
+* filter by selector (aka delegation): `Eventi.on([target, ]'type<.selector>', fn)`
 
 #### declare.js (requires on.js and fire.js)
 * declare `data-eventi="submit /beforeunload=quit"` on a root or container element
@@ -90,9 +98,9 @@ Download the [minified version][min] or the [development version][max].
 * filter key events: `Eventi.on([target, ]'keyup[shift-a]', fn)`
 
 #### location.js (requires on.js and fire.js)
-* event-based routing: `Eventi.on('location', '?view={view}'||regex, function(e, url, params){ console.log(params.view); })`
-* event-based history.pushState: `Eventi.fire('location', '?view={0}', ['foo'])`
-* consistent event for all popstate/hashchange/pushstate changes: `Eventi.on('location', function(e){ console.log(e.uri, e.oldURI, e.srcEvent); })`
+* event-based routing: `Eventi.on('location@?view={view}', function(e, url, params){ console.log(params.view); })`
+* event-based history.pushState: `Eventi.fire('location@?view={0}', ['foo'])`
+* consistent event for all popstate/hashchange/pushstate changes: `Eventi.on('location', function(e){ console.log(e.location, e.oldLocation, e.srcEvent); })`
 
 
 #### off.js (requires on.js)
@@ -100,42 +108,41 @@ Download the [minified version][min] or the [development version][max].
 * multiple removal: `Eventi.off([target, ]['first second third', ][fn])`
 * remove by category and/or tag: `Eventi.off([target, ]['category:type#tag', ][fn])`
 
-#### until.js (requires on.js)
+#### end.js (requires on.js)
 * this will remove handlers once the specified condition is satisfied
-* only tests condition upon matching event
-* countdown to zero: `Eventi.until([target, ]number, 'type', fn)`
-* test ref for truthiness: `Eventi.until([target, ]'reference', 'type', fn)`
-* call function for truthiness: `Eventi.until([target, ]testFn, 'type', fn)`
+* number of executions: `Eventi.on([target, ]'type$3', fn)`
+* test ref for truthiness: `Eventi.on([target, ]'type$reference', fn)`
+* call function for truthiness: `Eventi.on([target, ]'type$test.fn', fn)`
 
-#### combo.js (requires fire.js and on.js)
-* combo events (call after all specified events, then reset): `Eventi.on([target, ]'foo+bar', fn)`
-* event sequences (ordered combos): `Eventi.on([target, ]'one>two>three', fn...)`
-* fire combos (always in sequence): `Eventi.fire([target, ]'first>second'[, data...])`
+#### sequence.js (requires fire.js)
+* fire controllable sequence of events: `Eventi.fire([target, ]'first,second'[, data...])`
 * event sequence firing controls (w/async support via promises): `e.pauseSequence([promise])`,`e.resumeSequence()`, `e.isSequencePaused()`
-* configurable time allowed between events (for listening, not firing): `Eventi._.comboTimeout = 1000`
 
-#### types.js (requires core)
+#### combo.js (requires on.js and off.js)
+* combo events (call after all specified events, then reset): `Eventi.on([target, ]'foo+bar', fn)`
+* event sequences (ordered combos): `Eventi.on([target, ]'one,two,three', fn...)`
+* configurable timeout for combo events: `Eventi.on([target, ]'one,two', fn, 1000)`
+
+#### alias.js (requires core and declare.js)
 * provide both global and local type specification with minimal API
-* global: `Eventi.types('type');` -> `Eventi.on.type([target, ]handler)`
-* local (after Eventi.fy(o)): `Eventi.types(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
-* obviously, types cannot have the same name as Function properties like 'call' or 'length'
+* global: `Eventi.alias('type');` -> `Eventi.on.type([target, ]handler)`
+* local (after Eventi.fy(o)): `Eventi.alias(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
+* obviously, aliases cannot have the same name as Function properties like 'call' or 'length'
 
 
 #### jquery.eventi.js
 * add custom properties to $.event.props
 * add namespace support to rich syntax (ick)
 * listen for events in jQuery's manual bubbling system (ick again)
-* wrap $.fn.trigger, $.fn.on, $.fn.off, and maybe $.fn.one to intercept calls with Eventi params/syntax
+* wrap $.fn.trigger, $.fn.on, $.fn.off, and maybe $.fn.one to intercept calls with Eventi syntax
 
 #### visual.js
 * Integration for http://www.sprymedia.co.uk/article/Visual+Event+2
 
 
 ## Release History
-* 2014-02-11 [v0.5.0][] (first public release)
-* 2014-03-07 [v0.6.3][] (location events, crucial fixes)
-* 2014-03-13 [v0.7.1][] (s/signal/types, crucial fixes)
+* 2014-02-11 [v0.5.0][] (alpha)
+* 2014-04-02 [v1.0.0][] (beta)
 
 [v0.5.0]: https://github.com/nbubna/Eventi/tree/0.5.0
-[v0.6.3]: https://github.com/nbubna/Eventi/tree/0.6.3
-[v0.7.1]: https://github.com/nbubna/Eventi/tree/0.7.1
+[v1.0.0]: https://github.com/nbubna/Eventi/tree/1.0.0
