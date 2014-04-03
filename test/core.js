@@ -84,9 +84,11 @@
     ok(_.create, "_.create");
     ok(_.prop, "_.prop");
     ok(_.parse, "_.parse");
-    ok(_.properties, "_.properties");
-    ok(_.splitRE, "_.splitRE");
+    ok(_.parsers, "_.parsers");
     ok(_.wrap, "_.wrap");
+    equal(typeof _.split, "object", "_.split");
+    equal(typeof _.split.guard, "object", "_.split.guard");
+    equal(typeof _.split.ter, "function", "_.split.ter");
   });
 
   test('_.noop', function() {
