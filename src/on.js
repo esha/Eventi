@@ -3,8 +3,17 @@ _.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
     return other;
 }]);
 _.on = function(target, events, fn, data) {
-    for (var i=0,m=events.length; i<m; i++) {
-        _.handler(target, events[i], fn, data);
+    if (!Array.isArray(events)) {
+        if (fn !== undefined) {
+            data = data ? data.unshift(fn) && data : [fn];
+        }
+        for (var event in events) {
+            _.handler(target, event, events[event], data);
+        }
+    } else {
+        for (var i=0,m=events.length; i<m; i++) {
+            _.handler(target, events[i], fn, data);
+        }
     }
 };
 _.handler = function(target, text, fn, data) {

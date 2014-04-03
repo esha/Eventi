@@ -76,7 +76,7 @@ var _ = {
                 args[dataIndex] = args.slice(dataIndex);
                 args = args.slice(0, dataIndex+1);
             }
-            if (!(args[1] instanceof Event)) {// 2nd arg should be Event or array of event texts
+            if (!args[1] || typeof args[1] === "string") {
                 args[1] = _.split.ter(args[1]);
             }
             var fn = _[name], ret;

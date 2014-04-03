@@ -57,6 +57,22 @@
     Eventi.on(o, 'type', fn, 'hdata').fire(o, 'type', 'edata');
   });
 
+  test('Eventi.on({type:fn,other:fn2})', function() {
+    expect(3);
+    var target = {},
+      handlers = {
+      type: function(e) {
+        equal(e.type, 'type');
+      },
+      "other#tagged": function(e) {
+        equal(e.type, 'other');
+        equal(e.tagged, true);
+      }
+    };
+    Eventi.on(target, handlers);
+    Eventi.fire(target, Object.keys(handlers));
+  });
+
   test('_.listener', function() {
     var o = {},
       listener = _.listener(o);
