@@ -1,15 +1,17 @@
 _.off = function(target, events, fn) {
-    //TODO: support filtering by selector/location
     var listener = target[_key];
     if (listener) {
         for (var i=0, m=events.length; i<m; i++) {
-            var filter = { event:{}, handler:{}, fn:fn, text:events[i] },
-            type = _.parse(events[i], filter.event, filter.handler);
+            var filter = { event:{}, handler:{}, fn:fn, text:events[i] };
+            _.parse(events[i], filter.event, filter.handler);
             delete filter.event.tags;// superfluous for matching
-            if (type) {
-                _.clean(type, filter, listener, target);
+            if (target !== _) {
+                Eventi.fire(_, 'off:filter', filter);
+            }
+            if (filter.event.type) {
+                _.clean(filter.event.type, filter, listener, target);
             } else {
-                for (type in listener.s) {
+                for (var type in listener.s) {
                     _.clean(type, filter, listener, target);
                 }
             }
@@ -30,7 +32,7 @@ _.clean = function(type, filter, listener, target) {
             if (_.cleans(handlers[i], filter)) {
                 var cleaned = handlers.splice(i--, 1)[0];
                 if (target !== _) {// ignore internal events
-                    Eventi.fire(_, 'handler#off', cleaned);
+                    Eventi.fire(_, 'off:cleaned', cleaned);
                 }
                 m--;
             }

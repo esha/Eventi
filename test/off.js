@@ -148,23 +148,39 @@
     ok(_.cleans, "_.cleans");
   });
 
-  test('handler#off event', function() {
+  test('off:filter event', function() {
+    expect(2);
+    var target = {},
+      type = 'filterme',
+      fn = function(e, f) {
+        if (f.event.type === type) {
+          equal(e.type, 'filter');
+          equal(e.category, 'off');
+        }
+      };
+    Eventi.on(target, type, function(){})
+          .on(_, 'off:filter', fn)
+          .off(target, type)
+          .off(_, 'off:filter', fn);
+  });
+
+  test('off:cleaned event', function() {
     expect(4);
     var target = {},
       type = 'offevent',
       fn = function(e, h) {
         if (h.event.type === type) {
-          ok(e.off);
-          equal(e.type, 'handler');
+          equal(e.type, 'cleaned');
+          equal(e.category, 'off');
           ok(h === handler, 'should pass off\'ed handler');
         }
       };
     Eventi.on(target, type, function(){});
     var handler = target[_._key].s[type][0];
     ok(handler, 'should be able to snag ref to handler');
-    Eventi.on(_, 'handler#off', fn)
+    Eventi.on(_, 'off:cleaned', fn)
           .off(target, type)
-          .off(_, 'handler#off', fn);
+          .off(_, 'off:cleaned', fn);
   });
 
   test('_.unhandle not just noop', function() {
