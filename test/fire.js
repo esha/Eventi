@@ -86,7 +86,7 @@
     Eventi.fire('test:global');
     window.removeEventListener('global', listener);
   });
-
+/*
   test('Eventi.fire(event, props)', function() {
     expect(1);
     window.addEventListener('props', function(e) {
@@ -95,10 +95,9 @@
     Eventi.fire('props', { detail:'detail' });
     Eventi.fire(document.documentElement, 'props', { bubbles:false });
   });
-
+*/
   test('internal api presence', function() {
     ok(_.fire, "_.fire");
-    ok(_.fireAll, "_.fireAll");
     ok(_.dispatch, "_.dispatch");
   });
 

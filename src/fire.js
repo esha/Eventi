@@ -1,14 +1,14 @@
-_.fire = function(target, events, props, data) {
-    if (typeof props === "object" && !(props instanceof Event) &&
-        ('bubbles' in props || 'detail' in props || 'cancelable' in props)) {
-        props.data = data;
-    } else {
-        if (props !== undefined) {
-            data = data ? data.unshift(props) && data : [props];
-        }
-        props = { data: data };
+_.parsers.unshift([/^(\W*)\//, function(event, handler, other) {
+    handler.global = true;
+    return other;
+}]);
+_.fire = function(target, events, data) {
+    if (events instanceof Event) {
+        events.data = data;
+        _.dispatch(target, events);
+        return events;
     }
-    return _.fireAll(target, events, props);
+    return _.fireAll(target, events, {data:data});
 };
 _.fireAll = function(target, events, props) {
     var event;
@@ -19,6 +19,7 @@ _.fireAll = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event, objectBubbling) {
+    if (event.global){ target = _.global; }
     (target.dispatchEvent || target[_key] || _.noop).call(target, event);
     if (target.parentObject && event.bubbles && !event.propagationStopped) {
         _.dispatch(target.parentObject, event, true);
@@ -28,4 +29,4 @@ _.dispatch = function(target, event, objectBubbling) {
         _.singleton(target, event);
     }
 };
-Eventi.fire = _.wrap('fire', 3);
+Eventi.fire = _.wrap('fire', 2);
