@@ -52,6 +52,8 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
         delete handler.selector;
         delete handler.location;
         delete handler.filters;
+        delete handler.endtest;
+        delete handler.end;
         // set up combo event handlers
         handler.texts = texts;
         handler.ordered = texts.ordered;

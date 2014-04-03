@@ -4,7 +4,10 @@ _.off = function(target, events, fn) {
         for (var i=0, m=events.length; i<m; i++) {
             var filter = { event:{}, handler:{}, fn:fn, text:events[i] };
             _.parse(events[i], filter.event, filter.handler);
-            delete filter.event.tags;// superfluous for matching
+            // delete superfluous properties
+            delete filter.event.tags;
+            delete filter.handler.filters;
+            delete filter.handler.end;
             if (target !== _) {
                 Eventi.fire(_, 'off:filter', filter);
             }

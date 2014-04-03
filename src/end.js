@@ -1,4 +1,5 @@
-_.parsers.unshift([/\$\!?(\w+(\.\w+)*)/, function(event, handler, condition) {
+_.parsers.unshift([/\$(\!?\w+(\.\w+)*)/, function(event, handler, condition) {
+    handler.endtest = condition;
     handler.end = _.endTest(condition);
 }]);
 _.endTest = function(condition) {
