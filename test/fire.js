@@ -86,16 +86,17 @@
     Eventi.fire('test:global');
     window.removeEventListener('global', listener);
   });
-/*
-  test('Eventi.fire(event, props)', function() {
-    expect(1);
-    window.addEventListener('props', function(e) {
-      equal(e.detail, 'detail', 'should have detail of "detail"');
+
+  test('Eventi.fire(new CustomEvent("test")', function() {
+    expect(2);
+    var target = {},
+      event = new CustomEvent('test');
+    Eventi.on(target, 'test', function(e) {
+      strictEqual(e, event);
     });
-    Eventi.fire('props', { detail:'detail' });
-    Eventi.fire(document.documentElement, 'props', { bubbles:false });
+    equal(Eventi.fire(target, event), event);
   });
-*/
+
   test('internal api presence', function() {
     ok(_.fire, "_.fire");
     ok(_.dispatch, "_.dispatch");
