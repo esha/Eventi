@@ -4,7 +4,7 @@ var _ = {
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     copy: function(a, b, p) {
-        if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
+        if (typeof a === "object"){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
     async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
@@ -36,7 +36,7 @@ var _ = {
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     parse: function(type, event, handler) {
-        _.properties.forEach(function(property) {
+        _.parsers.forEach(function(property) {
             type = type.replace(property[0], function() {
                 var args = _.slice(arguments, 1);
                 args.unshift(event, handler);
@@ -45,61 +45,87 @@ var _ = {
         });
         return type ? event.type = type : type;
     },
-    properties: [
-        [/^\!/, function important(e, handler) {//
-            handler.important = true;
-        }],
-        [/^_/, function nobubble(event) {
+    parsers: [
+        [/^(\W*)_/, function(event, handler, other) {
             event.bubbles = false;
+            return other;
         }],
-        [/\((.*)\)/, function detail(event, handler, val) {
+        [/\((.*)\)/, function(event, handler, val) {
             try {
                 event.detail = _.resolve(val) || JSON.parse(val);
             } catch (e) {
                 event.detail = val;
             }
         }],
-        [/#(\w+)/g, function tags(event, handler, tag) {
+        [/#(\w+)/g, function(event, handler, tag) {
             (event.tags||(event.tags=[])).push(tag);
             event[tag] = true;
         }],
-        [/^(\w+):/, function category(event, handler, cat) {//
+        [/^(\w+):/, function(event, handler, cat) {//
             event.category = cat;
         }]
     ],
 
-    splitRE: / (?![^\(\)]*\))+/g,
-    wrap: function(name, expect, index) {
-        index = index || 1;
-        var wrapper = function wrapper(target) {
+    wrap: function(name, dataIndex) {
+        return function wrapper(target) {
             var args = _.slice(arguments);
-            // ensure target param precedes event text
-            if (!target || typeof target === "string") {
-                target = !this || this === Eventi ? _.global : this;
-                args.unshift(target);
+            if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
+                args.unshift(target = !this || this === Eventi ? _.global : this);
             }
-            // ensure array of event text inputs
-            args[index] = args[index] ? (args[index]+'').split(_.splitRE) : [''];
-            // gather ...data the old way
-            if (args.length > expect) {
-                args[expect] = args.slice(expect);
-                args = args.slice(0, expect+1);
+            if (args.length > dataIndex) {// gather ...data the old way
+                args[dataIndex] = args.slice(dataIndex);
+                args = args.slice(0, dataIndex+1);
             }
-            // call fn for each target
+            if (!(args[1] instanceof Event)) {// 2nd arg should be Event or array of event texts
+                args[1] = _.split.ter(args[1]);
+            }
             var fn = _[name], ret;
-            if ('length' in target && target !== _.global) {
+            if ('length' in target && target !== _.global) {// apply to each target
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(args[0] = target[i], args);
                 }
             } else {
                 ret = fn.apply(target, args);
             }
-            // be fluent
-            return ret === undefined ? this : ret;
+            return ret === undefined ? this : ret;// be fluent
         };
-        wrapper.index = index;
-        return wrapper;
-    }   
+    },
+    split: {
+        guard: { '(':')' },
+        ter: function(texts, delims) {
+            var parts = [],
+                text = '',
+                guard;
+            if (texts) {
+                delims = _.slice(arguments, 1);
+                delims.unshift(' ');
+                for (var i=0,m=texts.length; i<m; i++) {
+                    var c = texts.charAt(i);
+                    if (!guard && delims.indexOf(c) >= 0) {
+                        if (text) {
+                            parts.push(text);
+                        }
+                        text = '';
+                    } else {
+                        text += c;
+                        if (guard) {
+                            if (guard === c) {
+                                guard = null;
+                            }
+                        } else {
+                            guard = _.split.guard[c];
+                        }
+                    }
+                }
+                if (text) {
+                    parts.push(text);
+                }
+            } else {
+                parts.push('');
+            }
+            return parts;
+        }
+    }
 };
 Eventi._ = _;
 (Eventi.fy = function fy(o) {
