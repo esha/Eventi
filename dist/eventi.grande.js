@@ -1,4 +1,4 @@
-/*! Eventi - v0.7.1 - 2014-03-25
+/*! Eventi - v0.7.1 - 2014-04-02
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -19,6 +19,7 @@
             this.detail = args.detail;
             this.timestamp = Date.now();
         };
+        if (!global.Event){ global.Event = global.CustomEvent; }
     }
 
 function Eventi(){ return _.create.apply(this, arguments); }
@@ -27,7 +28,7 @@ var _ = {
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     copy: function(a, b, p) {
-        if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
+        if (typeof a === "object"){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
     async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
@@ -59,7 +60,7 @@ var _ = {
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     parse: function(type, event, handler) {
-        _.properties.forEach(function(property) {
+        _.parsers.forEach(function(property) {
             type = type.replace(property[0], function() {
                 var args = _.slice(arguments, 1);
                 args.unshift(event, handler);
@@ -68,61 +69,87 @@ var _ = {
         });
         return type ? event.type = type : type;
     },
-    properties: [
-        [/^\!/, function important(e, handler) {//
-            handler.important = true;
-        }],
-        [/^_/, function nobubble(event) {
+    parsers: [
+        [/^(\W*)_/, function(event, handler, other) {
             event.bubbles = false;
+            return other;
         }],
-        [/\((.*)\)/, function detail(event, handler, val) {
+        [/\((.*)\)/, function(event, handler, val) {
             try {
                 event.detail = _.resolve(val) || JSON.parse(val);
             } catch (e) {
                 event.detail = val;
             }
         }],
-        [/#(\w+)/g, function tags(event, handler, tag) {
+        [/#(\w+)/g, function(event, handler, tag) {
             (event.tags||(event.tags=[])).push(tag);
             event[tag] = true;
         }],
-        [/^(\w+):/, function category(event, handler, cat) {//
+        [/^(\w+):/, function(event, handler, cat) {//
             event.category = cat;
         }]
     ],
 
-    splitRE: / (?![^\(\)]*\))+/g,
-    wrap: function(name, expect, index) {
-        index = index || 1;
-        var wrapper = function wrapper(target) {
+    wrap: function(name, dataIndex) {
+        return function wrapper(target) {
             var args = _.slice(arguments);
-            // ensure target param precedes event text
-            if (!target || typeof target === "string") {
-                target = !this || this === Eventi ? _.global : this;
-                args.unshift(target);
+            if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
+                args.unshift(target = !this || this === Eventi ? _.global : this);
             }
-            // ensure array of event text inputs
-            args[index] = args[index] ? (args[index]+'').split(_.splitRE) : [''];
-            // gather ...data the old way
-            if (args.length > expect) {
-                args[expect] = args.slice(expect);
-                args = args.slice(0, expect+1);
+            if (args.length > dataIndex) {// gather ...data the old way
+                args[dataIndex] = args.slice(dataIndex);
+                args = args.slice(0, dataIndex+1);
             }
-            // call fn for each target
+            if (!(args[1] instanceof Event)) {// 2nd arg should be Event or array of event texts
+                args[1] = _.split.ter(args[1]);
+            }
             var fn = _[name], ret;
-            if ('length' in target && target !== _.global) {
+            if ('length' in target && target !== _.global) {// apply to each target
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(args[0] = target[i], args);
                 }
             } else {
                 ret = fn.apply(target, args);
             }
-            // be fluent
-            return ret === undefined ? this : ret;
+            return ret === undefined ? this : ret;// be fluent
         };
-        wrapper.index = index;
-        return wrapper;
-    }   
+    },
+    split: {
+        guard: { '(':')' },
+        ter: function(texts, delims) {
+            var parts = [],
+                text = '',
+                guard;
+            if (texts) {
+                delims = _.slice(arguments, 1);
+                delims.unshift(' ');
+                for (var i=0,m=texts.length; i<m; i++) {
+                    var c = texts.charAt(i);
+                    if (!guard && delims.indexOf(c) >= 0) {
+                        if (text) {
+                            parts.push(text);
+                        }
+                        text = '';
+                    } else {
+                        text += c;
+                        if (guard) {
+                            if (guard === c) {
+                                guard = null;
+                            }
+                        } else {
+                            guard = _.split.guard[c];
+                        }
+                    }
+                }
+                if (text) {
+                    parts.push(text);
+                }
+            } else {
+                parts.push('');
+            }
+            return parts;
+        }
+    }
 };
 Eventi._ = _;
 (Eventi.fy = function fy(o) {
@@ -135,17 +162,17 @@ Eventi._ = _;
     return o;
 }).utility = true;
 
-_.fire = function(target, events, props, data) {
-    if (typeof props === "object" && !(props instanceof Event) &&
-        ('bubbles' in props || 'detail' in props || 'cancelable' in props)) {
-        props.data = data;
-    } else {
-        if (props !== undefined) {
-            data = data ? data.unshift(props) && data : [props];
-        }
-        props = { data: data };
+_.parsers.unshift([/^(\W*)\//, function(event, handler, other) {
+    handler.global = true;
+    return other;
+}]);
+_.fire = function(target, events, data) {
+    if (events instanceof Event) {
+        events.data = data;
+        _.dispatch(target, events);
+        return events;
     }
-    return _.fireAll(target, events, props);
+    return _.fireAll(target, events, {data:data});
 };
 _.fireAll = function(target, events, props) {
     var event;
@@ -156,6 +183,7 @@ _.fireAll = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event, objectBubbling) {
+    if (event.global){ target = _.global; }
     (target.dispatchEvent || target[_key] || _.noop).call(target, event);
     if (target.parentObject && event.bubbles && !event.propagationStopped) {
         _.dispatch(target.parentObject, event, true);
@@ -165,7 +193,11 @@ _.dispatch = function(target, event, objectBubbling) {
         _.singleton(target, event);
     }
 };
-Eventi.fire = _.wrap('fire', 3);
+Eventi.fire = _.wrap('fire', 2);
+_.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
+    handler.important = true;
+    return other;
+}]);
 _.on = function(target, events, fn, data) {
     for (var i=0,m=events.length; i<m; i++) {
         _.handler(target, events[i], fn, data);
@@ -176,11 +208,12 @@ _.handler = function(target, text, fn, data) {
     _.parse(text, handler.event, handler);
     delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
-        Eventi.fire(_, 'handler#new', handler);
+        Eventi.fire(_, 'on:handler', handler);
     }
-    // allow handler#new listeners to change these things
+    // allow on:handler listeners to change these things
     if (handler.fn !== _.noop) {
-        _.handlers(handler.target, handler.event.type).push(handler);
+        target = handler.global === true ? _.global : handler.target;
+        _.handlers(target, handler.event.type).push(handler);
     }
     return handler;
 };
@@ -222,21 +255,23 @@ _.handle = function(event, handlers) {
 _.execute = function(event, handler) {
     var args = [event],
         fn = handler.fn,
-        call = { context: handler.target, args:args };
+        call = { target: handler.target, args:args };
     if (event.data){ args.push.apply(args, event.data); }
     if (handler.data){ args.push.apply(args, handler.data); }
     if (handler.filters) {
-        for (var i=0,m=handler.filters.length; i<m; i++) {
+        for (var i=0,m=handler.filters.length; i<m && call.target; i++) {
             handler.filters[i].call(call, event, handler);
         }
     }
-    try {
-        fn.apply(call.context, call.args);
-    } catch (e) {
-        _.async(function(){ throw e; });
-    }
-    if (handler.end && handler.end.apply(call.context, call.args)) {
-        _.unhandle(handler);
+    if (call.target) {
+        try {
+            fn.apply(call.target, call.args);
+        } catch (e) {
+            _.async(function(){ throw e; });
+        }
+        if (handler.end && handler.end.apply(call.target, call.args)) {
+            _.unhandle(handler);
+        }
     }
 };
 _.filter = function(handler, fn) {
@@ -255,13 +290,16 @@ _.matches = function(event, match) {
 
 Eventi.on = _.wrap('on', 3);
 
-if (global.Element) {
-    _.properties.unshift([/<(.+)>/, function delegate(event, handler, selector) {
-        handler.selector = selector;
+_.split.guard['<'] = '>';
+_.parsers.unshift([/<(.+)>/, function(event, handler, selector) {
+    handler.selector = selector;
+    if (_.delegate && event !== handler) {
         _.filter(handler, _.delegate);
-    }]);
+    }
+}]);
+if (global.Element) {
     _.delegate = function delegate(event, handler) {
-        this.context = _.closest(event.target, handler.selector) || handler.target;
+        this.target = _.closest(event.target, handler.selector);
     };
     _.closest = function(el, selector) {
         while (el && el.matches) {
@@ -279,59 +317,64 @@ if (global.Element) {
     }
 }   
 
+_.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
+    handler.alias = alias;
+    if (handler !== event) {
+        handler.data = handler.data || [];
+        handler.data.push(alias);
+    }
+}]);
 if (document) {
     _.init = function init() {
         var nodes = document.querySelectorAll('[data-eventi]');
         for (var i=0,m=nodes.length; i<m; i++) {
-            var node = nodes[i],
-                mapping = node.getAttribute('data-eventi');
-            if (mapping) {
-                _.declare(mapping, node);
+            var target = nodes[i],
+                mapping = target.getAttribute('data-eventi');
+            if (mapping !== target.eventi) {
+                if (_.off && target.eventi) {
+                    Eventi.off(target, target.eventi, _.declared);
+                }
+                target.eventi = mapping;
+                _.declare(target, mapping);
             }
         }
         if (nodes.length || document.querySelectorAll('[click]').length) {
             Eventi.on('click keyup', _.check);
         }
     };
-    _.declare = function(mapping, mapper) {// register listener
-        var types = mapping.split(_.splitRE);
-        for (var i=0,m=types.length; i<m; i++) {
-            var type = types[i],
-                eq = type.lastIndexOf('='),
-                alias = eq > 0 ? type.substring(eq+1) : undefined,
-                global = type.charAt(0) === '/',
-                context = global ? _.global : mapper;
-            mapper = mapper || document;
-            if (alias){ type = type.substring(0, eq); }
-            if (global){ type = type.substring(1); }
-            Eventi.on(context, type, _.mapped, mapper, alias);
+    _.declare = function(target, mapping) {// register listener
+        var texts = _.split.ter(mapping);
+        for (var i=0,m=texts.length; i<m; i++) {
+            Eventi.on(target, texts[i], _.declared);
         }
     };
-    _.mapped = function(e, mapper, alias) {// lookup handlers
-        var type = alias || e.type,
-            nodes = _.declarers(mapper, type, this !== _.global && e.target);
+    _.declared = function(e, alias) {// lookup handlers
+        alias = typeof alias === "string" ? alias : e.type;
+        var nodes = _.declarers(this, alias, e.target);
         for (var i=0,m=nodes.length; i<m; i++) {
-            _.declared(nodes[i], type, e);
+            _.respond(nodes[i], alias, e);
         }
     };
-    _.declarers = function(mapper, type, target) {
-        var query = '['+type+']';
-        if (target) {
-            // gather matching parents up to the mapper
-            var nodes = [];
-            while (target && target.matches && target !== mapper.parentNode) {
-                if (target.matches(query)) {
-                    nodes.push(target);
-                }
-                target = target.parentNode;
+    _.declarers = function(target, alias, node) {
+        var query = '['+alias+']',
+            // gather matching parents up to the target
+            nodes = [],
+            descendant = false;
+        while (node && node.matches) {
+            if (node.matches(query)) {
+                nodes.push(node);
             }
-            return nodes;
+            if (node === target) {
+                descendant = true;
+                break;
+            }
+            node = node.parentNode;
         }
-        // gather all declarations within the mapper
-        return mapper.querySelectorAll(query);
+        // if node isn't a descendant of target, handler must be global
+        return descendant ? nodes : target.querySelectorAll(query);
     };
-    _.declared = function(node, type, e) {// execute handler
-        var response = node.getAttribute(type);
+    _.respond = function(node, alias, e) {// execute handler
+        var response = node.getAttribute(alias);
         if (response) {
             var fn = _.resolve(response, node) || _.resolve(response);
             if (typeof fn === "function") {
@@ -345,7 +388,7 @@ if (document) {
         var click = (e.type === 'click' && _.click(e.target)) ||
                     (e.keyCode === 13 && _.click(e.target, true));
         if (click) {
-            _.mapped(e, document.documentElement, 'click');
+            _.declared.call(document.documentElement, e, 'click');
             if (click === 'noDefault' && !_.allowDefault(e.target)) {
                 e.preventDefault();
             }
@@ -380,11 +423,12 @@ if (document) {
 }
 
 // add singleton to _.parse's supported event properties
-_.properties.unshift([/^\^/, function singleton(event, handler) {
+_.parsers.unshift([/^(\W*)\^/, function(event, handler, other) {
 	handler.singleton = true;
 	if (event !== handler) {
 		_.filter(handler, _.before);
 	}
+	return other;
 }]);
 
 // _.fire's _.dispatch will call this when appropriate
@@ -407,11 +451,11 @@ _.before = function singleton(event, handler) {
 	_.unhandle(handler);
 	handler.fn = _.noop;// tell _.handler not to keep this
 	if (!event[_skey]) {// remember this non-singleton as singleton for handler's sake
-		_.remember(this.context, event);
+		_.remember(this.target, event);
 	}
 };
 
-Eventi.on(_, 'handler#new', function singleton(e, handler) {
+Eventi.on(_, 'on:handler', function singleton(e, handler) {
 	if (handler.singleton) {
 		// search target's saved singletons, execute handler upon match
 		var saved = handler.target[_skey]||[];
@@ -427,19 +471,19 @@ Eventi.on(_, 'handler#new', function singleton(e, handler) {
 
 if (document) {
 	Eventi.on('DOMContentLoaded', function ready(e) {
-		_.fire(document.documentElement, ['^ready'], undefined, [e]);
+		Eventi.fire(document.documentElement, '^ready', e);
 	});
 }
 // add key syntax to _.parse's supported event properties
 _.keyRE = /\[([a-z-0-9,\.\/\[\`\\\]\']+)\]/;
-_.properties.push([_.keyRE, function parseKey(m, name) {
+_.parsers.push([_.keyRE, function(event, handler, name) {
     var dash, key;
     while ((dash = name.indexOf('-')) > 0) {
         key = name.substring(0, dash);
         name = name.substring(dash+1);
-        this[(_.special[key]||key)+'Key'] = true;
+        event[(_.special[key]||key)+'Key'] = true;
     }
-    this.keyCode = _.codes[name] || parseInt(name, 10) || 0;
+    event.keyCode = _.codes[name] || parseInt(name, 10) || 0;
 }]);
 _.special = { command: 'meta', apple: 'meta' };
 _.codes = {
@@ -453,95 +497,104 @@ for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
 'abcdefghijklmnopqrstuvwxyz 0123456789'.split('').forEach(function(c) {
     _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
 });
-var h = global.history,
-    l = global.location;
-_.pushState = h.pushState;
-h.pushState = function() {
-    var ret = _.pushState.apply(this, arguments);
-    _.dispatch(_.global, new Eventi('pushstate', {uri:arguments[2]}));
-    return ret;
-};
-Eventi.on('!popstate !hashchange !pushstate', _.at = function(e, uri) {
-    uri = uri || decodeURI(l.pathname + l.search + l.hash);
-    if (uri !== _.uri) {
-        _.dispatch(_.global, new Eventi('location', {
-            oldURI: _.uri,
-            uri: _.uri = uri,
-            srcEvent: e
-        }));
+_.split.guard['@'] = '@';
+_.parsers.unshift([/@([^@]+)(@|$)/, function(event, handler, uri) {
+    handler.location = uri;
+    if (_.location && event !== handler) {
+        _.locationHandler(uri, handler);
     }
-    return uri;
-})
-.on('!location', function setUri(e, uri, fill) {
-    if (typeof uri === "string") {
-        var keys = _.keys(uri);
-        if (keys) {
-            uri = keys.reduce(function(s, key) {
-                return s.replace(new RegExp('\\{'+key+'\\}',"g"),
-                                 fill[key] || global.location[key] || '');
-            }, uri);
+}]);
+if (global.history && global.location) {
+    var current;
+    _.pushState = history.pushState;
+    history.pushState = function() {
+        var ret = _.pushState.apply(this, arguments);
+        _.dispatch(_.global, new CustomEvent('pushstate'));
+        return ret;
+    };
+    _.location = function(e, uri) {
+        uri = uri || decodeURI(location.pathname + location.search + location.hash);
+        if (uri !== current) {
+            _.dispatch(_.global, new Eventi('location', {
+                oldLocation: current,
+                location: current = uri,
+                srcEvent: e
+            }));
         }
-        e.uri = uri;
-        if (uri !== _.uri) {
-            h.pushState(null,null, encodeURI(uri));
+        return current;
+    };
+    _.setLocation = function(e, uri, fill) {
+        if (typeof uri !== "string") {
+            fill = uri;
+            uri = e.location;
         }
-    } else if (!e.uri) {
-        e.uri = _.uri;
-    }
-})
-.on(_, 'handler#new', function location(e, handler) {
-    if (handler.event.type === "location") {
-        // always listen on window, but save given target to use as context
-        handler._target = handler.target;
-        handler.target = _.global;
-        if (handler.selector) {
-            // overloading on.js' selector argument with uri template/regex
-            var re = handler.selector;
-            delete handler.selector;
-            if (typeof re === "string") {
-                re = re.replace(/([.*+?^=!:$(|\[\/\\])/g, "\\$1");
-                if (handler.keys = _.keys(re)) {
-                    re = re.replace(/\{\w+\}/g, "([^\/?#]+)");
-                } else {
-                    re.replace(/\{/g, '\\{');
-                }
-                re = new RegExp(re);
+        if (uri) {
+            var keys = _.keys(uri);
+            if (keys) {
+                uri = keys.reduce(function(s, key) {
+                    return s.replace(new RegExp('\\{'+key+'\\}',"g"),
+                                     fill[key] || location[key] || '');
+                }, uri);
             }
-            handler.regexp = re;
+            if (uri !== current) {
+                history.pushState(null, null, encodeURI(uri));
+            }
+        }
+    };
+    _.keys = function(tmpl) {
+        var keys = tmpl.match(/\{\w+\}/g);
+        return keys && keys.map(function(key) {
+            return key.substring(1, key.length-1);
+        });
+    };
+    _.locationHandler = function(uri, handler) {
+        var re = uri;
+        if (uri.charAt(0) === '`') {
+            re = re.substring(1, re.length-1);
         } else {
-            handler.regexp = /.+/;
+            re = re.replace(/([.*+?^=!:$(|\[\/\\])/g, "\\$1");// escape uri/regexp conflicts
+            if (handler.keys = _.keys(re)) {
+                re = re.replace(/\{\w+\}/g, "([^\/?#]+)");
+            } else {
+                re.replace(/\{/g, '\\{');
+            }
         }
-        handler._fn = handler.fn;
-        handler.fn = function(e){ _.location(e.uri, handler, arguments); };
-        // try for current uri match immediately
-        _.execute(new Eventi('location',{uri:_.uri||_.at()}), handler);
-    }
-});
-_.keys = function(tmpl) {
-    var keys = tmpl.match(/\{\w+\}/g);
-    return keys && keys.map(function(key) {
-        return key.substring(1, key.length-1);
+        handler.uriRE = new RegExp(re);
+        _.filter(handler, _.locationFilter);
+    };
+    _.locationFilter = function(event, handler) {
+        var matches = (event.uri || current).match(handler.uriRE);
+        if (matches) {
+            this.args.splice.apply(this.args, [1,0].concat(matches));
+            if (handler.keys) {
+                // put key/match object in place of full match
+                this.args[1] = handler.keys.reduce(function(o, key) {
+                    o[key] = matches.shift();
+                    return o;
+                }, { match: matches.shift() });
+            }
+        } else {
+            this.target = undefined;
+        }
+    };
+    Eventi.on('!popstate !hashchange !pushstate', _.location)
+    .on('!location', _.setLocation)
+    .on(_, 'on:handler', function location(e, handler) {
+        if (handler.event.type === 'location') {
+            // force global
+            handler.global = true;
+            // try for current uri match immediately
+            if (!current) {
+                _.location();
+            }
+            _.execute(new Eventi('location',{location:current, srcEvent:e}), handler);
+        }
     });
-};
-_.location = function(uri, handler, args) {
-    var matches = (uri||_.uri).match(handler.regexp);
-    if (matches) {
-        args = _.slice(args);
-        args.splice.apply(args, [1,0].concat(matches));
-        if (handler.keys) {
-            // put key/match object in place of full match
-            args[1] = handler.keys.reduce(function(o, key) {
-                o[key] = matches.shift();
-                return o;
-            }, { match: matches.shift() });
-        }
-        handler._fn.apply(handler._target, args);
-    }
-};
+}
     _.version = "0.7.1";
 
-    var sP = (Event && Event.prototype.stopPropagation) || _.noop,
-        sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
+        sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
     CustomEvent.prototype.stopPropagation = function() {
         this.propagationStopped = true;
         sP.call(this);

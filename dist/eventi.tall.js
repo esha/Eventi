@@ -1,4 +1,4 @@
-/*! Eventi - v0.7.1 - 2014-03-25
+/*! Eventi - v0.7.1 - 2014-04-02
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -19,6 +19,7 @@
             this.detail = args.detail;
             this.timestamp = Date.now();
         };
+        if (!global.Event){ global.Event = global.CustomEvent; }
     }
 
 function Eventi(){ return _.create.apply(this, arguments); }
@@ -27,7 +28,7 @@ var _ = {
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
     copy: function(a, b, p) {
-        if (a){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
+        if (typeof a === "object"){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
     async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
@@ -59,7 +60,7 @@ var _ = {
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     parse: function(type, event, handler) {
-        _.properties.forEach(function(property) {
+        _.parsers.forEach(function(property) {
             type = type.replace(property[0], function() {
                 var args = _.slice(arguments, 1);
                 args.unshift(event, handler);
@@ -68,61 +69,87 @@ var _ = {
         });
         return type ? event.type = type : type;
     },
-    properties: [
-        [/^\!/, function important(e, handler) {//
-            handler.important = true;
-        }],
-        [/^_/, function nobubble(event) {
+    parsers: [
+        [/^(\W*)_/, function(event, handler, other) {
             event.bubbles = false;
+            return other;
         }],
-        [/\((.*)\)/, function detail(event, handler, val) {
+        [/\((.*)\)/, function(event, handler, val) {
             try {
                 event.detail = _.resolve(val) || JSON.parse(val);
             } catch (e) {
                 event.detail = val;
             }
         }],
-        [/#(\w+)/g, function tags(event, handler, tag) {
+        [/#(\w+)/g, function(event, handler, tag) {
             (event.tags||(event.tags=[])).push(tag);
             event[tag] = true;
         }],
-        [/^(\w+):/, function category(event, handler, cat) {//
+        [/^(\w+):/, function(event, handler, cat) {//
             event.category = cat;
         }]
     ],
 
-    splitRE: / (?![^\(\)]*\))+/g,
-    wrap: function(name, expect, index) {
-        index = index || 1;
-        var wrapper = function wrapper(target) {
+    wrap: function(name, dataIndex) {
+        return function wrapper(target) {
             var args = _.slice(arguments);
-            // ensure target param precedes event text
-            if (!target || typeof target === "string") {
-                target = !this || this === Eventi ? _.global : this;
-                args.unshift(target);
+            if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
+                args.unshift(target = !this || this === Eventi ? _.global : this);
             }
-            // ensure array of event text inputs
-            args[index] = args[index] ? (args[index]+'').split(_.splitRE) : [''];
-            // gather ...data the old way
-            if (args.length > expect) {
-                args[expect] = args.slice(expect);
-                args = args.slice(0, expect+1);
+            if (args.length > dataIndex) {// gather ...data the old way
+                args[dataIndex] = args.slice(dataIndex);
+                args = args.slice(0, dataIndex+1);
             }
-            // call fn for each target
+            if (!(args[1] instanceof Event)) {// 2nd arg should be Event or array of event texts
+                args[1] = _.split.ter(args[1]);
+            }
             var fn = _[name], ret;
-            if ('length' in target && target !== _.global) {
+            if ('length' in target && target !== _.global) {// apply to each target
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(args[0] = target[i], args);
                 }
             } else {
                 ret = fn.apply(target, args);
             }
-            // be fluent
-            return ret === undefined ? this : ret;
+            return ret === undefined ? this : ret;// be fluent
         };
-        wrapper.index = index;
-        return wrapper;
-    }   
+    },
+    split: {
+        guard: { '(':')' },
+        ter: function(texts, delims) {
+            var parts = [],
+                text = '',
+                guard;
+            if (texts) {
+                delims = _.slice(arguments, 1);
+                delims.unshift(' ');
+                for (var i=0,m=texts.length; i<m; i++) {
+                    var c = texts.charAt(i);
+                    if (!guard && delims.indexOf(c) >= 0) {
+                        if (text) {
+                            parts.push(text);
+                        }
+                        text = '';
+                    } else {
+                        text += c;
+                        if (guard) {
+                            if (guard === c) {
+                                guard = null;
+                            }
+                        } else {
+                            guard = _.split.guard[c];
+                        }
+                    }
+                }
+                if (text) {
+                    parts.push(text);
+                }
+            } else {
+                parts.push('');
+            }
+            return parts;
+        }
+    }
 };
 Eventi._ = _;
 (Eventi.fy = function fy(o) {
@@ -135,17 +162,17 @@ Eventi._ = _;
     return o;
 }).utility = true;
 
-_.fire = function(target, events, props, data) {
-    if (typeof props === "object" && !(props instanceof Event) &&
-        ('bubbles' in props || 'detail' in props || 'cancelable' in props)) {
-        props.data = data;
-    } else {
-        if (props !== undefined) {
-            data = data ? data.unshift(props) && data : [props];
-        }
-        props = { data: data };
+_.parsers.unshift([/^(\W*)\//, function(event, handler, other) {
+    handler.global = true;
+    return other;
+}]);
+_.fire = function(target, events, data) {
+    if (events instanceof Event) {
+        events.data = data;
+        _.dispatch(target, events);
+        return events;
     }
-    return _.fireAll(target, events, props);
+    return _.fireAll(target, events, {data:data});
 };
 _.fireAll = function(target, events, props) {
     var event;
@@ -156,6 +183,7 @@ _.fireAll = function(target, events, props) {
     return event;
 };
 _.dispatch = function(target, event, objectBubbling) {
+    if (event.global){ target = _.global; }
     (target.dispatchEvent || target[_key] || _.noop).call(target, event);
     if (target.parentObject && event.bubbles && !event.propagationStopped) {
         _.dispatch(target.parentObject, event, true);
@@ -165,7 +193,11 @@ _.dispatch = function(target, event, objectBubbling) {
         _.singleton(target, event);
     }
 };
-Eventi.fire = _.wrap('fire', 3);
+Eventi.fire = _.wrap('fire', 2);
+_.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
+    handler.important = true;
+    return other;
+}]);
 _.on = function(target, events, fn, data) {
     for (var i=0,m=events.length; i<m; i++) {
         _.handler(target, events[i], fn, data);
@@ -176,11 +208,12 @@ _.handler = function(target, text, fn, data) {
     _.parse(text, handler.event, handler);
     delete handler.event.tags;// superfluous for handlers
     if (target !== _) {// ignore internal events
-        Eventi.fire(_, 'handler#new', handler);
+        Eventi.fire(_, 'on:handler', handler);
     }
-    // allow handler#new listeners to change these things
+    // allow on:handler listeners to change these things
     if (handler.fn !== _.noop) {
-        _.handlers(handler.target, handler.event.type).push(handler);
+        target = handler.global === true ? _.global : handler.target;
+        _.handlers(target, handler.event.type).push(handler);
     }
     return handler;
 };
@@ -222,21 +255,23 @@ _.handle = function(event, handlers) {
 _.execute = function(event, handler) {
     var args = [event],
         fn = handler.fn,
-        call = { context: handler.target, args:args };
+        call = { target: handler.target, args:args };
     if (event.data){ args.push.apply(args, event.data); }
     if (handler.data){ args.push.apply(args, handler.data); }
     if (handler.filters) {
-        for (var i=0,m=handler.filters.length; i<m; i++) {
+        for (var i=0,m=handler.filters.length; i<m && call.target; i++) {
             handler.filters[i].call(call, event, handler);
         }
     }
-    try {
-        fn.apply(call.context, call.args);
-    } catch (e) {
-        _.async(function(){ throw e; });
-    }
-    if (handler.end && handler.end.apply(call.context, call.args)) {
-        _.unhandle(handler);
+    if (call.target) {
+        try {
+            fn.apply(call.target, call.args);
+        } catch (e) {
+            _.async(function(){ throw e; });
+        }
+        if (handler.end && handler.end.apply(call.target, call.args)) {
+            _.unhandle(handler);
+        }
     }
 };
 _.filter = function(handler, fn) {
@@ -257,8 +292,8 @@ Eventi.on = _.wrap('on', 3);
 
     _.version = "0.7.1";
 
-    var sP = (Event && Event.prototype.stopPropagation) || _.noop,
-        sIP = (Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
+        sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
     CustomEvent.prototype.stopPropagation = function() {
         this.propagationStopped = true;
         sP.call(this);
