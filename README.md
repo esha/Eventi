@@ -9,10 +9,6 @@ Download the [minified version][min] or the [development version][max].
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
 
 ## TODO
-* teach on.js to do `Eventi.on("type", "referenced.handler")` for more declare.js parity
-* batch registration for on.js: `Eventi.on({ 'type': handler, 'other': otherFn });`
-* finish key tests
-* finish end tests
 * documentation
 * demo app/site
 * integrations (jQuery, Visual Event 2, Capo, etc)
