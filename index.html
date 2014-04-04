@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Eventi by nbubna</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Eventi</h1>
+        <h2>Unlocking the potential of event-based development.</h2>
+        <a href="https://github.com/nbubna/Eventi" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="eventi" class="anchor" href="#eventi"><span class="octicon octicon-link"></span></a>Eventi</h1>
+
+<p>Powerful application events, made easy.</p>
+
+<h2>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h2>
+
+<p>Download the <a href="https://raw.github.com/nbubna/Eventi/master/dist/Eventi.min.js">minified version</a> or the <a href="https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js">development version</a>.</p>
+
+<h2>
+<a name="motive" class="anchor" href="#motive"><span class="octicon octicon-link"></span></a>Motive</h2>
+
+<ul>
+<li>JavaScript development is ultimately event-based development.</li>
+<li>Application events (aka custom events) are usually under-used or poorly-used in webapps.</li>
+<li>Events are the best way to decouple modules and components without isolating them entirely.</li>
+<li>DOM event bubbling, in particular, has much potential for meaningful event based interfaces.</li>
+<li>Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types with poor data that most heavy custom event users end up using.</li>
+<li>Custom events can be awesome, especially when you have rich features and patterns that are simple to use.</li>
+<li>Declarative events are completely unsupported out there. This is a travesty.</li>
+</ul><h2>
+<a name="goal" class="anchor" href="#goal"><span class="octicon octicon-link"></span></a>Goal</h2>
+
+<ul>
+<li>A rich event platform that's easy to use and to extend.</li>
+<li>A declarative syntax for working with rich, informative events.</li>
+<li>DOM and object support</li>
+<li>Handling for complex event types (combos, async sequences, singletons, etc).</li>
+<li>Robust, error tolerant listener execution</li>
+<li>Support for best-practices like "signals" (aka pre-defined types) and declarative event mapping</li>
+<li>Lots of solid, maintainable test code</li>
+<li>Impressive, interactive demo (ideas, anyone?)</li>
+<li>Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key/location, venti adds off/until/combo/types</li>
+<li>Venti is the default version to encourage much event-based awesomeness for everyone.</li>
+<li>Grande includes basic webapp tools.</li>
+<li>Tall could be enough for light server-side work.</li>
+</ul><h2>
+<a name="code-organization" class="anchor" href="#code-organization"><span class="octicon octicon-link"></span></a>Code Organization</h2>
+
+<h4>
+<a name="eventiframe-useless-on-its-own" class="anchor" href="#eventiframe-useless-on-its-own"><span class="octicon octicon-link"></span></a>Eventi.frame (useless on its own)</h4>
+
+<ul>
+<li>external IIFE</li>
+<li>universal module definition</li>
+<li>CustomEvent constructor polyfill</li>
+<li>body is resolved to build tool specified (sub)set of the following content</li>
+</ul><h4>
+<a name="corejs-not-much-use-on-its-own" class="anchor" href="#corejs-not-much-use-on-its-own"><span class="octicon octicon-link"></span></a>core.js (not much use on its own)</h4>
+
+<ul>
+<li>rich event syntax parsing: <code>Eventi("group:kind#label('val')")</code> -&gt; <code>{ category:'group', type:'kind', tags:['label'], label:true, detail:'val' }</code>
+</li>
+<li>parser should be extensible (for supporting jQuery namespaces or keyCodes or whatever)</li>
+<li>detail can be resolvable reference, string, or limited json (no parentheses)</li>
+<li>interface sharing (pass <code>this</code> as <code>target</code> param to copied functions): <code>Eventi.fy(foo)</code> -&gt; <code>foo.fire('type')</code>
+</li>
+<li>add stopImmediatePropagation and immediatePropagationStopped to event interface</li>
+</ul><h4>
+<a name="onjs-requires-corejs" class="anchor" href="#onjs-requires-corejs"><span class="octicon octicon-link"></span></a>on.js (requires core.js)</h4>
+
+<ul>
+<li>simple event registration: <code>Eventi.on([target, ]'type', fn)</code>
+</li>
+<li>space delimited multiple registration: <code>Eventi.on([target, ]'first second third', fn)</code>
+</li>
+<li>filter by category and/or tag: <code>Eventi.on([target, ]"category:type#tag", fn)</code>
+</li>
+<li>bind data w/listener: <code>Eventi.on([target, ]'type', fn, data)</code>
+</li>
+<li>applying rich event data as listener arg(s): <code>Eventi.on([target, ]'type', function(e, arg, arg){})</code>
+</li>
+<li>implementation: one listener per target that gets registered for every handled type. the listener handles each event by looking amongst its handlers for those that match the event and executing them</li>
+</ul><h4>
+<a name="firejs-requires-corejs-uses-onjs" class="anchor" href="#firejs-requires-corejs-uses-onjs"><span class="octicon octicon-link"></span></a>fire.js (requires core.js, uses on.js)</h4>
+
+<ul>
+<li>object or DOM custom event dispatch: <code>Eventi.fire(Node|object, 'type')</code>
+</li>
+<li>handler errors caught and thrown in next tick to avoid interrupting sibling handlers or hiding errors</li>
+<li>implicit global target: <code>Eventi.fire('type')</code> === `Eventi.fire(document || this, 'type')</li>
+<li>multiple target specification: <code>Eventi.fire(Array|NodeList, 'type')</code>
+</li>
+<li>fire with handler arguments <code>Eventi.fire([target, ]'type', data)</code>
+</li>
+<li>TODO: consider non-DOM propagation when typeof object.parent === "object"</li>
+</ul><h4>
+<a name="delegatejs-requires-onjs" class="anchor" href="#delegatejs-requires-onjs"><span class="octicon octicon-link"></span></a>delegate.js (requires on.js)</h4>
+
+<ul>
+<li>alias Element.prototype.matches from the prefixed matchesSelector versions</li>
+<li>filter by selector (aka delegation): <code>Eventi.on([target, ]'type&lt;.selector&gt;', fn)</code>
+</li>
+</ul><h4>
+<a name="declarejs-requires-onjs-and-firejs" class="anchor" href="#declarejs-requires-onjs-and-firejs"><span class="octicon octicon-link"></span></a>declare.js (requires on.js and fire.js)</h4>
+
+<ul>
+<li>declare <code>data-eventi="submit /beforeunload=quit"</code> on a root or container element</li>
+<li>declare specific responses on descendent(s): <code>submit="validate&gt;save" quit="Utils.persist"</code>
+</li>
+<li>try to resolve attr values at call-time to either element or global function (declared event handler)</li>
+<li>otherwise, fire as application event (declared event mapping)</li>
+<li>impl should scan document for data-eventi attributes on DOMContentLoaded, register those listeners</li>
+<li>
+<code>click="..."</code> is globally supported by default using trigger.js' intelligent click/enter logic</li>
+</ul><h4>
+<a name="singletonjs-requires-firejs-and-onjs" class="anchor" href="#singletonjs-requires-firejs-and-onjs"><span class="octicon octicon-link"></span></a>singleton.js (requires fire.js and on.js)</h4>
+
+<ul>
+<li>singleton events (immediately call late listeners, ignore multiple firings)</li>
+<li>"listen" for them: <code>Eventi.on([target, ]'^type', fn)</code>
+</li>
+<li>fire them so they're remembered: <code>Eventi.fire([target, ]'^type', fn)</code>
+</li>
+<li>alias DOMContentLoaded to '^ready'</li>
+</ul><h4>
+<a name="keyjs-requires-onjs" class="anchor" href="#keyjs-requires-onjs"><span class="octicon octicon-link"></span></a>key.js (requires on.js)</h4>
+
+<ul>
+<li>filter key events: <code>Eventi.on([target, ]'keyup[shift-a]', fn)</code>
+</li>
+</ul><h4>
+<a name="locationjs-requires-onjs-and-firejs" class="anchor" href="#locationjs-requires-onjs-and-firejs"><span class="octicon octicon-link"></span></a>location.js (requires on.js and fire.js)</h4>
+
+<ul>
+<li>event-based routing: <code>Eventi.on('location@?view={view}', function(e, url, params){ console.log(params.view); })</code>
+</li>
+<li>event-based history.pushState: <code>Eventi.fire('location@?view={0}', ['foo'])</code>
+</li>
+<li>consistent event for all popstate/hashchange/pushstate changes: <code>Eventi.on('location', function(e){ console.log(e.location, e.oldLocation, e.srcEvent); })</code>
+</li>
+</ul><h4>
+<a name="offjs-requires-onjs" class="anchor" href="#offjs-requires-onjs"><span class="octicon octicon-link"></span></a>off.js (requires on.js)</h4>
+
+<ul>
+<li>simple listener removal: <code>Eventi.off([target, ]['type', ][fn])</code>
+</li>
+<li>multiple removal: <code>Eventi.off([target, ]['first second third', ][fn])</code>
+</li>
+<li>remove by category and/or tag: <code>Eventi.off([target, ]['category:type#tag', ][fn])</code>
+</li>
+</ul><h4>
+<a name="endjs-requires-onjs" class="anchor" href="#endjs-requires-onjs"><span class="octicon octicon-link"></span></a>end.js (requires on.js)</h4>
+
+<ul>
+<li>this will remove handlers once the specified condition is satisfied</li>
+<li>number of executions: <code>Eventi.on([target, ]'type$3', fn)</code>
+</li>
+<li>test ref for truthiness: <code>Eventi.on([target, ]'type$reference', fn)</code>
+</li>
+<li>call function for truthiness: <code>Eventi.on([target, ]'type$test.fn', fn)</code>
+</li>
+</ul><h4>
+<a name="sequencejs-requires-firejs" class="anchor" href="#sequencejs-requires-firejs"><span class="octicon octicon-link"></span></a>sequence.js (requires fire.js)</h4>
+
+<ul>
+<li>fire controllable sequence of events: <code>Eventi.fire([target, ]'first,second'[, data...])</code>
+</li>
+<li>event sequence firing controls (w/async support via promises): <code>e.pauseSequence([promise])</code>,<code>e.resumeSequence()</code>, <code>e.isSequencePaused()</code>
+</li>
+</ul><h4>
+<a name="combojs-requires-onjs-and-offjs" class="anchor" href="#combojs-requires-onjs-and-offjs"><span class="octicon octicon-link"></span></a>combo.js (requires on.js and off.js)</h4>
+
+<ul>
+<li>combo events (call after all specified events, then reset): <code>Eventi.on([target, ]'foo+bar', fn)</code>
+</li>
+<li>event sequences (ordered combos): <code>Eventi.on([target, ]'one,two,three', fn...)</code>
+</li>
+<li>configurable timeout for combo events: <code>Eventi.on([target, ]'one,two', fn, 1000)</code>
+</li>
+</ul><h4>
+<a name="aliasjs-requires-core-and-declarejs" class="anchor" href="#aliasjs-requires-core-and-declarejs"><span class="octicon octicon-link"></span></a>alias.js (requires core and declare.js)</h4>
+
+<ul>
+<li>provide both global and local type specification with minimal API</li>
+<li>global: <code>Eventi.alias('type');</code> -&gt; <code>Eventi.on.type([target, ]handler)</code>
+</li>
+<li>local (after Eventi.fy(o)): <code>Eventi.alias(o, 'type', 'type2')</code> -&gt; <code>target.until.type2(1, handler)</code>
+</li>
+<li>obviously, aliases cannot have the same name as Function properties like 'call' or 'length'</li>
+</ul><h2>
+<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h2>
+
+<ul>
+<li>documentation</li>
+<li>demo app/site</li>
+<li>integrations (jQuery, Visual Event 2, Capo, etc)</li>
+<li>consider limited grouping syntax for types with partial overlap: <code>group:{type#tag other$1}#tag2</code> but probably don't bother due to incompatibility w/aliasing and current parsing</li>
+<li>consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality. but resist doing it, as this could get out of hand...</li>
+</ul><h4>
+<a name="plan-for-jqueryeventijs" class="anchor" href="#plan-for-jqueryeventijs"><span class="octicon octicon-link"></span></a>Plan for jquery.eventi.js</h4>
+
+<ul>
+<li>add custom properties to $.event.props</li>
+<li>add namespace support to rich syntax (reluctantly)</li>
+<li>listen for events in jQuery's manual bubbling system</li>
+<li>wrap $.fn.trigger, $.fn.on, $.fn.off, and $.fn.one to intercept calls with Eventi syntax</li>
+</ul><h2>
+<a name="release-history" class="anchor" href="#release-history"><span class="octicon octicon-link"></span></a>Release History</h2>
+
+<ul>
+<li>2014-02-11 <a href="https://github.com/nbubna/Eventi/tree/0.5.0">v0.5.0</a> (alpha)</li>
+<li>2014-04-03 <a href="https://github.com/nbubna/Eventi/tree/1.0.0">v1.0.0</a> (beta)</li>
+</ul>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/nbubna/Eventi/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/nbubna/Eventi/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/nbubna/Eventi"></a> is maintained by <a href="https://github.com/nbubna">nbubna</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-42479338-2");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
