@@ -1,12 +1,14 @@
-/*! Eventi - v1.0.0 - 2014-04-03
+/*! Eventi - v1.0.0 - 2014-04-04
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
 (function(global, document) {
     "use strict";
 
-    // polyfill CustomEvent constructor
-    if (!global.CustomEvent) {
+    try {
+        new global.CustomEvent('test');
+    } catch (err) {
+        // polyfill CustomEvent constructor
         global.CustomEvent = document ? function CustomEvent(type, args) {
             args = args || {};
             var e = document.createEvent('CustomEvent');

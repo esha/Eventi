@@ -2,8 +2,10 @@
 (function(global, document) {
     "use strict";
 
-    // polyfill CustomEvent constructor
-    if (!global.CustomEvent) {
+    try {
+        new global.CustomEvent('test');
+    } catch (err) {
+        // polyfill CustomEvent constructor
         global.CustomEvent = document ? function CustomEvent(type, args) {
             args = args || {};
             var e = document.createEvent('CustomEvent');
