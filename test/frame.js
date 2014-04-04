@@ -4,7 +4,7 @@
   module('Eventi frame');
 
   test('CustomEvent API/polyfill', function() {
-    equal(typeof CustomEvent, "function", "CustomEvent");
+    ok(CustomEvent, "CustomEvent");
     var ce = new CustomEvent('foo', {bubbles:true});
     equal(ce.type, 'foo', "CustomEvent type");
     equal(typeof ce.timeStamp, "number", "CustomEvent timeStamp");
