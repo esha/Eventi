@@ -1,9 +1,9 @@
-_.alias = function(alias, text) {
+_.alias = function(alias, text, context) {
 	return function aliased(target) {
 		var args = _.slice(arguments),
 			index = (typeof target !== "object" || !(target.dispatchEvent || target[_key])) ? 0 : 1;
 		args.splice(index, 0, text);
-		return this.apply(null, args);
+		return this.apply(context, args);
 	};
 };
 (Eventi.alias = function(context) {
@@ -24,7 +24,7 @@ _.alias = function(alias, text) {
 				props = {};
 				_.parse(texts[i], props, props);
 				props.alias = props.alias || props.type;
-				fn[props.alias] = _.alias(props.alias, texts[i]);
+				fn[props.alias] = _.alias(props.alias, texts[i], context);
 			}
 		}
 	}
