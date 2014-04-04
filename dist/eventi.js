@@ -1,4 +1,4 @@
-/*! Eventi - v0.7.1 - 2014-04-02
+/*! Eventi - v1.0.0 - 2014-04-03
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -100,7 +100,7 @@ var _ = {
                 args[dataIndex] = args.slice(dataIndex);
                 args = args.slice(0, dataIndex+1);
             }
-            if (!(args[1] instanceof Event)) {// 2nd arg should be Event or array of event texts
+            if (!args[1] || typeof args[1] === "string") {
                 args[1] = _.split.ter(args[1]);
             }
             var fn = _[name], ret;
@@ -134,7 +134,11 @@ var _ = {
                         text += c;
                         if (guard) {
                             if (guard === c) {
-                                guard = null;
+                                if (text.charAt(text.length-2) === '\\') {
+                                    text = text.replace("\\"+c, c);
+                                } else {
+                                    guard = null;
+                                }
                             }
                         } else {
                             guard = _.split.guard[c];
@@ -199,8 +203,17 @@ _.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
     return other;
 }]);
 _.on = function(target, events, fn, data) {
-    for (var i=0,m=events.length; i<m; i++) {
-        _.handler(target, events[i], fn, data);
+    if (!Array.isArray(events)) {
+        if (fn !== undefined) {
+            data = data ? data.unshift(fn) && data : [fn];
+        }
+        for (var event in events) {
+            _.handler(target, event, events[event], data);
+        }
+    } else {
+        for (var i=0,m=events.length; i<m; i++) {
+            _.handler(target, events[i], fn, data);
+        }
     }
 };
 _.handler = function(target, text, fn, data) {
@@ -385,8 +398,9 @@ if (document) {
         }
     };
     _.check = function(e) {
-        var click = (e.type === 'click' && _.click(e.target)) ||
-                    (e.keyCode === 13 && _.click(e.target, true));
+        var click = e.target.getAttribute &&
+                    ((e.type === 'click' && _.click(e.target)) ||
+                     (e.keyCode === 13 && _.click(e.target, true)));
         if (click) {
             _.declared.call(document.documentElement, e, 'click');
             if (click === 'noDefault' && !_.allowDefault(e.target)) {
@@ -474,23 +488,22 @@ if (document) {
 		Eventi.fire(document.documentElement, '^ready', e);
 	});
 }
-// add key syntax to _.parse's supported event properties
-_.keyRE = /\[([a-z-0-9,\.\/\[\`\\\]\']+)\]/;
-_.parsers.push([_.keyRE, function(event, handler, name) {
-    var dash, key;
-    while ((dash = name.indexOf('-')) > 0) {
-        key = name.substring(0, dash);
-        name = name.substring(dash+1);
-        event[(_.special[key]||key)+'Key'] = true;
+_.split.guard['['] = ']';
+_.parsers.push([/\[([^ ]+)\]/, function(event, handler, key) {//'
+    var dash;
+    while ((dash = key.indexOf('-')) > 0) {
+        event[key.substring(0, dash)+'Key'] = true;
+        key = key.substring(dash+1);
     }
-    event.keyCode = _.codes[name] || parseInt(name, 10) || 0;
+    if (key) {
+        event.keyCode = _.codes[key] || parseInt(key, 10) || key;
+    }
 }]);
-_.special = { command: 'meta', apple: 'meta' };
 _.codes = {
     backspace:8, tab:9, enter:13, shift:16, ctrl:17, alt:18, capsLock:20, escape:27, start:91, command:224,
     pageUp:33, pageDown:34, end:35, home:36, left:37, up:38, right:39, down:40, insert:45, 'delete':46,
     multiply:106, plus:107, minus:109, point:110, divide:111, numLock:144,// numpad controls
-    ',':188, '.':190, '/':191, '`':192, '[':219, '\\':220, ']':221, '\'':222, space:32// symbols
+    ';':186, '=':187, ',':188, '-':189, '.':190, '/':191, '`':192, '[':219, '\\':220, ']':221, '\'':222, space:32// symbols
 };
 for (var n=0; n<10; n++){ _.codes['num'+n] = 96+n; }// numpad numbers
 for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
@@ -597,7 +610,10 @@ _.off = function(target, events, fn) {
         for (var i=0, m=events.length; i<m; i++) {
             var filter = { event:{}, handler:{}, fn:fn, text:events[i] };
             _.parse(events[i], filter.event, filter.handler);
-            delete filter.event.tags;// superfluous for matching
+            // delete superfluous properties
+            delete filter.event.tags;
+            delete filter.handler.filters;
+            delete filter.handler.end;
             if (target !== _) {
                 Eventi.fire(_, 'off:filter', filter);
             }
@@ -615,7 +631,7 @@ _.off = function(target, events, fn) {
     }
 };
 _.unhandle = function off(handler) {
-    _.off(handler.target, [handler.text], handler._fn||handler.fn);
+    _.off(handler.target, [handler.text], handler.fn);
 };
 _.empty = function(o){ for (var k in o){ return !k; } return true; };
 _.clean = function(type, filter, listener, target) {
@@ -643,10 +659,11 @@ _.cleans = function(handler, filter) {
            _.matches(handler, filter.handler) &&
            (!handler.important || (filter.handler.important &&
                                    _.matches(filter.event, handler.event))) &&
-           (!filter.fn || filter.fn === (handler._fn||handler.fn));
+           (!filter.fn || filter.fn === handler.fn);
 };
 Eventi.off = _.wrap('off', 3);
-_.parsers.unshift([/\$\!?(\w+(\.\w+)*)/, function(event, handler, condition) {
+_.parsers.unshift([/\$(\!?\w+(\.\w+)*)/, function(event, handler, condition) {
+    handler.endtest = condition;
     handler.end = _.endTest(condition);
 }]);
 _.endTest = function(condition) {
@@ -756,6 +773,8 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
         delete handler.selector;
         delete handler.location;
         delete handler.filters;
+        delete handler.endtest;
+        delete handler.end;
         // set up combo event handlers
         handler.texts = texts;
         handler.ordered = texts.ordered;
@@ -774,12 +793,12 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
         handler.handlers.forEach(_.unhandle);
     }
 });
-_.alias = function(alias, text) {
+_.alias = function(alias, text, context) {
 	return function aliased(target) {
 		var args = _.slice(arguments),
 			index = (typeof target !== "object" || !(target.dispatchEvent || target[_key])) ? 0 : 1;
 		args.splice(index, 0, text);
-		return this.apply(null, args);
+		return this.apply(context, args);
 	};
 };
 (Eventi.alias = function(context) {
@@ -800,13 +819,13 @@ _.alias = function(alias, text) {
 				props = {};
 				_.parse(texts[i], props, props);
 				props.alias = props.alias || props.type;
-				fn[props.alias] = _.alias(props.alias, texts[i]);
+				fn[props.alias] = _.alias(props.alias, texts[i], context);
 			}
 		}
 	}
 	return props;
 }).utility = true;
-    _.version = "0.7.1";
+    _.version = "1.0.0";
 
     var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;

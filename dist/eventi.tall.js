@@ -1,4 +1,4 @@
-/*! Eventi - v0.7.1 - 2014-04-02
+/*! Eventi - v1.0.0 - 2014-04-03
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -100,7 +100,7 @@ var _ = {
                 args[dataIndex] = args.slice(dataIndex);
                 args = args.slice(0, dataIndex+1);
             }
-            if (!(args[1] instanceof Event)) {// 2nd arg should be Event or array of event texts
+            if (!args[1] || typeof args[1] === "string") {
                 args[1] = _.split.ter(args[1]);
             }
             var fn = _[name], ret;
@@ -134,7 +134,11 @@ var _ = {
                         text += c;
                         if (guard) {
                             if (guard === c) {
-                                guard = null;
+                                if (text.charAt(text.length-2) === '\\') {
+                                    text = text.replace("\\"+c, c);
+                                } else {
+                                    guard = null;
+                                }
                             }
                         } else {
                             guard = _.split.guard[c];
@@ -199,8 +203,17 @@ _.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
     return other;
 }]);
 _.on = function(target, events, fn, data) {
-    for (var i=0,m=events.length; i<m; i++) {
-        _.handler(target, events[i], fn, data);
+    if (!Array.isArray(events)) {
+        if (fn !== undefined) {
+            data = data ? data.unshift(fn) && data : [fn];
+        }
+        for (var event in events) {
+            _.handler(target, event, events[event], data);
+        }
+    } else {
+        for (var i=0,m=events.length; i<m; i++) {
+            _.handler(target, events[i], fn, data);
+        }
     }
 };
 _.handler = function(target, text, fn, data) {
@@ -290,7 +303,7 @@ _.matches = function(event, match) {
 
 Eventi.on = _.wrap('on', 3);
 
-    _.version = "0.7.1";
+    _.version = "1.0.0";
 
     var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
