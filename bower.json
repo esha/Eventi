@@ -1,6 +1,6 @@
 {
   "name": "eventi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/nbubna/Eventi",
   "bugs": "https://github.com/nbubna/nbubna/issues",
   "authors": [
@@ -8,7 +8,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com:nbubna/HTML.git"
+    "url": "https://github.com:nbubna/Eventi.git"
   },
   "main": "dist/eventi.min.js",
   "keywords": [

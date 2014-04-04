@@ -8,14 +8,6 @@ Download the [minified version][min] or the [development version][max].
 [min]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.min.js
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
 
-## TODO
-* documentation
-* demo app/site
-* integrations (jQuery, Visual Event 2, Capo, etc)
-* consider limited grouping syntax for types with partial overlap: `group:{type#tag other$1}#tag2` but probably don't bother due to incompatibility w/aliasing and current parsing
-* consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality. but resist doing it, as this could get out of hand...
-
-
 ## Motive
 
 * JavaScript development is ultimately event-based development.
@@ -125,8 +117,14 @@ Download the [minified version][min] or the [development version][max].
 * local (after Eventi.fy(o)): `Eventi.alias(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
 * obviously, aliases cannot have the same name as Function properties like 'call' or 'length'
 
+## TODO
+* documentation
+* demo app/site
+* integrations (jQuery, Visual Event 2, Capo, etc)
+* consider limited grouping syntax for types with partial overlap: `group:{type#tag other$1}#tag2` but probably don't bother due to incompatibility w/aliasing and current parsing
+* consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality. but resist doing it, as this could get out of hand...
 
-#### jquery.eventi.js
+#### Plan for jquery.eventi.js
 * add custom properties to $.event.props
 * add namespace support to rich syntax (ick)
 * listen for events in jQuery's manual bubbling system (ick again)
@@ -138,7 +136,9 @@ Download the [minified version][min] or the [development version][max].
 
 ## Release History
 * 2014-02-11 [v0.5.0][] (alpha)
-* 2014-04-02 [v1.0.0][] (beta)
+* 2014-04-03 [v1.0.0][] (beta)
+* 2014-04-04 [v1.0.1][] (beta - IE fixes)
 
 [v0.5.0]: https://github.com/nbubna/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/nbubna/Eventi/tree/1.0.0
+[v1.0.1]: https://github.com/nbubna/Eventi/tree/1.0.1
