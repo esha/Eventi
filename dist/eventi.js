@@ -32,7 +32,8 @@ var _ = {
     copy: function(a, b, p) {
         if (typeof a === "object"){ for (p in a){ if (a.hasOwnProperty(p)){ b[p] = a[p]; }}}
     },
-    async: global.setImmediate || function async(fn){ return setTimeout(fn, 0); },
+    async: (global.setImmediate && setImmediate.bind(global)) ||
+           function async(fn){ return setTimeout(fn, 0); },
     resolveRE: /^([\w\$]+)?((\.[\w\$]+)|\[(\d+|'(\\'|[^'])+'|"(\\"|[^"])+")\])*$/,
     resolve: function(reference, context, tested) {
         if (tested || _.resolveRE.test(reference)) {

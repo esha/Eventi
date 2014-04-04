@@ -60,9 +60,11 @@
     deepEqual(detail, [1, true, {foo:evil}], 'should be correctly parsed');
   });
 
-  test('new Eventi("referenceDetail(Eventi.name)")', function() {
-    var detail = new Eventi('referenceDetail(Eventi.name)').detail;
-    equal(detail, 'Eventi', 'should be resolved reference');
+  test('new Eventi("referenceDetail(reference.property)")', function() {
+    window.reference = { property: 'value' };
+    var detail = new Eventi('referenceDetail(reference.property)').detail;
+    equal(detail, 'value', 'should be resolved reference');
+    delete window.reference;
   });
 
   test('Eventi.fy(obj) api', function() {
@@ -111,8 +113,8 @@
 
   asyncTest('_.async', function() {
     var id = _.async(function() {
-      ok(true, 'should be called');
       start();
+      ok(true, 'should be called');
     });
     ok(id, 'should have id');
   });
@@ -121,7 +123,7 @@
     equal(_.resolve('module()') || _.resolve('test;foo') || _.resolve('a b'), undefined, 'should not resolve non-reference strings');
     equal(_.resolve('test'), test, 'should resolve test fn');
     equal(_.resolve('documentElement', document), document.documentElement, 'should resolve references against context');
-    equal(_.resolve('Eventi.name'), 'Eventi', 'should resolve dot-notated references');
+    equal(_.resolve('document.body'), document.body, 'should resolve dot-notated references');
     equal(_.resolve('array[0]', { array: [1] }), 1, 'should resolve bracket-notated references');
   });
 

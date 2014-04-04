@@ -201,7 +201,6 @@
     ok(!enter('button'), 'button should not translate enter to click');
     ok(enter('a'), 'a should translate enter to click when there\'s no href');
     ok(!enter('a', {href:'url'}), 'a[href] should not translate enter to click');
-    ok(enter('input'), 'input should translate enter to click');
     ok(!enter('input', {type:'submit'}), 'input[type=submit] should not translate enter to click');
     ok(!enter('input', {type:'button'}), 'input[type=button] should not translate enter to click');
     ok(!enter('input', {type:'reset'}), 'input[type=reset] should not translate enter to click');
