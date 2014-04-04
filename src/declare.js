@@ -66,8 +66,9 @@ if (document) {
         }
     };
     _.check = function(e) {
-        var click = (e.type === 'click' && _.click(e.target)) ||
-                    (e.keyCode === 13 && _.click(e.target, true));
+        var click = e.target.getAttribute &&
+                    ((e.type === 'click' && _.click(e.target)) ||
+                     (e.keyCode === 13 && _.click(e.target, true)));
         if (click) {
             _.declared.call(document.documentElement, e, 'click');
             if (click === 'noDefault' && !_.allowDefault(e.target)) {
