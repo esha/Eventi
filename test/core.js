@@ -184,4 +184,10 @@
     delete _.fn;
   });
 
+  test("_.split.ter", function() {
+    deepEqual(_.split.ter('a b'), ['a','b']);
+    deepEqual(_.split.ter('a( ) b()'), ['a( )','b()']);
+    deepEqual(_.split.ter('a(\\)) b'), ['a())','b']);
+  });
+
 }());

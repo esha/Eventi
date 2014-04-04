@@ -110,7 +110,11 @@ var _ = {
                         text += c;
                         if (guard) {
                             if (guard === c) {
-                                guard = null;
+                                if (text.charAt(text.length-2) === '\\') {
+                                    text = text.replace("\\"+c, c);
+                                } else {
+                                    guard = null;
+                                }
                             }
                         } else {
                             guard = _.split.guard[c];
