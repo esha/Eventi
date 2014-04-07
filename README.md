@@ -3,7 +3,7 @@
 Powerful application events and event handling, made easy.
 
 ## Getting Started
-Download the [minified version][min] or the [development version][max]. [![Build Status](https://travis-ci.org/esha/Eventi.png?branch=master)](https://travis-ci.org/esha/Eventi)
+Download the [minified version][min] or the [development version][max]. [![Build Status](https://travis-ci.org/esha/Eventi.png?branch=master)](https://travis-ci.org/esha/Eventi)  
 [Bower][bower]: `bower install eventi`  
 [NPM][npm]: `npm install eventi`   
 [Component][component]: `component install esha/Eventi`  
