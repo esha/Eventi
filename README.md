@@ -4,9 +4,15 @@ Powerful application events and event handling, made easy.
 
 ## Getting Started
 Download the [minified version][min] or the [development version][max]. [![Build Status](https://travis-ci.org/esha/Eventi.png?branch=master)](https://travis-ci.org/esha/Eventi)
+[Bower][bower]: `bower install domx`  
+[NPM][npm]: `npm install domx`   
+[Component][component]: `component install nbubna/domx`  
 
 [min]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.min.js
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
+[npm]: https://npmjs.org/package/Eventi
+[bower]: http://bower.io/
+[component]: http://component.io/
 
 ## Motive
 
