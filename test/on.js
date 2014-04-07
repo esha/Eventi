@@ -57,7 +57,7 @@
     Eventi.on(o, 'type', fn, 'hdata').fire(o, 'type', 'edata');
   });
 
-  test('Eventi.on({type:fn,other:fn2})', function() {
+  test('Eventi.on(target, {type:fn,other:fn2})', function() {
     expect(3);
     var target = {},
       handlers = {
