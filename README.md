@@ -3,7 +3,7 @@
 Powerful application events and event handling, made easy.
 
 ## Getting Started
-Download the [minified version][min] or the [development version][max]. [![Build Status](https://travis-ci.org/nbubna/debug.png?branch=master)](https://travis-ci.org/nbubna/debug)
+Download the [minified version][min] or the [development version][max]. [![Build Status](https://travis-ci.org/esha/Eventi.png?branch=master)](https://travis-ci.org/esha/Eventi)
 
 [min]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.min.js
 [max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
