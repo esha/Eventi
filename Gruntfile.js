@@ -50,6 +50,10 @@ module.exports = function(grunt) {
         src: 'dist/<%= pkg.name %>.grande.js',
         dest: 'dist/<%= pkg.name %>.grande.min.js'
       },
+      debug: {
+        src: 'src/debug.js',
+        dest: 'dist/<%= pkg.name %>.debug.min.js'
+      }
     },
     compress: {
       options: {
