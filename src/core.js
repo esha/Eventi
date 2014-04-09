@@ -132,6 +132,7 @@ var _ = {
         }
     }
 };
+Eventi.toString = function(){ return 'Eventi'; };
 Eventi._ = _;
 (Eventi.fy = function fy(o) {
     for (var p in Eventi) {
