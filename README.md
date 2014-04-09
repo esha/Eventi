@@ -144,7 +144,9 @@ Download the [minified version][min] or the [development version][max]. [![Build
 * 2014-02-11 [v0.5.0][] (alpha)
 * 2014-04-03 [v1.0.0][] (beta)
 * 2014-04-04 [v1.0.1][] (beta - IE fixes)
+* 2014-04-09 [v1.0.2][] (beta - toString and location fix)
 
 [v0.5.0]: https://github.com/nbubna/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/nbubna/Eventi/tree/1.0.0
 [v1.0.1]: https://github.com/nbubna/Eventi/tree/1.0.1
+[v1.0.2]: https://github.com/nbubna/Eventi/tree/1.0.2

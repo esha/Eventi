@@ -1,4 +1,4 @@
-/*! Eventi - v1.0.1 - 2014-04-07
+/*! Eventi - v1.0.2 - 2014-04-09
 * https://github.com/nbubna/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -158,6 +158,7 @@ var _ = {
         }
     }
 };
+(Eventi.toString = function(){ return 'Eventi'; }).utility = true;
 Eventi._ = _;
 (Eventi.fy = function fy(o) {
     for (var p in Eventi) {
@@ -306,7 +307,7 @@ _.matches = function(event, match) {
 
 Eventi.on = _.wrap('on', 3);
 
-    _.version = "1.0.1";
+    _.version = "1.0.2";
 
     var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
