@@ -64,7 +64,7 @@ if (global.history && global.location) {
         _.filter(handler, _.locationFilter);
     };
     _.locationFilter = function(event, handler) {
-        var matches = (event.uri || current).match(handler.uriRE);
+        var matches = (event.location || current).match(handler.uriRE);
         if (matches) {
             this.args.splice.apply(this.args, [1,0].concat(matches));
             if (handler.keys) {
