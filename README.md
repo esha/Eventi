@@ -8,16 +8,15 @@ Download the [minified version][min] or the [development version][max]. [![Build
 [NPM][npm]: `npm install eventi`   
 [Component][component]: `component install esha/Eventi`  
 
-[min]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.min.js
-[max]: https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js
-[npm]: https://npmjs.org/package/Eventi
+[min]: https://raw.github.com/esha/Eventi/master/dist/Eventi.min.js
+[max]: https://raw.github.com/esha/Eventi/master/dist/Eventi.js
+[npm]: https://npmjs.org/package/eventi
 [bower]: http://bower.io/
 [component]: http://component.io/
 
 ## Motive
 
-* JavaScript development is ultimately event-based development.
-* Application events (aka custom events) are usually under-used or poorly-used in webapps.
+* Application events (aka custom events) are usually under-used or poorly-used in applications.
 * Events are the best way to decouple modules and components without isolating them entirely.
 * DOM event bubbling, in particular, has much potential for meaningful event based interfaces.
 * Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types with poor data that most heavy custom event users end up using.
@@ -33,7 +32,7 @@ Download the [minified version][min] or the [development version][max]. [![Build
 * Support for best-practices like "signals" (aka pre-defined types) and declarative event mapping
 * Lots of solid, maintainable test code
 * Impressive, interactive demo (ideas, anyone?)
-* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key/location, venti adds off/until/combo/types
+* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds delegate/declare/singleton/key/location, venti adds off/end/sequence/combo/alias
 * Venti is the default version to encourage much event-based awesomeness for everyone.
 * Grande includes basic webapp tools.
 * Tall could be enough for light server-side work.
@@ -146,7 +145,7 @@ Download the [minified version][min] or the [development version][max]. [![Build
 * 2014-04-04 [v1.0.1][] (beta - IE fixes)
 * 2014-04-09 [v1.0.2][] (beta - toString and location fix)
 
-[v0.5.0]: https://github.com/nbubna/Eventi/tree/0.5.0
-[v1.0.0]: https://github.com/nbubna/Eventi/tree/1.0.0
-[v1.0.1]: https://github.com/nbubna/Eventi/tree/1.0.1
-[v1.0.2]: https://github.com/nbubna/Eventi/tree/1.0.2
+[v0.5.0]: https://github.com/esha/Eventi/tree/0.5.0
+[v1.0.0]: https://github.com/esha/Eventi/tree/1.0.0
+[v1.0.1]: https://github.com/esha/Eventi/tree/1.0.1
+[v1.0.2]: https://github.com/esha/Eventi/tree/1.0.2
