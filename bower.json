@@ -1,14 +1,14 @@
 {
   "name": "eventi",
   "version": "1.0.2",
-  "homepage": "https://github.com/nbubna/Eventi",
-  "bugs": "https://github.com/nbubna/nbubna/issues",
+  "homepage": "https://github.com/esha/Eventi",
+  "bugs": "https://github.com/esha/Eventi/issues",
   "authors": [
     "ESHA Research <nathan@esha.com>"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com:nbubna/Eventi.git"
+    "url": "https://github.com:esha/Eventi.git"
   },
   "main": "dist/eventi.min.js",
   "keywords": [

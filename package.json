@@ -2,22 +2,22 @@
   "name": "eventi",
   "title": "Eventi",
   "version": "1.0.2",
-  "homepage": "https://github.com/nbubna/Eventi",
+  "homepage": "https://github.com/esha/Eventi",
   "author": {
     "name": "ESHA Research",
     "email": "nathan@esha.com"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/nbubna/Eventi.git"
+    "url": "git://github.com/esha/Eventi.git"
   },
   "bugs": {
-    "url": "https://github.com/nbubna/Eventi/issues"
+    "url": "https://github.com/esha/Eventi/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/nbubna/Eventi/blob/master/LICENSE-MIT"
+      "url": "https://github.com/esha/Eventi/blob/master/LICENSE-MIT"
     }
   ],
   "engines": {
