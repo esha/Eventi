@@ -100,5 +100,4 @@ _.matches = function(event, match) {
     }
     return true;
 };
-
-Eventi.on = _.wrap('on', 3);
+_.fn('on', 3);

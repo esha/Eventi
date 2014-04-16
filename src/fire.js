@@ -29,4 +29,4 @@ _.dispatch = function(target, event, objectBubbling) {
         _.singleton(target, event);
     }
 };
-Eventi.fire = _.wrap('fire', 2);
+_.fn('fire', 2);

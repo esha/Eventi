@@ -37,11 +37,11 @@ var _ = {
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     parse: function(type, event, handler) {
-        _.parsers.forEach(function(property) {
-            type = type.replace(property[0], function() {
+        _.parsers.forEach(function(parser) {
+            type = type.replace(parser[0], function() {
                 var args = _.slice(arguments, 1);
                 args.unshift(event, handler);
-                return property[1].apply(event, args) || '';
+                return parser[1].apply(event, args) || '';
             });
         });
         return type ? event.type = type : type;
@@ -67,8 +67,8 @@ var _ = {
         }]
     ],
 
-    wrap: function(name, dataIndex) {
-        return function wrapper(target) {
+    fn: function(name, dataIndex) {
+        Eventi[name] = _.fns[name] = function wrapper(target) {
             var args = _.slice(arguments);
             if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
                 args.unshift(target = !this || this === Eventi ? _.global : this);
@@ -91,6 +91,7 @@ var _ = {
             return ret === undefined ? this : ret;// be fluent
         };
     },
+    fns: {},
     split: {
         guard: { '(':')' },
         ter: function(texts, delims) {
@@ -132,14 +133,11 @@ var _ = {
         }
     }
 };
-(Eventi.toString = function(){ return 'Eventi'; }).utility = true;
+Eventi.toString = function(){ return 'Eventi'; };
 Eventi._ = _;
-(Eventi.fy = function fy(o) {
-    for (var p in Eventi) {
-        var fn = Eventi[p];
-        if (typeof fn === "function" && !fn.utility) {
-            Object.defineProperty(o, p, {value:fn, writable:true, configurable:true});
-        }
+Eventi.fy = function fy(o) {
+    for (var p in _.fns) {
+        Object.defineProperty(o, p, {value:Eventi[p], writable:true, configurable:true});
     }
     return o;
-}).utility = true;
+};

@@ -87,7 +87,8 @@
     ok(_.prop, "_.prop");
     ok(_.parse, "_.parse");
     ok(_.parsers, "_.parsers");
-    ok(_.wrap, "_.wrap");
+    ok(_.fn, "_.fn");
+    equal(typeof _.fns, "object", "_.fns");
     equal(typeof _.split, "object", "_.split");
     equal(typeof _.split.guard, "object", "_.split.guard");
     equal(typeof _.split.ter, "function", "_.split.ter");
@@ -143,9 +144,9 @@
     _.prop = _prop;
   });
 
-  test('_.wrap', function() {
-    expect(14);
-    _.fn = function(target, strings, data) {
+  test('_.fn', function() {
+    expect(16);
+    _.test1 = function(target, strings, data) {
       ok(Array.isArray(strings), 'strings should be array (of strings)');
       equal(typeof strings[0], 'string', 'strings should always have at least one string');
       if (strings[0] === 'global') {
@@ -158,32 +159,42 @@
         equal(data[0], 'data', 'got extra data');
       }
     };
-    var api = _.wrap('fn', 2);
-    notEqual(api, _.fn, 'should not return same fn');
-    api('global', 'data');
-    api([_.fn, api], 'multiple');
-    delete _.fn;
+    _.fn('test1', 2);
+    equal(typeof Eventi.test1, "function", "Eventi.test1 defined");
+    equal(Eventi.test1, _.fns.test1, 'should have reference in _.fns');
+    notEqual(Eventi.test1, _.test1, 'should not return same fn');
+    Eventi.test1('global', 'data');
+    Eventi.test1([_.fn, Eventi.test1], 'multiple');
+    delete _.test1;
+    delete Eventi.test1;
+    delete _.fns.test1;
   });
 
   // ensure ordered iteration over targets
-  test('_.wrap multiple target order', function() {
+  test('_.fn multiple target order', function() {
     expect(2);
     var targets = ['a','b'];
-    _.fn = function(target) {
+    _.test2 = function(target) {
       equal(target, targets.shift(), 'should receive targets in correct order');
     };
-    _.wrap('fn', 2)(targets.slice(0), 'orderTest');
-    delete _.fn;
+    _.fn('test2', 2);
+    Eventi.test2(targets.slice(0), 'orderTest');
+    delete _.test2;
+    delete Eventi.test2;
+    delete _.fns.test2;
   });
 
-  test('_.wrap falsey event text', function() {
+  test('_.fn falsey event text', function() {
     expect(2);
-    _.fn = function(target, strings) {
+    _.test3 = function(target, strings) {
       equal(target, _.global, 'target should be _.global');
       equal(strings[0], '', 'text should be ""');
     };
-    _.wrap('fn', 2)(null);
-    delete _.fn;
+    _.fn('test3', 2);
+    Eventi.test3(null);
+    delete _.test3;
+    delete _.fns.test3;
+    delete Eventi.test3;
   });
 
   test("_.split.ter", function() {

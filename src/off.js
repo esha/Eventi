@@ -55,4 +55,4 @@ _.cleans = function(handler, filter) {
                                    _.matches(filter.event, handler.event))) &&
            (!filter.fn || filter.fn === handler.fn);
 };
-Eventi.off = _.wrap('off', 3);
+_.fn('off', 3);

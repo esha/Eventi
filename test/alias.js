@@ -33,28 +33,19 @@
 
   test('Eventi.alias("type") API additions', function() {
     Eventi.alias('type');
-    for (var p in Eventi) {
-      if (typeof Eventi[p] === "function") {
-        if (Eventi[p].utility) {
-          equal(Eventi[p].type, undefined, "utilities should not get alias");
-        } else {
-          equal(typeof Eventi[p].type, "function", "Eventi."+p+".type is a function");
-        }
-      }
+    for (var p in _.fns) {
+      equal(typeof Eventi[p].type, "function", "Eventi."+p+".type is a function");
     }
   });
 
   test('Eventi.alias(Eventi.fy({}), "local", "signal") API additions', function() {
-    expect(10);
+    expect(7);
     var o = Eventi.fy({});
     equal(o.fire.signal, undefined, 'should not have signal yet');
     Eventi.alias(o, 'local', '/test:signal=>alias');
-    for (var p in Eventi) {
-      if (typeof Eventi[p] === "function" && !Eventi[p].utility) {
-        notEqual(o[p], Eventi[p], "should have bound Eventi function, not primary");
-        equal(typeof o[p].alias, "function", "should have alias alias");
-        ok(o[p].local, "should have local alias");
-      }
+    for (var p in _.fns) {
+      equal(typeof o[p].alias, "function", "should have alias alias");
+      ok(o[p].local, "should have local alias");
     }
   });
 

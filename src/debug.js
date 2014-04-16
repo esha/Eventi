@@ -62,7 +62,7 @@ _.debug.match = function(handler, filter) {
                                    _.matches(filter.event, handler.event))) &&
            (!filter.fn || filter.fn === handler.fn);
 };
-Eventi.debug = _.wrap('debug', 3);
+_.fn('debug', 3);
 out('Eventi, version '+_.version);
 Eventi.debug();// show global handlers automatically
 })();
