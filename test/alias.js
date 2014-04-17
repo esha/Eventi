@@ -38,11 +38,11 @@
     }
   });
 
-  test('Eventi.alias(Eventi.fy({}), "local", "signal") API additions', function() {
+  test('Eventi.alias(Eventi.fy({}), "local signal") API additions', function() {
     expect(7);
     var o = Eventi.fy({});
     equal(o.fire.signal, undefined, 'should not have signal yet');
-    Eventi.alias(o, 'local', '/test:signal=>alias');
+    Eventi.alias(o, 'local /test:signal=>alias');
     for (var p in _.fns) {
       equal(typeof o[p].alias, "function", "should have alias alias");
       ok(o[p].local, "should have local alias");

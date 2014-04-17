@@ -13,13 +13,12 @@ _.alias = function(alias, text, context) {
 		return this.apply(context, args);
 	};
 };
-Eventi.alias = function(context) {
-	var texts = _.slice(arguments, 1),
-		props;
+Eventi.alias = function(context, text) {
 	if (typeof context === "string") {
-		texts.unshift(context);
-		context = Eventi;
+		text = context; context = Eventi;
 	}
+	var texts = _.split.ter(text),
+		props;
 	for (var prop in _.fns) {
 		for (var i=0,m=texts.length; i<m; i++) {
 			props = {};
