@@ -3,6 +3,9 @@ _.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
     return other;
 }]);
 _.on = function(target, events, fn, data) {
+    if (target !== _.global && events.length === 1 && events[0] === '') {
+        events = target; target = _.global;
+    }
     if (!Array.isArray(events)) {
         if (fn !== undefined) {
             data = data ? data.unshift(fn) && data : [fn];
