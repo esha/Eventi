@@ -1,4 +1,24 @@
 _.combo = {
+    convert: function(handler, text, texts) {
+        handler.event = _.combo.event(text);
+        if (handler.data && typeof handler.data[0] === "number") {
+            handler.timeout = handler.data.shift();
+        }
+        delete handler.singleton;
+        delete handler.selector;
+        delete handler.location;
+        delete handler.filters;
+        delete handler.endtest;
+        delete handler.end;
+        // set up combo event handlers
+        handler.texts = texts;
+        handler.ordered = texts.ordered;
+        handler.reset = _.combo.reset.bind(handler);
+        handler.handlers = texts.map(function(text, index) {
+            return _.handler(handler.target, text, _.combo.eventFn.bind(handler, index));
+        });
+        handler.reset();
+    },
     event: function(text) {
         return _.combo[text] || (_.combo[text] = {
             category: 'combo',
@@ -44,24 +64,7 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
 	var text = handler.text,
 		texts = _.combo.split(text);
 	if (texts.length > 1) {
-        handler.event = _.combo.event(text);
-        if (handler.data && typeof handler.data[0] === "number") {
-            handler.timeout = handler.data.shift();
-        }
-        delete handler.singleton;
-        delete handler.selector;
-        delete handler.location;
-        delete handler.filters;
-        delete handler.endtest;
-        delete handler.end;
-        // set up combo event handlers
-        handler.texts = texts;
-        handler.ordered = texts.ordered;
-        handler.reset = _.combo.reset.bind(handler);
-        handler.handlers = texts.map(function(text, index) {
-            return _.handler(handler.target, text, _.combo.eventFn.bind(handler, index));
-        });
-        handler.reset();
+        _.combo.convert(handler, text, texts);
 	}
 }).on(_, 'off:filter', function comboFilter(e, filter) {
     if (_.combo.split(filter.text).length > 1) {
