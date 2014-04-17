@@ -1,5 +1,5 @@
-/*! Eventi - v1.0.2 - 2014-04-09
-* https://github.com/nbubna/Eventi
+/*! Eventi - v1.0.2 - 2014-04-17
+* https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
 (function(global, document) {
@@ -63,11 +63,11 @@ var _ = {
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     parse: function(type, event, handler) {
-        _.parsers.forEach(function(property) {
-            type = type.replace(property[0], function() {
+        _.parsers.forEach(function(parser) {
+            type = type.replace(parser[0], function() {
                 var args = _.slice(arguments, 1);
                 args.unshift(event, handler);
-                return property[1].apply(event, args) || '';
+                return parser[1].apply(event, args) || '';
             });
         });
         return type ? event.type = type : type;
@@ -93,8 +93,8 @@ var _ = {
         }]
     ],
 
-    wrap: function(name, dataIndex) {
-        return function wrapper(target) {
+    fn: function(name, dataIndex) {
+        Eventi[name] = _.fns[name] = function wrapper(target) {
             var args = _.slice(arguments);
             if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
                 args.unshift(target = !this || this === Eventi ? _.global : this);
@@ -117,6 +117,7 @@ var _ = {
             return ret === undefined ? this : ret;// be fluent
         };
     },
+    fns: {},
     split: {
         guard: { '(':')' },
         ter: function(texts, delims) {
@@ -158,17 +159,14 @@ var _ = {
         }
     }
 };
-(Eventi.toString = function(){ return 'Eventi'; }).utility = true;
+Eventi.toString = function(){ return 'Eventi'; };
 Eventi._ = _;
-(Eventi.fy = function fy(o) {
-    for (var p in Eventi) {
-        var fn = Eventi[p];
-        if (typeof fn === "function" && !fn.utility) {
-            Object.defineProperty(o, p, {value:fn, writable:true, configurable:true});
-        }
+Eventi.fy = function fy(o) {
+    for (var p in _.fns) {
+        Object.defineProperty(o, p, {value:Eventi[p], writable:true, configurable:true});
     }
     return o;
-}).utility = true;
+};
 
 _.parsers.unshift([/^(\W*)\//, function(event, handler, other) {
     handler.global = true;
@@ -201,12 +199,15 @@ _.dispatch = function(target, event, objectBubbling) {
         _.singleton(target, event);
     }
 };
-Eventi.fire = _.wrap('fire', 2);
+_.fn('fire', 2);
 _.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
     handler.important = true;
     return other;
 }]);
 _.on = function(target, events, fn, data) {
+    if (target !== _.global && events.length === 1 && events[0] === '') {
+        events = target; target = _.global;
+    }
     if (!Array.isArray(events)) {
         if (fn !== undefined) {
             data = data ? data.unshift(fn) && data : [fn];
@@ -304,35 +305,7 @@ _.matches = function(event, match) {
     }
     return true;
 };
-
-Eventi.on = _.wrap('on', 3);
-
-_.split.guard['<'] = '>';
-_.parsers.unshift([/<(.+)>/, function(event, handler, selector) {
-    handler.selector = selector;
-    if (_.delegate && event !== handler) {
-        _.filter(handler, _.delegate);
-    }
-}]);
-if (global.Element) {
-    _.delegate = function delegate(event, handler) {
-        this.target = _.closest(event.target, handler.selector);
-    };
-    _.closest = function(el, selector) {
-        while (el && el.matches) {
-            if (el.matches(selector)) {
-                return el;
-            }
-            el = el.parentNode;
-        }
-    };
-
-    var Ep = Element.prototype,
-        aS = 'atchesSelector';
-    if (!Ep['matches']) {
-        Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
-    }
-}   
+_.fn('on', 3);
 
 _.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
     handler.alias = alias;
@@ -341,105 +314,89 @@ _.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
         handler.data.push(alias);
     }
 }]);
-if (document) {
-    _.init = function init() {
-        var nodes = document.querySelectorAll('[data-eventi]');
-        for (var i=0,m=nodes.length; i<m; i++) {
-            var target = nodes[i],
-                mapping = target.getAttribute('data-eventi');
-            if (mapping !== target.eventi) {
-                if (_.off && target.eventi) {
-                    Eventi.off(target, target.eventi, _.declared);
-                }
-                target.eventi = mapping;
-                _.declare(target, mapping);
+_.alias = function(alias, text, context) {
+	return function aliased(target) {
+		var args = _.slice(arguments),
+			index = (typeof target !== "object" || !(target.dispatchEvent || target[_key])) ? 0 : 1;
+		args.splice(index, 0, text);
+		return this.apply(context, args);
+	};
+};
+Eventi.alias = function(context) {
+	var texts = _.slice(arguments, 1),
+		props;
+	if (typeof context === "string") {
+		texts.unshift(context);
+		context = Eventi;
+	}
+	for (var prop in _.fns) {
+		for (var i=0,m=texts.length; i<m; i++) {
+			props = {};
+			_.parse(texts[i], props, props);
+			props.alias = props.alias || props.type;
+			context[prop][props.alias] = _.alias(props.alias, texts[i], context);
+		}
+	}
+	return props;
+};
+_.off = function(target, events, fn) {
+    var listener = target[_key];
+    if (listener) {
+        for (var i=0, m=events.length; i<m; i++) {
+            var filter = { event:{}, handler:{}, fn:fn, text:events[i] };
+            _.parse(events[i], filter.event, filter.handler);
+            // delete superfluous properties
+            delete filter.event.tags;
+            delete filter.handler.filters;
+            delete filter.handler.end;
+            if (target !== _) {
+                Eventi.fire(_, 'off:filter', filter);
             }
-        }
-        if (nodes.length || document.querySelectorAll('[click]').length) {
-            Eventi.on('click keyup', _.check);
-        }
-    };
-    _.declare = function(target, mapping) {// register listener
-        var texts = _.split.ter(mapping);
-        for (var i=0,m=texts.length; i<m; i++) {
-            Eventi.on(target, texts[i], _.declared);
-        }
-    };
-    _.declared = function(e, alias) {// lookup handlers
-        alias = typeof alias === "string" ? alias : e.type;
-        var nodes = _.declarers(this, alias, e.target);
-        for (var i=0,m=nodes.length; i<m; i++) {
-            _.respond(nodes[i], alias, e);
-        }
-    };
-    _.declarers = function(target, alias, node) {
-        var query = '['+alias+']',
-            // gather matching parents up to the target
-            nodes = [],
-            descendant = false;
-        while (node && node.matches) {
-            if (node.matches(query)) {
-                nodes.push(node);
-            }
-            if (node === target) {
-                descendant = true;
-                break;
-            }
-            node = node.parentNode;
-        }
-        // if node isn't a descendant of target, handler must be global
-        return descendant ? nodes : target.querySelectorAll(query);
-    };
-    _.respond = function(node, alias, e) {// execute handler
-        var response = node.getAttribute(alias);
-        if (response) {
-            var fn = _.resolve(response, node) || _.resolve(response);
-            if (typeof fn === "function") {
-                fn.call(node, e);
+            if (filter.event.type) {
+                _.clean(filter.event.type, filter, listener, target);
             } else {
-                Eventi.fire(node, response, e);
+                for (var type in listener.s) {
+                    _.clean(type, filter, listener, target);
+                }
             }
         }
-    };
-    _.check = function(e) {
-        var click = e.target.getAttribute &&
-                    ((e.type === 'click' && _.click(e.target)) ||
-                     (e.keyCode === 13 && _.click(e.target, true)));
-        if (click) {
-            _.declared.call(document.documentElement, e, 'click');
-            if (click === 'noDefault' && !_.allowDefault(e.target)) {
-                e.preventDefault();
+        if (_.empty(listener.s)) {
+            delete target[_key];
+        }
+    }
+};
+_.unhandle = function off(handler) {
+    _.off(handler.target, [handler.text], handler.fn);
+};
+_.empty = function(o){ for (var k in o){ return !k; } return true; };
+_.clean = function(type, filter, listener, target) {
+    var handlers = listener.s[type];
+    if (handlers) {
+        for (var i=0, m=handlers.length; i<m; i++) {
+            if (_.cleans(handlers[i], filter)) {
+                var cleaned = handlers.splice(i--, 1)[0];
+                if (target !== _) {// ignore internal events
+                    Eventi.fire(_, 'off:cleaned', cleaned);
+                }
+                m--;
             }
         }
-    };
-    _.allowDefault = function(el) {
-        return el.type === 'radio' || el.type === 'checkbox';
-    };
-    _.click = function(el, enter) {
-        // click attributes with non-false value override everything
-        var click = el.getAttribute('click');
-        if (click && click !== "false") {
-            return 'noDefault';
+        if (!handlers.length) {
+            if (target.removeEventListener) {
+                target.removeEventListener(type, listener);
+            }
+            delete listener.s[type];
         }
-        // editables, select, textarea, non-button inputs all use click to alter focus w/o action
-        // textarea and editables use enter to add a new line w/o action
-        // a[href], buttons, button inputs all automatically dispatch 'click' on enter
-        // in all three situations, dev must declare on element, not on parent to avoid insanity
-        if (!el.isContentEditable) {
-            var name = el.nodeName.toLowerCase();
-            return name !== 'textarea' &&
-                   (name !== 'select' || enter) &&
-                   (enter ? (name !== 'a' || !el.getAttribute('href')) &&
-                            name !== 'button' &&
-                            (name !== 'input' || !_.buttonRE.test(el.type))
-                          : name !== 'input' || _.buttonRE.test(el.type));
-        }
-    };
-    _.buttonRE = /^(submit|button|reset)$/;
-
-    Eventi.on('DOMContentLoaded', _.init);
-}
-
+    }
+};
+_.cleans = function(handler, filter) {
+    return _.matches(handler.event, filter.event) &&
+           _.matches(handler, filter.handler) &&
+           (!handler.important || (filter.handler.important &&
+                                   _.matches(filter.event, handler.event))) &&
+           (!filter.fn || filter.fn === handler.fn);
+};
+_.fn('off', 3);
 // add singleton to _.parse's supported event properties
 _.parsers.unshift([/^(\W*)\^/, function(event, handler, other) {
 	handler.singleton = true;
@@ -492,122 +449,140 @@ if (document) {
 		Eventi.fire(document.documentElement, '^ready', e);
 	});
 }
-_.split.guard['['] = ']';
-_.parsers.push([/\[([^ ]+)\]/, function(event, handler, key) {//'
-    var dash;
-    while ((dash = key.indexOf('-')) > 0) {
-        event[key.substring(0, dash)+'Key'] = true;
-        key = key.substring(dash+1);
-    }
-    if (key) {
-        event.keyCode = _.codes[key] || parseInt(key, 10) || key;
-    }
+_.parsers.unshift([/\$(\!?\w+(\.\w+)*)/, function(event, handler, condition) {
+    handler.endtest = condition;
+    handler.end = _.endTest(condition);
 }]);
-_.codes = {
-    backspace:8, tab:9, enter:13, shift:16, ctrl:17, alt:18, capsLock:20, escape:27, start:91, command:224,
-    pageUp:33, pageDown:34, end:35, home:36, left:37, up:38, right:39, down:40, insert:45, 'delete':46,
-    multiply:106, plus:107, minus:109, point:110, divide:111, numLock:144,// numpad controls
-    ';':186, '=':187, ',':188, '-':189, '.':190, '/':191, '`':192, '[':219, '\\':220, ']':221, '\'':222, space:32// symbols
+_.endTest = function(condition) {
+    var callsLeft = parseInt(condition, 10);
+    if (callsLeft) {
+        return function(){ return !--callsLeft; };
+    }
+    var not = condition.charAt(0) === '!';
+    if (not){ condition = condition.substring(1); }
+    if (condition && _.resolveRE.test(condition)) {
+        return function endRef() {
+            var value = _.resolve(condition, this, true);
+            if (value === undefined) {
+                value = _.resolve(condition, true);
+            }
+            if (typeof value === "function") {
+                value = value.apply(this, arguments);
+            }
+            return not ? !value : value;
+        };
+    }
 };
-for (var n=0; n<10; n++){ _.codes['num'+n] = 96+n; }// numpad numbers
-for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
-'abcdefghijklmnopqrstuvwxyz 0123456789'.split('').forEach(function(c) {
-    _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
-});
-_.split.guard['@'] = '@';
-_.parsers.unshift([/@([^@]+)(@|$)/, function(event, handler, uri) {
-    handler.location = uri;
-    if (_.location && event !== handler) {
-        _.locationHandler(uri, handler);
-    }
-}]);
-if (global.history && global.location) {
-    var current;
-    _.pushState = history.pushState;
-    history.pushState = function() {
-        var ret = _.pushState.apply(this, arguments);
-        _.dispatch(_.global, new CustomEvent('pushstate'));
-        return ret;
-    };
-    _.location = function(e, uri) {
-        uri = uri || decodeURI(location.pathname + location.search + location.hash);
-        if (uri !== current) {
-            _.dispatch(_.global, new Eventi('location', {
-                oldLocation: current,
-                location: current = uri,
-                srcEvent: e
-            }));
-        }
-        return current;
-    };
-    _.setLocation = function(e, uri, fill) {
-        if (typeof uri !== "string") {
-            fill = uri;
-            uri = e.location;
-        }
-        if (uri) {
-            var keys = _.keys(uri);
-            if (keys) {
-                uri = keys.reduce(function(s, key) {
-                    return s.replace(new RegExp('\\{'+key+'\\}',"g"),
-                                     fill[key] || location[key] || '');
-                }, uri);
-            }
-            if (uri !== current) {
-                history.pushState(null, null, encodeURI(uri));
-            }
-        }
-    };
-    _.keys = function(tmpl) {
-        var keys = tmpl.match(/\{\w+\}/g);
-        return keys && keys.map(function(key) {
-            return key.substring(1, key.length-1);
-        });
-    };
-    _.locationHandler = function(uri, handler) {
-        var re = uri;
-        if (uri.charAt(0) === '`') {
-            re = re.substring(1, re.length-1);
-        } else {
-            re = re.replace(/([.*+?^=!:$(|\[\/\\])/g, "\\$1");// escape uri/regexp conflicts
-            if (handler.keys = _.keys(re)) {
-                re = re.replace(/\{\w+\}/g, "([^\/?#]+)");
+// overwrite fire.js' _.fireAll to watch for combo events
+_.fireAll = function(target, events, props, _resumeIndex) {
+    var event, sequence;
+    for (var i=0; i<events.length; i++) {
+        sequence = props.sequence = _.split.ter(events[i], '+', ',');
+        for (var j=_resumeIndex||0; j < sequence.length && (!event||!event.isSequencePaused()); j++) {
+            if (sequence[j]) {
+                props.index = j;
+                event = props.previousEvent = _.create(sequence[j], props);
+                _.sequence(event, props, target);
+                _.dispatch(target, event);
             } else {
-                re.replace(/\{/g, '\\{');
+                sequence.splice(j--, 1);
             }
         }
-        handler.uriRE = new RegExp(re);
-        _.filter(handler, _.locationFilter);
+    }
+    return event;
+};
+_.sequence = function(event, props, target, paused) {
+    event.resumeSequence = function(index) {
+        if (paused) {
+            paused = false;
+            _.fireAll(target, [props.sequence.join(',')], props, index||props.index+1);
+        }
     };
-    _.locationFilter = function(event, handler) {
-        var matches = (event.location || current).match(handler.uriRE);
-        if (matches) {
-            this.args.splice.apply(this.args, [1,0].concat(matches));
-            if (handler.keys) {
-                // put key/match object in place of full match
-                this.args[1] = handler.keys.reduce(function(o, key) {
-                    o[key] = matches.shift();
-                    return o;
-                }, { match: matches.shift() });
-            }
+    event.pauseSequence = function(promise) {
+        if (paused !== false) {// multiple pauses is nonsense
+            paused = true;
+            return promise && promise.then(this.resumeSequence);
+        }
+    };
+    event.isSequencePaused = function(){ return !!paused; };
+};
+_.combo = {
+    convert: function(handler, text, texts) {
+        handler.event = _.combo.event(text);
+        if (handler.data && typeof handler.data[0] === "number") {
+            handler.timeout = handler.data.shift();
+        }
+        delete handler.singleton;
+        delete handler.selector;
+        delete handler.location;
+        delete handler.filters;
+        delete handler.endtest;
+        delete handler.end;
+        // set up combo event handlers
+        handler.texts = texts;
+        handler.ordered = texts.ordered;
+        handler.reset = _.combo.reset.bind(handler);
+        handler.handlers = texts.map(function(text, index) {
+            return _.handler(handler.target, text, _.combo.eventFn.bind(handler, index));
+        });
+        handler.reset();
+    },
+    event: function(text) {
+        return _.combo[text] || (_.combo[text] = {
+            category: 'combo',
+            type: '_'+(++_.combo.count)
+        });
+    },
+    split: function(text) {
+        var parts = _.split.ter(text, '+');
+        if (parts.length > 1) {
+            parts.ordered = false;
         } else {
-            this.target = undefined;
-        }
-    };
-    Eventi.on('!popstate !hashchange !pushstate', _.location)
-    .on('!location', _.setLocation)
-    .on(_, 'on:handler', function location(e, handler) {
-        if (handler.event.type === 'location') {
-            // force global
-            handler.global = true;
-            // try for current uri match immediately
-            if (!current) {
-                _.location();
+            parts = _.split.ter(text, ',');
+            if (parts.length > 1) {
+                parts.ordered = true;
             }
-            _.execute(new Eventi('location',{location:current, srcEvent:e}), handler);
         }
-    });
-}
+        return parts;
+    },
+    count: 0,
+    reset: function() {
+        if (this.clear){ clearTimeout(this.clear); }
+        this.unfired = this.texts.slice();
+        this.events = [];
+    },
+    eventFn: function(index, e) {
+        if (this.timeout && !this.clear) {
+            this.clear = setTimeout(this.reset, this.timeout);
+        }
+        if (!this.ordered || index-1 === this.unfired.lastIndexOf('')) {
+            this.unfired[index] = '';
+            this.events.push(e);
+            if (!this.unfired.join('')) {
+                var event = new Eventi('combo:'+this.event.type);
+                event.events = this.events;
+                event.text = this.text;
+                _.dispatch(this.target, event);
+                this.reset();
+            }
+        }
+    }
+};
+Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
+	var text = handler.text,
+		texts = _.combo.split(text);
+	if (texts.length > 1) {
+        _.combo.convert(handler, text, texts);
+	}
+}).on(_, 'off:filter', function comboFilter(e, filter) {
+    if (_.combo.split(filter.text).length > 1) {
+        filter.event = _.combo.event(filter.text);
+    }
+}).on(_, 'off:cleaned', function comboOff(e, handler) {
+    if (handler.handlers) {
+        handler.handlers.forEach(_.unhandle);
+    }
+});
     _.version = "1.0.2";
 
     var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,

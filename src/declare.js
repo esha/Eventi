@@ -1,10 +1,3 @@
-_.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
-    handler.alias = alias;
-    if (handler !== event) {
-        handler.data = handler.data || [];
-        handler.data.push(alias);
-    }
-}]);
 if (document) {
     _.init = function init() {
         var nodes = document.querySelectorAll('[data-eventi]');

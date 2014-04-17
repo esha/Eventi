@@ -20,18 +20,14 @@ module.exports = function(grunt) {
       },
       dist: {
         dest: 'dist/<%= pkg.name %>.js',
-        src: ['src/core.js','src/fire.js','src/on.js',
-              'src/delegate.js', 'src/declare.js', 'src/singleton.js', 'src/key.js', 'src/location.js',
-              'src/off.js', 'src/end.js', 'src/sequence.js', 'src/combo.js', 'src/alias.js']
+        src: ['src/core.js','src/fire.js','src/on.js', 'src/alias.js',
+              'src/delegate.js', 'src/declare.js', 'src/key.js', 'src/location.js',
+              'src/off.js', 'src/singleton.js', 'src/end.js', 'src/sequence.js', 'src/combo.js']
       },
-      tall: {
-        dest: 'dist/<%= pkg.name %>.tall.js',
-        src: ['src/core.js','src/fire.js','src/on.js']
-      },
-      grande: {
-        dest: 'dist/<%= pkg.name %>.grande.js',
-        src: ['src/core.js','src/fire.js','src/on.js',
-              'src/delegate.js', 'src/declare.js', 'src/singleton.js','src/key.js', 'src/location.js']
+      server: {
+        dest: 'dist/<%= pkg.name %>.server.js',
+        src: ['src/core.js','src/fire.js','src/on.js', 'src/alias.js',
+              'src/off.js', 'src/singleton.js', 'src/end.js', 'src/sequence.js', 'src/combo.js']
       },
     },
     uglify: {
@@ -42,13 +38,9 @@ module.exports = function(grunt) {
         src: 'dist/<%= pkg.name %>.js',
         dest: 'dist/<%= pkg.name %>.min.js'
       },
-      tall: {
-        src: 'dist/<%= pkg.name %>.tall.js',
-        dest: 'dist/<%= pkg.name %>.tall.min.js'
-      },
-      grande: {
-        src: 'dist/<%= pkg.name %>.grande.js',
-        dest: 'dist/<%= pkg.name %>.grande.min.js'
+      server: {
+        src: 'dist/<%= pkg.name %>.server.js',
+        dest: 'dist/<%= pkg.name %>.server.min.js'
       },
       debug: {
         src: 'src/debug.js',
@@ -63,13 +55,9 @@ module.exports = function(grunt) {
         src: ['dist/<%= pkg.name %>.min.js'],
         dest: 'dist/<%= pkg.name %>.min.js'
       },
-      tall: {
-        src: ['dist/<%= pkg.name %>.tall.min.js'],
-        dest: 'dist/<%= pkg.name %>.tall.min.js'
-      },
-      grande: {
-        src: ['dist/<%= pkg.name %>.grande.min.js'],
-        dest: 'dist/<%= pkg.name %>.grande.min.js'
+      server: {
+        src: ['dist/<%= pkg.name %>.server.min.js'],
+        dest: 'dist/<%= pkg.name %>.server.min.js'
       },
     },
     qunit: {

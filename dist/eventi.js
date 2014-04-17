@@ -1,5 +1,5 @@
-/*! Eventi - v1.0.2 - 2014-04-09
-* https://github.com/nbubna/Eventi
+/*! Eventi - v1.0.2 - 2014-04-17
+* https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
 (function(global, document) {
@@ -63,11 +63,11 @@ var _ = {
     skip: 'bubbles cancelable detail type'.split(' '),
     prop: function(prop){ return prop; },// only an extension hook
     parse: function(type, event, handler) {
-        _.parsers.forEach(function(property) {
-            type = type.replace(property[0], function() {
+        _.parsers.forEach(function(parser) {
+            type = type.replace(parser[0], function() {
                 var args = _.slice(arguments, 1);
                 args.unshift(event, handler);
-                return property[1].apply(event, args) || '';
+                return parser[1].apply(event, args) || '';
             });
         });
         return type ? event.type = type : type;
@@ -93,8 +93,8 @@ var _ = {
         }]
     ],
 
-    wrap: function(name, dataIndex) {
-        return function wrapper(target) {
+    fn: function(name, dataIndex) {
+        Eventi[name] = _.fns[name] = function wrapper(target) {
             var args = _.slice(arguments);
             if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
                 args.unshift(target = !this || this === Eventi ? _.global : this);
@@ -117,6 +117,7 @@ var _ = {
             return ret === undefined ? this : ret;// be fluent
         };
     },
+    fns: {},
     split: {
         guard: { '(':')' },
         ter: function(texts, delims) {
@@ -158,17 +159,14 @@ var _ = {
         }
     }
 };
-(Eventi.toString = function(){ return 'Eventi'; }).utility = true;
+Eventi.toString = function(){ return 'Eventi'; };
 Eventi._ = _;
-(Eventi.fy = function fy(o) {
-    for (var p in Eventi) {
-        var fn = Eventi[p];
-        if (typeof fn === "function" && !fn.utility) {
-            Object.defineProperty(o, p, {value:fn, writable:true, configurable:true});
-        }
+Eventi.fy = function fy(o) {
+    for (var p in _.fns) {
+        Object.defineProperty(o, p, {value:Eventi[p], writable:true, configurable:true});
     }
     return o;
-}).utility = true;
+};
 
 _.parsers.unshift([/^(\W*)\//, function(event, handler, other) {
     handler.global = true;
@@ -201,12 +199,15 @@ _.dispatch = function(target, event, objectBubbling) {
         _.singleton(target, event);
     }
 };
-Eventi.fire = _.wrap('fire', 2);
+_.fn('fire', 2);
 _.parsers.unshift([/^(\W*)\!/, function(e, handler, other) {//
     handler.important = true;
     return other;
 }]);
 _.on = function(target, events, fn, data) {
+    if (target !== _.global && events.length === 1 && events[0] === '') {
+        events = target; target = _.global;
+    }
     if (!Array.isArray(events)) {
         if (fn !== undefined) {
             data = data ? data.unshift(fn) && data : [fn];
@@ -304,9 +305,40 @@ _.matches = function(event, match) {
     }
     return true;
 };
+_.fn('on', 3);
 
-Eventi.on = _.wrap('on', 3);
-
+_.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
+    handler.alias = alias;
+    if (handler !== event) {
+        handler.data = handler.data || [];
+        handler.data.push(alias);
+    }
+}]);
+_.alias = function(alias, text, context) {
+	return function aliased(target) {
+		var args = _.slice(arguments),
+			index = (typeof target !== "object" || !(target.dispatchEvent || target[_key])) ? 0 : 1;
+		args.splice(index, 0, text);
+		return this.apply(context, args);
+	};
+};
+Eventi.alias = function(context) {
+	var texts = _.slice(arguments, 1),
+		props;
+	if (typeof context === "string") {
+		texts.unshift(context);
+		context = Eventi;
+	}
+	for (var prop in _.fns) {
+		for (var i=0,m=texts.length; i<m; i++) {
+			props = {};
+			_.parse(texts[i], props, props);
+			props.alias = props.alias || props.type;
+			context[prop][props.alias] = _.alias(props.alias, texts[i], context);
+		}
+	}
+	return props;
+};
 _.split.guard['<'] = '>';
 _.parsers.unshift([/<(.+)>/, function(event, handler, selector) {
     handler.selector = selector;
@@ -334,13 +366,6 @@ if (global.Element) {
     }
 }   
 
-_.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
-    handler.alias = alias;
-    if (handler !== event) {
-        handler.data = handler.data || [];
-        handler.data.push(alias);
-    }
-}]);
 if (document) {
     _.init = function init() {
         var nodes = document.querySelectorAll('[data-eventi]');
@@ -440,58 +465,6 @@ if (document) {
     Eventi.on('DOMContentLoaded', _.init);
 }
 
-// add singleton to _.parse's supported event properties
-_.parsers.unshift([/^(\W*)\^/, function(event, handler, other) {
-	handler.singleton = true;
-	if (event !== handler) {
-		_.filter(handler, _.before);
-	}
-	return other;
-}]);
-
-// _.fire's _.dispatch will call this when appropriate
-_.singleton = function(target, event) {
-	_.remember(target, event);
-	if (event.bubbles && !event.propagationStopped && target !== _.global) {
-		_.singleton(target.parentNode || target.parentObject || _.global, event);
-	}
-};
-var _skey = _._skey = '^'+_key;
-_.remember = function remember(target, event) {
-	var saved = target[_skey] || [];
-	if (!saved.length) {
-		Object.defineProperty(target, _skey, {value:saved,configurable:true});
-	}
-	event[_skey] = true;
-	saved.push(event);
-};
-_.before = function singleton(event, handler) {
-	_.unhandle(handler);
-	handler.fn = _.noop;// tell _.handler not to keep this
-	if (!event[_skey]) {// remember this non-singleton as singleton for handler's sake
-		_.remember(this.target, event);
-	}
-};
-
-Eventi.on(_, 'on:handler', function singleton(e, handler) {
-	if (handler.singleton) {
-		// search target's saved singletons, execute handler upon match
-		var saved = handler.target[_skey]||[];
-		for (var i=0,m=saved.length; i<m; i++) {
-			var event = saved[i];
-			if (_.matches(event, handler.event)) {
-				_.execute(event, handler);
-				break;
-			}
-		}
-	}
-});
-
-if (document) {
-	Eventi.on('DOMContentLoaded', function ready(e) {
-		Eventi.fire(document.documentElement, '^ready', e);
-	});
-}
 _.split.guard['['] = ']';
 _.parsers.push([/\[([^ ]+)\]/, function(event, handler, key) {//'
     var dash;
@@ -665,7 +638,59 @@ _.cleans = function(handler, filter) {
                                    _.matches(filter.event, handler.event))) &&
            (!filter.fn || filter.fn === handler.fn);
 };
-Eventi.off = _.wrap('off', 3);
+_.fn('off', 3);
+// add singleton to _.parse's supported event properties
+_.parsers.unshift([/^(\W*)\^/, function(event, handler, other) {
+	handler.singleton = true;
+	if (event !== handler) {
+		_.filter(handler, _.before);
+	}
+	return other;
+}]);
+
+// _.fire's _.dispatch will call this when appropriate
+_.singleton = function(target, event) {
+	_.remember(target, event);
+	if (event.bubbles && !event.propagationStopped && target !== _.global) {
+		_.singleton(target.parentNode || target.parentObject || _.global, event);
+	}
+};
+var _skey = _._skey = '^'+_key;
+_.remember = function remember(target, event) {
+	var saved = target[_skey] || [];
+	if (!saved.length) {
+		Object.defineProperty(target, _skey, {value:saved,configurable:true});
+	}
+	event[_skey] = true;
+	saved.push(event);
+};
+_.before = function singleton(event, handler) {
+	_.unhandle(handler);
+	handler.fn = _.noop;// tell _.handler not to keep this
+	if (!event[_skey]) {// remember this non-singleton as singleton for handler's sake
+		_.remember(this.target, event);
+	}
+};
+
+Eventi.on(_, 'on:handler', function singleton(e, handler) {
+	if (handler.singleton) {
+		// search target's saved singletons, execute handler upon match
+		var saved = handler.target[_skey]||[];
+		for (var i=0,m=saved.length; i<m; i++) {
+			var event = saved[i];
+			if (_.matches(event, handler.event)) {
+				_.execute(event, handler);
+				break;
+			}
+		}
+	}
+});
+
+if (document) {
+	Eventi.on('DOMContentLoaded', function ready(e) {
+		Eventi.fire(document.documentElement, '^ready', e);
+	});
+}
 _.parsers.unshift([/\$(\!?\w+(\.\w+)*)/, function(event, handler, condition) {
     handler.endtest = condition;
     handler.end = _.endTest(condition);
@@ -724,6 +749,26 @@ _.sequence = function(event, props, target, paused) {
     event.isSequencePaused = function(){ return !!paused; };
 };
 _.combo = {
+    convert: function(handler, text, texts) {
+        handler.event = _.combo.event(text);
+        if (handler.data && typeof handler.data[0] === "number") {
+            handler.timeout = handler.data.shift();
+        }
+        delete handler.singleton;
+        delete handler.selector;
+        delete handler.location;
+        delete handler.filters;
+        delete handler.endtest;
+        delete handler.end;
+        // set up combo event handlers
+        handler.texts = texts;
+        handler.ordered = texts.ordered;
+        handler.reset = _.combo.reset.bind(handler);
+        handler.handlers = texts.map(function(text, index) {
+            return _.handler(handler.target, text, _.combo.eventFn.bind(handler, index));
+        });
+        handler.reset();
+    },
     event: function(text) {
         return _.combo[text] || (_.combo[text] = {
             category: 'combo',
@@ -769,24 +814,7 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
 	var text = handler.text,
 		texts = _.combo.split(text);
 	if (texts.length > 1) {
-        handler.event = _.combo.event(text);
-        if (handler.data && typeof handler.data[0] === "number") {
-            handler.timeout = handler.data.shift();
-        }
-        delete handler.singleton;
-        delete handler.selector;
-        delete handler.location;
-        delete handler.filters;
-        delete handler.endtest;
-        delete handler.end;
-        // set up combo event handlers
-        handler.texts = texts;
-        handler.ordered = texts.ordered;
-        handler.reset = _.combo.reset.bind(handler);
-        handler.handlers = texts.map(function(text, index) {
-            return _.handler(handler.target, text, _.combo.eventFn.bind(handler, index));
-        });
-        handler.reset();
+        _.combo.convert(handler, text, texts);
 	}
 }).on(_, 'off:filter', function comboFilter(e, filter) {
     if (_.combo.split(filter.text).length > 1) {
@@ -797,38 +825,6 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
         handler.handlers.forEach(_.unhandle);
     }
 });
-_.alias = function(alias, text, context) {
-	return function aliased(target) {
-		var args = _.slice(arguments),
-			index = (typeof target !== "object" || !(target.dispatchEvent || target[_key])) ? 0 : 1;
-		args.splice(index, 0, text);
-		return this.apply(context, args);
-	};
-};
-(Eventi.alias = function(context) {
-	var texts = _.slice(arguments, 1),
-		props;
-	if (typeof context === "string") {
-		texts.unshift(context);
-		context = Eventi;
-	}
-	for (var prop in Eventi) {
-		var fn = context[prop];
-		if (typeof fn === "function" && !fn.utility) {
-			if (context !== Eventi && fn === Eventi[prop]) {
-				// prevent shared aliases for different Eventi-fied objects
-				fn = context[prop] = fn.bind(context);
-			}
-			for (var i=0,m=texts.length; i<m; i++) {
-				props = {};
-				_.parse(texts[i], props, props);
-				props.alias = props.alias || props.type;
-				fn[props.alias] = _.alias(props.alias, texts[i], context);
-			}
-		}
-	}
-	return props;
-}).utility = true;
     _.version = "1.0.2";
 
     var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,

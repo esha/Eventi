@@ -1,3 +1,10 @@
+_.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
+    handler.alias = alias;
+    if (handler !== event) {
+        handler.data = handler.data || [];
+        handler.data.push(alias);
+    }
+}]);
 _.alias = function(alias, text, context) {
 	return function aliased(target) {
 		var args = _.slice(arguments),

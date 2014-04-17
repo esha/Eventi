@@ -29,13 +29,10 @@ Download the [minified version][min] or the [development version][max]. [![Build
 * DOM and object support
 * Handling for complex event types (combos, async sequences, singletons, etc).
 * Robust, error tolerant listener execution
-* Support for best-practices like "signals" (aka pre-defined types) and declarative event mapping
+* Support for best-practices like "signals" (aka aliases for complex types) and declarative event mapping
 * Lots of solid, maintainable test code
 * Impressive, interactive demo (ideas, anyone?)
-* Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds delegate/declare/singleton/key/location, venti adds off/end/sequence/combo/alias
-* Venti is the default version to encourage much event-based awesomeness for everyone.
-* Grande includes basic webapp tools.
-* Tall could be enough for light server-side work.
+* Two versions (server and browser): server is frame/core/fire/on/alias/off/singleton/end/sequence/combo, browser adds delegate/declare/key/location
 
 ## Code Plans
 
