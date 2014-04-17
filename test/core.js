@@ -74,6 +74,10 @@
     ok(!o.name, 'should not inherit any properties');
   });
 
+  test('Eventi.toString()', function() {
+    equal(Eventi+'', "Eventi, v"+_.version);
+  });
+
   test('internal api presence', function() {
     ok(typeof _ === "object", "Eventi._ should be present");
     ok(_.global, "_.global");
@@ -88,6 +92,8 @@
     ok(_.parse, "_.parse");
     ok(_.parsers, "_.parsers");
     ok(_.fn, "_.fn");
+    equal(typeof _.version, "string", "_.version");
+    notEqual(_.version, "<%= pkg.version %>");
     equal(typeof _.fns, "object", "_.fns");
     equal(typeof _.split, "object", "_.split");
     equal(typeof _.split.guard, "object", "_.split.guard");

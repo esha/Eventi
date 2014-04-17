@@ -133,7 +133,7 @@ var _ = {
         }
     }
 };
-Eventi.toString = function(){ return 'Eventi'; };
+Eventi.toString = function(){ return 'Eventi, v'+_.version; };
 Eventi._ = _;
 Eventi.fy = function fy(o) {
     for (var p in _.fns) {
