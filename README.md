@@ -3,137 +3,151 @@
 Powerful application events and event handling, made easy.
 
 ## Getting Started
-Download the [minified version][min] or the [development version][max]. [![Build Status](https://travis-ci.org/esha/Eventi.png?branch=master)](https://travis-ci.org/esha/Eventi)  
+Download the [full][], [minified][min], or [server][server] versions. [![Build Status](https://travis-ci.org/esha/Eventi.png?branch=master)](https://travis-ci.org/esha/Eventi)  
 [Bower][bower]: `bower install eventi`  
 [NPM][npm]: `npm install eventi`   
 [Component][component]: `component install esha/Eventi`  
 
+[full]: https://raw.github.com/esha/Eventi/master/dist/Eventi.js
 [min]: https://raw.github.com/esha/Eventi/master/dist/Eventi.min.js
-[max]: https://raw.github.com/esha/Eventi/master/dist/Eventi.js
+[server]: https://raw.github.com/esha/Eventi/master/dist/Eventi.server.js
 [npm]: https://npmjs.org/package/eventi
 [bower]: http://bower.io/
 [component]: http://component.io/
 
-## Motive
+## Methods
 
-* Application events (aka custom events) are usually under-used or poorly-used in applications.
-* Events are the best way to decouple modules and components without isolating them entirely.
-* DOM event bubbling, in particular, has much potential for meaningful event based interfaces.
-* Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types with poor data that most heavy custom event users end up using.
-* Custom events can be awesome, especially when you have rich features and patterns that are simple to use.
-* Declarative events are completely unsupported out there. This is a travesty.
+#### Eventi.fire([target, ]eventi[, data,...])
 
-## Goal
-* A rich event platform that's easy to use and to extend.
-* A declarative syntax for working with rich, informative events.
-* DOM and object support
-* Handling for complex event types (combos, async sequences, singletons, etc).
-* Robust, error tolerant listener execution
-* Support for best-practices like "signals" (aka aliases for complex types) and declarative event mapping
-* Lots of solid, maintainable test code
-* Impressive, interactive demo (ideas, anyone?)
-* Two versions (server and browser): server is frame/core/fire/on/alias/off/singleton/end/sequence/combo, browser adds delegate/declare/key/location
+Creates and dispatches the specified event(s) on the specified target(s), attaching any specified data.
 
-## Code Plans
+Arguments | Required | Type(s) | Default | Description
+--------- | -------- | ------- | ------- | -----------
+target | No | _Object_, _Array_ | global/window | A single target or array of them.
+eventi | Yes | _String_, _Event_, _Array_* | | One or more space-delimited Eventi definitions, an Event instance, or an array of either
+data | No | | | Any number of arguments that will be put in an Array and attached to all created events as the `data` property.
 
-#### Eventi.frame (useless on its own)
-* external IIFE
-* universal module definition
-* CustomEvent constructor polyfill
-* body is resolved to build tool specified (sub)set of the following content
+*When passing events in an array, you *must* specify a target argument.
 
-#### core.js (not much use on its own)
-* rich event syntax parsing: `Eventi("group:kind#label('val')")` -> `{ category:'group', type:'kind', tags:['label'], label:true, detail:'val' }`
-* parser should be extensible (for supporting jQuery namespaces or keyCodes or whatever)
-* detail can be resolvable reference, string, or limited json (no parentheses)
-* interface sharing (pass `this` as `target` param to copied functions): `Eventi.fy(foo)` -> `foo.fire('type')`
-* add stopImmediatePropagation and immediatePropagationStopped to event interface
+Any attached data will be fed to the event listeners as additional arguments after the event itself and any data registered along with the listener itself.
 
-#### on.js (requires core.js)
-* simple event registration: `Eventi.on([target, ]'type', fn)`
-* space delimited multiple registration: `Eventi.on([target, ]'first second third', fn)`
-* filter by category and/or tag: `Eventi.on([target, ]"category:type#tag", fn)`
-* bind data w/listener: `Eventi.on([target, ]'type', fn, data)`
-* applying rich event data as listener arg(s): `Eventi.on([target, ]'type', function(e, arg, arg){})`
-* implementation: one listener per target that gets registered for every handled type. the listener handles each event by looking amongst its handlers for those that match the event and executing them
+```javascript
+Eventi.fire(user, 'account:close', accountId);
+```
 
-#### fire.js (requires core.js, uses on.js)
-* object or DOM custom event dispatch: `Eventi.fire(Node|object, 'type')`
-* handler errors caught and thrown in next tick to avoid interrupting sibling handlers or hiding errors
-* implicit global target: `Eventi.fire('type')` === `Eventi.fire(document || this, 'type')
-* multiple target specification: `Eventi.fire(Array|NodeList, 'type')`
-* fire with handler arguments `Eventi.fire([target, ]'type', data)`
-* TODO: consider non-DOM propagation when typeof object.parent === "object"
+#### Eventi.on([target, ]eventi, fn[, data,...])
 
+Registers the specified function as an event listener for the specified event(s) on the specified target(s).
 
-#### delegate.js (requires on.js)
-* alias Element.prototype.matches from the prefixed matchesSelector versions
-* filter by selector (aka delegation): `Eventi.on([target, ]'type<.selector>', fn)`
+Arguments | Required | Type(s) | Default | Description
+--------- | -------- | ------- | ------- | -----------
+target | No | _Object_, _Array_ | global/window | A single target or array of them.
+eventi | Yes | _String_, _Array_* | | One or more space-delimited Eventi definitions or an array of them (*in which case you *must* specify a target argument)
+fn | Yes | _Function_ | | The function to be called when a matching event hits the target(s).
+data | No | * | | Any number of arguments that will be passed directly to the listener function as arguments (after the event argument).
 
-#### declare.js (requires on.js and fire.js)
-* declare `data-eventi="submit /beforeunload=quit"` on a root or container element
-* declare specific responses on descendent(s): `submit="validate>save" quit="Utils.persist"`
-* try to resolve attr values at call-time to either element or global function (declared event handler)
-* otherwise, fire as application event (declared event mapping)
-* impl should scan document for data-eventi attributes on DOMContentLoaded, register those listeners
-* `click="..."` is globally supported by default using trigger.js' intelligent click/enter logic
+The function argument will be called with the target as its context, the received event as the first argument, and data arguments registered with the listener as the next arguments, and any data arguments attached to the event itself after those.
 
-#### singleton.js (requires fire.js and on.js)
-* singleton events (immediately call late listeners, ignore multiple firings)
-* "listen" for them: `Eventi.on([target, ]'^type', fn)`
-* fire them so they're remembered: `Eventi.fire([target, ]'^type', fn)`
-* alias DOMContentLoaded to '^ready'
+```javascript
+Eventi.on(user, 'account:open', function(e) {
+   console.log('Event: type='+e.type+' category='+e.category, this/* will be user */); 
+});
+```
 
-#### key.js (requires on.js)
-* filter key events: `Eventi.on([target, ]'keyup[shift-a]', fn)`
+#### Eventi.on([targets, ]{ eventi:fn,... })
 
-#### location.js (requires on.js and fire.js)
-* event-based routing: `Eventi.on('location@?view={view}', function(e, url, params){ console.log(params.view); })`
-* event-based history.pushState: `Eventi.fire('location@?view={0}', ['foo'])`
-* consistent event for all popstate/hashchange/pushstate changes: `Eventi.on('location', function(e){ console.log(e.location, e.oldLocation, e.srcEvent); })`
+Overloading of `on()` for convenient registration of multiple listeners at once. Iterates over the object argument, registering key/value pairs as eventi/fn pairs.
+
+```javascript
+Eventi.on(user, {
+    'account:open', function(e) {
+        console.log('Event: type='+e.type+' category='+e.category, this/* will be user */); 
+    },
+    'account:close', function(e, accountId) {
+        console.log('User: '+this.id+' is closing account '+accountId);
+    }
+});
+```
 
 
-#### off.js (requires on.js)
-* simple listener removal: `Eventi.off([target, ]['type', ][fn])`
-* multiple removal: `Eventi.off([target, ]['first second third', ][fn])`
-* remove by category and/or tag: `Eventi.off([target, ]['category:type#tag', ][fn])`
+### Eventi.off([targets, ][eventi, ][fn])
 
-#### end.js (requires on.js)
-* this will remove handlers once the specified condition is satisfied
-* number of executions: `Eventi.on([target, ]'type$3', fn)`
-* test ref for truthiness: `Eventi.on([target, ]'type$reference', fn)`
-* call function for truthiness: `Eventi.on([target, ]'type$test.fn', fn)`
+Unregisters event listeners that match the specified event(s) and/or function on the specified target(s), or the global/window object, if none is specified.
 
-#### sequence.js (requires fire.js)
-* fire controllable sequence of events: `Eventi.fire([target, ]'first,second'[, data...])`
-* event sequence firing controls (w/async support via promises): `e.pauseSequence([promise])`,`e.resumeSequence()`, `e.isSequencePaused()`
+Arguments | Required | Type(s) | Default | Description
+--------- | -------- | ------- | ------- | -----------
+target | No | _Object_, _Array_ | global/window | A single target or array of them.
+eventi | No | _String_, _Array_* | | One or more space-delimited Eventi definitions (or portions thereof) or an array of them (*in which case you *must* specify a target argument)
+fn | No | _Function_ | | The specific listener function to be removed.
 
-#### combo.js (requires on.js and off.js)
-* combo events (call after all specified events, then reset): `Eventi.on([target, ]'foo+bar', fn)`
-* event sequences (ordered combos): `Eventi.on([target, ]'one,two,three', fn...)`
-* configurable timeout for combo events: `Eventi.on([target, ]'one,two', fn, 1000)`
+```javascript
+Eventi.off(user, 'account:');
+```
 
-#### alias.js (requires core and declare.js)
-* provide both global and local type specification with minimal API
-* global: `Eventi.alias('type');` -> `Eventi.on.type([target, ]handler)`
-* local (after Eventi.fy(o)): `Eventi.alias(o, 'type', 'type2')` -> `target.until.type2(1, handler)`
-* obviously, aliases cannot have the same name as Function properties like 'call' or 'length'
+### Eventi.alias([context, ]eventi,...)
 
-## TODO
-* documentation
-* demo app/site
-* integrations (jQuery, Visual Event 2, Capo, etc)
-* consider limited grouping syntax for types with partial overlap: `group:{type#tag other$1}#tag2` but probably don't bother due to incompatibility w/aliasing and current parsing
-* consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality. but resist doing it, as this could get out of hand...
+Defines aliases for the events specified. It creates sub-functions for `on()`, `off()`, and `fire()` under the alias (or simple type if no alias is defined).
 
-#### Plan for jquery.eventi.js
-* add custom properties to $.event.props
-* add namespace support to rich syntax (ick)
-* listen for events in jQuery's manual bubbling system (ick again)
-* wrap $.fn.trigger, $.fn.on, $.fn.off, and maybe $.fn.one to intercept calls with Eventi syntax
+Arguments | Required | Type | Default | Description
+--------- | -------- | ---- | ------- | -----------
+context | No | _Object_ | Eventi | An object that has been run through Eventi.fy() whose methods you want the aliases set for.
+eventi | Yes | _String_ | | One or more event space-delimited Eventi definitions.
 
-#### visual.js
-* Integration for http://www.sprymedia.co.uk/article/Visual+Event+2
+```javascript
+Eventi.alias('account:request#freeze=>hold');
+Eventi.on.hold(user, function(e, admin) {
+  console.log(admin.id+' is requesting freeze for '+user.id+' accounts');  
+});
+//...
+Eventi.fire.hold(user, admin);
+```
+
+### Eventi.fy(target)
+
+Convenience tool that simply defines `on()`, `off()`, and `fire()`, making the specified target object the context and target for those functions.
+
+Arguments | Required | Type | Default | Description
+--------- | -------- | ---- | ------- | -----------
+context | Yes | _Object_ | | A target object you would like to call fire/on/off upon directly.
+
+```javascript
+Eventi.fy(user);
+user.on('account:open', function(e) {
+   console.log('Open new account for '+this/* will be user */); 
+});
+```
+```javascript
+Eventi.fy(Element.prototype);// lets you call Eventi functions on all DOM elements
+```
+
+## Eventi Syntax
+
+### Core - Defining What's What
+
+#### Type
+#### Category:
+#### #Tags
+#### (Detail)
+#### _NoBubbles
+
+### Browser - Environment Awareness
+
+#### <.Delegate>
+#### [Key]
+#### @Location
+
+### Control - For Special Handling
+
+#### =>Alias
+#### ^Singleton
+#### $End
+#### !Important
+
+### Multiplicity - One Is Not Enough
+
+#### "Multiple Events"
+#### "Event,Sequences"
+#### "Combo+Events"
 
 
 ## Release History
@@ -141,8 +155,12 @@ Download the [minified version][min] or the [development version][max]. [![Build
 * 2014-04-03 [v1.0.0][] (beta)
 * 2014-04-04 [v1.0.1][] (beta - IE fixes)
 * 2014-04-09 [v1.0.2][] (beta - toString and location fix)
+* 2014-04-17 [v1.1.0][] (beta - restructure artifacts, small improvements)
+* 2014-04-18 [v1.1.1][] (beta - docs, space-delimited alias arguments)
 
 [v0.5.0]: https://github.com/esha/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/esha/Eventi/tree/1.0.0
 [v1.0.1]: https://github.com/esha/Eventi/tree/1.0.1
 [v1.0.2]: https://github.com/esha/Eventi/tree/1.0.2
+[v1.1.0]: https://github.com/esha/Eventi/tree/1.1.0
+[v1.1.1]: https://github.com/esha/Eventi/tree/1.1.1
