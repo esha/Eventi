@@ -80,7 +80,7 @@
 
   test('click="remove"', function() {
     var parent = document.getElementById('declare'),
-      el = parent.querySelector('[click]'),
+      el = parent.querySelector('[data-click],[click]'),
       button = el.querySelector('button');
     if (!el.remove) {
       el.remove = function() {

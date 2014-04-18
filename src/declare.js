@@ -1,9 +1,10 @@
 if (document) {
     _.init = function init() {
-        var nodes = document.querySelectorAll('[data-eventi]');
+        var nodes = document.querySelectorAll('[eventi],[data-eventi]');
         for (var i=0,m=nodes.length; i<m; i++) {
             var target = nodes[i],
-                mapping = target.getAttribute('data-eventi');
+                mapping = target.getAttribute('eventi') ||
+                          target.getAttribute('data-eventi');
             if (mapping !== target.eventi) {
                 if (_.off && target.eventi) {
                     Eventi.off(target, target.eventi, _.declared);
@@ -12,7 +13,7 @@ if (document) {
                 _.declare(target, mapping);
             }
         }
-        if (nodes.length || document.querySelectorAll('[click]').length) {
+        if (nodes.length || document.querySelectorAll('[click],[data-click]').length) {
             Eventi.on('click keyup', _.check);
         }
     };
@@ -30,7 +31,7 @@ if (document) {
         }
     };
     _.declarers = function(target, alias, node) {
-        var query = '['+alias+']',
+        var query = '['+alias+'],[data-'+alias+']',
             // gather matching parents up to the target
             nodes = [],
             descendant = false;
@@ -48,7 +49,7 @@ if (document) {
         return descendant ? nodes : target.querySelectorAll(query);
     };
     _.respond = function(node, alias, e) {// execute handler
-        var response = node.getAttribute(alias);
+        var response = node.getAttribute(alias)||node.getAttribute('data-'+alias);
         if (response) {
             var fn = _.resolve(response, node) || _.resolve(response);
             if (typeof fn === "function") {
