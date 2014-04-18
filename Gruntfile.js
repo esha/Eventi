@@ -38,10 +38,6 @@ module.exports = function(grunt) {
         src: 'dist/<%= pkg.name %>.js',
         dest: 'dist/<%= pkg.name %>.min.js'
       },
-      server: {
-        src: 'dist/<%= pkg.name %>.server.js',
-        dest: 'dist/<%= pkg.name %>.server.min.js'
-      },
       debug: {
         src: 'src/debug.js',
         dest: 'dist/<%= pkg.name %>.debug.min.js'
@@ -54,10 +50,6 @@ module.exports = function(grunt) {
       dist: {
         src: ['dist/<%= pkg.name %>.min.js'],
         dest: 'dist/<%= pkg.name %>.min.js'
-      },
-      server: {
-        src: ['dist/<%= pkg.name %>.server.min.js'],
-        dest: 'dist/<%= pkg.name %>.server.min.js'
       },
     },
     qunit: {
