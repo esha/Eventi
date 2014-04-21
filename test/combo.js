@@ -49,6 +49,17 @@
     });
   });
 
+  test('nodupes', function() {
+    expect(6);
+    onCombo('one,one,one', function(e) {
+      equal(e.events.length, 3);
+      while (e.events.length) {
+        var sub = e.events.pop();
+        equal(e.events.indexOf(sub), -1, "should not be used twice");
+      }
+    });
+  });
+
   test('unordered', function() {
     expect(2);
     onCombo('this+that', null, 'that this');

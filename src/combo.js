@@ -47,7 +47,8 @@ _.combo = {
         if (this.timeout && !this.clear) {
             this.clear = setTimeout(this.reset, this.timeout);
         }
-        if (!this.ordered || index-1 === this.unfired.lastIndexOf('')) {
+        if (this.events.indexOf(e) < 0 &&
+            (!this.ordered || index-1 === this.unfired.lastIndexOf(''))) {
             this.unfired[index] = '';
             this.events.push(e);
             if (!this.unfired.join('')) {
