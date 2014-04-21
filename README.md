@@ -381,11 +381,11 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 * 2014-04-04 [v1.0.1][] (beta - IE fixes)
 * 2014-04-09 [v1.0.2][] (beta - toString and location fix)
 * 2014-04-17 [v1.1.0][] (beta - restructure artifacts, small improvements)
-* 2014-04-18 [v1.1.1][] (beta - docs, space-delimited alias arguments)
+* 2014-04-21 [v1.2.0][] (beta - docs, space-delimited alias arguments, artifact changes, optional `data-` prefixes, combo fix)
 
 [v0.5.0]: https://github.com/esha/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/esha/Eventi/tree/1.0.0
 [v1.0.1]: https://github.com/esha/Eventi/tree/1.0.1
 [v1.0.2]: https://github.com/esha/Eventi/tree/1.0.2
 [v1.1.0]: https://github.com/esha/Eventi/tree/1.1.0
-[v1.1.1]: https://github.com/esha/Eventi/tree/1.1.1
+[v1.2.0]: https://github.com/esha/Eventi/tree/1.2.0
