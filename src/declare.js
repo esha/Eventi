@@ -3,8 +3,8 @@ if (document) {
         var nodes = document.querySelectorAll('[eventi],[data-eventi]');
         for (var i=0,m=nodes.length; i<m; i++) {
             var target = nodes[i],
-                mapping = target.getAttribute('eventi') ||
-                          target.getAttribute('data-eventi');
+                mapping = target.getAttribute('data-eventi') ||
+                          target.getAttribute('eventi');
             if (mapping !== target.eventi) {
                 if (_.off && target.eventi) {
                     Eventi.off(target, target.eventi, _.declared);
@@ -30,26 +30,26 @@ if (document) {
             _.respond(nodes[i], alias, e);
         }
     };
-    _.declarers = function(target, alias, node) {
+    _.declarers = function(node, alias, target) {
         var query = '['+alias+'],[data-'+alias+']',
-            // gather matching parents up to the target
+            // gather matching targets up to and including the listening node
             nodes = [],
             descendant = false;
-        while (node && node.matches) {
-            if (node.matches(query)) {
-                nodes.push(node);
+        while (target && target.matches) {
+            if (target.matches(query)) {
+                nodes.push(target);
             }
-            if (node === target) {
+            if (target === node) {
                 descendant = true;
                 break;
             }
-            node = node.parentNode;
+            target = target.parentNode;
         }
-        // if node isn't a descendant of target, handler must be global
-        return descendant ? nodes : target.querySelectorAll(query);
+        // if target isn't a descendant of node, handler must be global
+        return descendant ? nodes : node.querySelectorAll(query);
     };
     _.respond = function(node, alias, e) {// execute handler
-        var response = node.getAttribute(alias)||node.getAttribute('data-'+alias);
+        var response = node.getAttribute('data-'+alias)||node.getAttribute(alias)||alias;
         if (response) {
             var fn = _.resolve(response, node) || _.resolve(response);
             if (typeof fn === "function") {
