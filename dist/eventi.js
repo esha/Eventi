@@ -1,4 +1,4 @@
-/*! Eventi - v1.1.0 - 2014-04-17
+/*! Eventi - v1.2.0 - 2014-04-21
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -322,13 +322,12 @@ _.alias = function(alias, text, context) {
 		return this.apply(context, args);
 	};
 };
-Eventi.alias = function(context) {
-	var texts = _.slice(arguments, 1),
-		props;
+Eventi.alias = function(context, text) {
 	if (typeof context === "string") {
-		texts.unshift(context);
-		context = Eventi;
+		text = context; context = Eventi;
 	}
+	var texts = _.split.ter(text),
+		props;
 	for (var prop in _.fns) {
 		for (var i=0,m=texts.length; i<m; i++) {
 			props = {};
@@ -368,10 +367,11 @@ if (global.Element) {
 
 if (document) {
     _.init = function init() {
-        var nodes = document.querySelectorAll('[data-eventi]');
+        var nodes = document.querySelectorAll('[eventi],[data-eventi]');
         for (var i=0,m=nodes.length; i<m; i++) {
             var target = nodes[i],
-                mapping = target.getAttribute('data-eventi');
+                mapping = target.getAttribute('data-eventi') ||
+                          target.getAttribute('eventi');
             if (mapping !== target.eventi) {
                 if (_.off && target.eventi) {
                     Eventi.off(target, target.eventi, _.declared);
@@ -380,7 +380,7 @@ if (document) {
                 _.declare(target, mapping);
             }
         }
-        if (nodes.length || document.querySelectorAll('[click]').length) {
+        if (nodes.length || document.querySelectorAll('[click],[data-click]').length) {
             Eventi.on('click keyup', _.check);
         }
     };
@@ -397,26 +397,26 @@ if (document) {
             _.respond(nodes[i], alias, e);
         }
     };
-    _.declarers = function(target, alias, node) {
-        var query = '['+alias+']',
-            // gather matching parents up to the target
+    _.declarers = function(node, alias, target) {
+        var query = '['+alias+'],[data-'+alias+']',
+            // gather matching targets up to and including the listening node
             nodes = [],
             descendant = false;
-        while (node && node.matches) {
-            if (node.matches(query)) {
-                nodes.push(node);
+        while (target && target.matches) {
+            if (target.matches(query)) {
+                nodes.push(target);
             }
-            if (node === target) {
+            if (target === node) {
                 descendant = true;
                 break;
             }
-            node = node.parentNode;
+            target = target.parentNode;
         }
-        // if node isn't a descendant of target, handler must be global
-        return descendant ? nodes : target.querySelectorAll(query);
+        // if target isn't a descendant of node, handler must be global
+        return descendant ? nodes : node.querySelectorAll(query);
     };
     _.respond = function(node, alias, e) {// execute handler
-        var response = node.getAttribute(alias);
+        var response = node.getAttribute('data-'+alias)||node.getAttribute(alias)||alias;
         if (response) {
             var fn = _.resolve(response, node) || _.resolve(response);
             if (typeof fn === "function") {
@@ -797,7 +797,8 @@ _.combo = {
         if (this.timeout && !this.clear) {
             this.clear = setTimeout(this.reset, this.timeout);
         }
-        if (!this.ordered || index-1 === this.unfired.lastIndexOf('')) {
+        if (this.events.indexOf(e) < 0 &&
+            (!this.ordered || index-1 === this.unfired.lastIndexOf(''))) {
             this.unfired[index] = '';
             this.events.push(e);
             if (!this.unfired.join('')) {
@@ -825,7 +826,7 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
         handler.handlers.forEach(_.unhandle);
     }
 });
-    _.version = "1.1.0";
+    _.version = "1.2.0";
 
     var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;

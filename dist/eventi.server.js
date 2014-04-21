@@ -1,4 +1,4 @@
-/*! Eventi - v1.1.0 - 2014-04-17
+/*! Eventi - v1.2.0 - 2014-04-21
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -322,13 +322,12 @@ _.alias = function(alias, text, context) {
 		return this.apply(context, args);
 	};
 };
-Eventi.alias = function(context) {
-	var texts = _.slice(arguments, 1),
-		props;
+Eventi.alias = function(context, text) {
 	if (typeof context === "string") {
-		texts.unshift(context);
-		context = Eventi;
+		text = context; context = Eventi;
 	}
+	var texts = _.split.ter(text),
+		props;
 	for (var prop in _.fns) {
 		for (var i=0,m=texts.length; i<m; i++) {
 			props = {};
@@ -555,7 +554,8 @@ _.combo = {
         if (this.timeout && !this.clear) {
             this.clear = setTimeout(this.reset, this.timeout);
         }
-        if (!this.ordered || index-1 === this.unfired.lastIndexOf('')) {
+        if (this.events.indexOf(e) < 0 &&
+            (!this.ordered || index-1 === this.unfired.lastIndexOf(''))) {
             this.unfired[index] = '';
             this.events.push(e);
             if (!this.unfired.join('')) {
@@ -583,7 +583,7 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
         handler.handlers.forEach(_.unhandle);
     }
 });
-    _.version = "1.1.0";
+    _.version = "1.2.0";
 
     var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
         sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
