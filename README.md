@@ -24,7 +24,7 @@ Creates and dispatches the specified event(s) on the specified target(s), attach
 Arguments | Required | Type(s) | Default | Description
 --------- | -------- | ------- | ------- | -----------
 target | No | _Object_, _Array_ | global/window | A single target or array of them.
-eventi | Yes | _String_, _Event_, _Array_* | | One or more space-delimited Eventi definitions, an Event instance, or an array of either
+eventi | Yes | _String_, _Event_, _Array_ | | One or more space-delimited Eventi definitions, an Event instance, or an array of either (in which case you *must* specify a target argument).
 data | No | | | Any number of arguments that will be put in an Array and attached to all created events as the `data` property.
 
 *When passing events in an array, you *must* specify a target argument.
@@ -42,7 +42,7 @@ Registers the specified function as an event listener for the specified event(s)
 Arguments | Required | Type(s) | Default | Description
 --------- | -------- | ------- | ------- | -----------
 target | No | _Object_, _Array_ | global/window | A single target or array of them.
-eventi | Yes | _String_, _Array_* | | One or more space-delimited Eventi definitions or an array of them (*in which case you *must* specify a target argument)
+eventi | Yes | _String_, _Array_ | | One or more space-delimited Eventi definitions or an array of them (in which case you *must* specify a target argument).
 fn | Yes | _Function_ | | The function to be called when a matching event hits the target(s).
 data | No | * | | Any number of arguments that will be passed directly to the listener function as arguments (after the event argument).
 
