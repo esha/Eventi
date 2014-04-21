@@ -95,7 +95,7 @@ Unregisters event listeners that match the specified event(s) and/or function on
 Arguments | Required | Type(s) | Default | Description
 --------- | -------- | ------- | ------- | -----------
 target | No | _Object_, _Array_ | global/window | A single target or array of them.
-eventi | No | _String_, _Array_* | | One or more space-delimited Eventi definitions (or portions thereof) or an array of them (*in which case you must specify a target argument)
+eventi | No | _String_, _Array_ | | One or more space-delimited Eventi definitions (or portions thereof) or an array of them (in which case you must specify a target argument)
 fn | No | _Function_ | | The specific listener function to be removed.
 
 ```javascript
@@ -142,7 +142,9 @@ Eventi.fy(Element.prototype);// lets you call Eventi functions on all DOM elemen
 
 ### Core - Defining What's What
 
-#### Type (e.g. `open`)
+#### Type
+
+Example definition: `open`
 
 This is the central, "action" portion in an Eventi definition. It is *not* optional in most definitions, with the exception of calls to `off()`. It is what you have left after you strip off all the other event and handler properties described below here. It is an Event instance's `type` property. This should typically be a simple verb, in present or past tense.
 
@@ -151,7 +153,9 @@ var e = new Eventi('open');
 console.log(e.type);// outputs 'open'
 ```
 
-#### Category: (e.g. `account:open`)
+#### Category:
+
+Example definition: `account:open`
 
 This is the "subject" option in an Eventi definition. The category always precedes the type and is delimited from it by a `:`. It is an Eventi instance's `category` property. This should typically be a simple noun, and represent the subject or owner of a set of events. It is good practice to provide a category for your events unless you specifically mean them to be broadly applied.
 
@@ -160,7 +164,9 @@ var e = Eventi.fire('account:open');
 console.log(e.category);// outputs 'account'
 ```
 
-#### #Tags (e.g. `move#up#left`)
+#### #Tags
+
+Example definition: `move#up#left`
 
 These are the "adverb" or "adjective" portions of Eventi definitions. They always follow the type and are delimited from it and each other by `#`. When creating an Event, they are set together in an array on the instance as the `tags` property and each individual tag is set on the instance as a property with a value of `true`. Use these to distinguish related sub-types of events or provide simple annotations for the subject or object of an event.
 
@@ -172,7 +178,9 @@ Eventi.on('open#new', function(e) {
 }).fire('open#new#unverified');
 ```
 
-#### (Detail) (e.g. `account:label(["verified","gold"])`)
+#### (Detail)
+
+Example definition: `account:label(["verified","gold"])`
 
 This is the "object" portion of an Eventi definition. It follows the type and is delimited by `(` and `)`. The contents may be either JSON (which will get parsed), a reference to a global value (which will be resolved), or an arbitrary string. The result is an instance's `detail` property. Use this to declaratively attach contextual information for an event at the moment it is created.
 
@@ -185,7 +193,9 @@ console.log(e.detail);// outputs 'jdoe123'
 
 ### Browser - Environment Awareness
 
-#### <.Delegate> (e.g. `cancel<.transaction>`)
+#### <.Delegate>
+
+Example definition: `cancel<.transaction>`
 
 This specifies a selector for event delegation and is delimited by `<` and `>`. It instructs a listener to only react to events happening within the bounds of elements matching the specified selector and to use the matching element as the context for the handling function.
 
@@ -195,15 +205,29 @@ Eventi.on('change<[type=checkbox]>', function(e) {
 });
 ```
 
-#### [Key]  (e.g. keyup[delete])
+#### [Key]
+
+Example definition: `keyup[delete]`
 
 This specifies a key or combination thereof, by either keyCode or description, and is delimited by `[` and `]`. It instructs a listener to only react to events that know
 
 #### @Location
 
+Example definition: `location@/home`
+
+This specifies a url pattern that either blocks listener activation unless `window.location` matches or, when used in a definition for `fire()` will update `window.location` via `history.pushState`.
+
+```javascript
+Eventi.on('location@login', loginFn);
+Eventi.fire('location@?page=2');
+```
+
+
 ### Control - For Special Handling
 
-#### _NoBubbles (e.g. `_hide`)
+#### _NoBubbles
+
+Example definition: `_hide`
 
 This simply tells the dispatching code not to let an event propogate beyond the immediate target. Include a `_` in the control characters at the start of an event definition to set the `bubbles` property to false.
 
@@ -214,7 +238,9 @@ Eventi.on('test', function(e) {
 Eventi.fire(document.getElementById('hideme'), '_test');
 ```
 
-#### /Global (e.g. `/login`)
+#### /Global
+
+Example definition: `/login`
 
 This registers the listener on the global/window object but executes handler functions in the context for which they are registered. Include a `/` in the control characters at the start of an event definition to assign the listener globally.
 
@@ -225,7 +251,9 @@ Eventi.on(buttons, '/ajaxStart', function(e) {
 });
 ```
 
-#### ^Singleton (e.g. `^ready`)
+#### ^Singleton
+
+Example definition: `^ready`
 
 Including `^` in an event definition's control characters identifies it as a "singleton". The simplest way to explain these is that they are the event-equivalent of jQuery's ready() function. Once a singleton event is dispatched or received, it is remembered so that registered listeners execute no more than once and listeners registered after a singleton event is dispatched will be immediately executed with the remembered event. It's a once-for-all kind of deal. Events that go through `fire()` marked as singletons are automatically remembered for every target hit. When registering a listener for a singleton event that has not yet been fired, any matching event (marked singleton or not) will be remembered on the listener's target alone, for subsequent registrations. And yes, Eventi automatically watches for `DOMContentLoaded` and fires a `^ready` event on the document element.
 
@@ -242,18 +270,22 @@ Eventi.on({
 });
 ```
 
-#### $End (e.g. `login$1`)
+#### $End
+
+Example definition: `login$1`
 
 Not all event listeners are meant to last forever. You may declare a listener's end when registering it by appending a `$` and a condition to the event definition. The condition may be either a number (indicating the number of executions allowed), a reference to a value (either a property of the context or global/window), or a reference to a function that will return such a value. In the case of a value, you may also prefix it with `!` to reverse the condition. The "end declaration" follows all features of a definition except an alias. The most common is, of course, `$1` for single-use listeners.
 
 ```javascript
 Eventi.on(player, 'respawn:$!livesLeft', player.respawn);
-```javascript
 ```
+```javascript
 Eventi.on('load$1', Plugins.init);
 ```
 
-#### !Important (e.g. `!location`)
+#### !Important
+
+Example definition: `!location`
 
 A `!` control character in the front of an event definition is only relevant when you try to `off()` it. Listeners defined as "important" may only be unregistered by a fully-matching definition given to `off()`, including the `!`. This exists mostly to protect "internal" listeners (both Eventi's own and extensions) from being errantly unregistered.
 
@@ -267,14 +299,80 @@ Eventi.fire('demo');// will output 'still here!'
 
 #### =>Alias
 
+Example definition: `account:notify#SMS(balance)=>textme`
 
+Aliases are used by either `alias()` or `data-eventi` definitions to provide a simple alias for safely and conveniently referencing event definitions (particularly complicated ones). These are *strongly recommended* for any complex definitions that are repeated in your JavaScript. And, of course, for `data-eventi` declarations, they are unavoidable.
 
+```javascript
+Eventi.alias('/user:logout=>shutdown');
+Eventi.on.shutdown(function() {
+  // look ma, no typos!
+});
+```
 
-### Multiplicity - One Is Not Enough
+### Multiplicity - Beyond Definition Boundaries
+
+The following syntax options are uber-syntax for working with multiple, *separate* definitions. No syntax features can be shared across definitions conjoined by spaces, commas, or plus symbols.
 
 #### "Multiple Events"
+
+Example definition: `keyup[enter] blur`
+
+Allows you to dispatch, register, unregister, or alias multiple event definitions in the same call.
+
+```javascript
+Eventi.on(editor, 'keyup[ctrl-s] blur submit', function() {
+  Eventi.fire('service:send local:save');
+});
+```
+
 #### "Event,Sequences"
+
+Example definition: `validate,save`
+
+Allows you to dispatch or listen for a connected, ordered sequence of events. This is another feature adapted from [trigger (read this!)](https://github.com/nbubna/trigger#declaring-event-sequences-is-easy). The concepts are the same, only the delimiter (now `,`) and the API given to sequenced events have changed:
+
+```event.index``` - The index of this Event in the sequence.  
+```event.previousEvent``` - The preceding Event instance (if any).  
+```event.sequence``` - The array of Eventi definitions in the sequence.  
+```event.pauseSequence([promise])``` - Pauses the firing of the sequence. If a Promise (or other "then-able" object) is given as argument, it will automatically resume upon successful resolution of the promise. This makes async event sequences very straightforward!  
+```event.isSequencePaused()``` - Returns a Boolean indicating if the sequence has been paused.  
+```event.resumeSequence([index])``` - Resumes a paused sequence at either the specified index or the next index in the sequence.  
+
+```javascript
+Eventi.on('validate', function(e) {
+  var promise = asyncValidate($(this).closest('form'));
+  e.pauseSequence(promise);
+});
+```
+```html
+<form>
+...
+  <button click="validate,save,location@/home">Save and Quit</button>
+</form>
+```
+
+Unlike [trigger](https://github.com/nbubna/trigger), Eventi also allows you to register listeners for event sequences as well. Such sequences can be fired as sequences (as above) or separately. You may also specify a time in milliseconds as the first data argument, in order to restrict the timeframe for sequence completion.
+
+```javascript
+Eventi.on(editor, 'keyup[a],keyup[s],keyup[d],keyup[f]', function() {
+  console.log('Fake typing!');
+}, 500);
+```
+
 #### "Combo+Events"
+
+Example definition: `scroll+click`
+
+Allows you to listen for an unordered group of related events before executing the handler function. This is exactly like registering a listener for a sequence of events, except that the order in which the events are received is ignored (or irrelevant).
+
+```javascript
+Eventi.on(editor, 'click+click+click', function() {
+  Eventi.fire(this, 'tripleclick');
+}, 200);
+```
+
+And yes, you can mix combos and sequences. When doing so, sequences events will be sub-events of combos, not vice versa.
 
 
 ## Release History
