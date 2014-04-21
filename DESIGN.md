@@ -1,10 +1,17 @@
 ## TODO
-* documentation
-* demo app/site
+* finish documentation
+* demo app/site/jsbin
 * jQuery integration
 * Capo integration
+* consider allowing ref/def handler arguments (i.e. declare.js support for JavaScript): `Eventi.on('keyup[ctrl-s]', 'service:save');
 * consider limited grouping syntax for types with partial overlap: `group:{type#tag other$1}#tag2` but probably don't bother due to incompatibility w/aliasing and current parsing
 * consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality.
+* alternately, consider supporting `on('group:')`, as icky as the needed impl work might be
+* consider throttle/debounce syntax/support: `resize%200` (trailing), `resize%-200 (leading)`
+* consider allowing type to be omitted (default `keyup`) for key events: `Eventi.on('[d],[i],[e],[d]', function(){ console.log('so it goes.'); });
+* consider allowing eventi/handler shorthand when target and listener are same element: `<form eventi="submit|validate,save">`
+* consider giving `alias(document.body, '...'')` calls in JavaScript the same effect as `<body eventi="...">`
+* consider allowing multiple def on batch: `Eventi.on({'foo bar':fnForFooOrBarNotCombo});
 
 ## Motive
 
