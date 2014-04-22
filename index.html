@@ -13,7 +13,7 @@
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <title>Eventi - ESHA Research</title>
+    <title>Eventi by esha</title>
   </head>
 
   <body>
@@ -21,7 +21,7 @@
       <div class="inner">
         <h1>Eventi</h1>
         <h2>Unlocking the potential of event-based development.</h2>
-        <a href="https://github.com/nbubna/Eventi" class="button"><small>View project on</small>GitHub</a>
+        <a href="https://github.com/esha/Eventi" class="button"><small>View project on</small>GitHub</a>
       </div>
     </header>
 
@@ -36,223 +36,578 @@
 <h2>
 <a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h2>
 
-<p>Download the <a href="https://raw.github.com/nbubna/Eventi/master/dist/Eventi.min.js">minified version</a> or the <a href="https://raw.github.com/nbubna/Eventi/master/dist/Eventi.js">development version</a>.</p>
+<p>Download the <a href="https://raw.github.com/esha/Eventi/master/dist/eventi.js">full</a>, <a href="https://raw.github.com/esha/Eventi/master/dist/eventi.min.js">minified</a>, or <a href="https://raw.github.com/esha/Eventi/master/dist/eventi.server.js">server</a> versions. <a href="https://travis-ci.org/esha/Eventi"><img src="https://travis-ci.org/esha/Eventi.png?branch=master" alt="Build Status"></a><br><a href="http://bower.io/">Bower</a>: <code>bower install eventi</code><br><a href="https://npmjs.org/package/eventi">NPM</a>: <code>npm install eventi</code><br><a href="http://component.io/">Component</a>: <code>component install esha/Eventi</code>  </p>
 
 <h2>
-<a name="motive" class="anchor" href="#motive"><span class="octicon octicon-link"></span></a>Motive</h2>
-
-<ul>
-<li>JavaScript development is ultimately event-based development.</li>
-<li>Application events (aka custom events) are usually under-used or poorly-used in webapps.</li>
-<li>Events are the best way to decouple modules and components without isolating them entirely.</li>
-<li>DOM event bubbling, in particular, has much potential for meaningful event based interfaces.</li>
-<li>Environment events get simple types and rich data, not the mushed-up 'nounVerbAdjective' types with poor data that most heavy custom event users end up using.</li>
-<li>Custom events can be awesome, especially when you have rich features and patterns that are simple to use.</li>
-<li>Declarative events are completely unsupported out there. This is a travesty.</li>
-</ul><h2>
-<a name="goal" class="anchor" href="#goal"><span class="octicon octicon-link"></span></a>Goal</h2>
-
-<ul>
-<li>A rich event platform that's easy to use and to extend.</li>
-<li>A declarative syntax for working with rich, informative events.</li>
-<li>DOM and object support</li>
-<li>Handling for complex event types (combos, async sequences, singletons, etc).</li>
-<li>Robust, error tolerant listener execution</li>
-<li>Support for best-practices like "signals" (aka pre-defined types) and declarative event mapping</li>
-<li>Lots of solid, maintainable test code</li>
-<li>Impressive, interactive demo (ideas, anyone?)</li>
-<li>Three versions (tall, grande, venti): tall is frame/core/fire/on, grande adds declare/singleton/key/location, venti adds off/until/combo/types</li>
-<li>Venti is the default version to encourage much event-based awesomeness for everyone.</li>
-<li>Grande includes basic webapp tools.</li>
-<li>Tall could be enough for light server-side work.</li>
-</ul><h2>
-<a name="code-plans" class="anchor" href="#code-plans"><span class="octicon octicon-link"></span></a>Code Plans</h2>
+<a name="eventi-api" class="anchor" href="#eventi-api"><span class="octicon octicon-link"></span></a>Eventi API</h2>
 
 <h4>
-<a name="eventiframe-useless-on-its-own" class="anchor" href="#eventiframe-useless-on-its-own"><span class="octicon octicon-link"></span></a>Eventi.frame (useless on its own)</h4>
+<a name="eventifiretarget-eventi-data" class="anchor" href="#eventifiretarget-eventi-data"><span class="octicon octicon-link"></span></a>Eventi.fire([target, ]eventi[, data,...])</h4>
 
-<ul>
-<li>external IIFE</li>
-<li>universal module definition</li>
-<li>CustomEvent constructor polyfill</li>
-<li>body is resolved to build tool specified (sub)set of the following content</li>
-</ul><h4>
-<a name="corejs-not-much-use-on-its-own" class="anchor" href="#corejs-not-much-use-on-its-own"><span class="octicon octicon-link"></span></a>core.js (not much use on its own)</h4>
+<p>Creates and dispatches the specified event(s) on the specified target(s), attaching any specified data.</p>
 
-<ul>
-<li>rich event syntax parsing: <code>Eventi("group:kind#label('val')")</code> -&gt; <code>{ category:'group', type:'kind', tags:['label'], label:true, detail:'val' }</code>
-</li>
-<li>parser should be extensible (for supporting jQuery namespaces or keyCodes or whatever)</li>
-<li>detail can be resolvable reference, string, or limited json (no parentheses)</li>
-<li>interface sharing (pass <code>this</code> as <code>target</code> param to copied functions): <code>Eventi.fy(foo)</code> -&gt; <code>foo.fire('type')</code>
-</li>
-<li>add stopImmediatePropagation and immediatePropagationStopped to event interface</li>
-</ul><h4>
-<a name="onjs-requires-corejs" class="anchor" href="#onjs-requires-corejs"><span class="octicon octicon-link"></span></a>on.js (requires core.js)</h4>
+<table>
+<thead><tr>
+<th>Arguments</th>
+<th>Required</th>
+<th>Type(s)</th>
+<th>Default</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>target</td>
+<td>No</td>
+<td>
+<em>Object</em>, <em>Array</em>
+</td>
+<td>global/window</td>
+<td>A single target or array of them.</td>
+</tr>
+<tr>
+<td>eventi</td>
+<td>Yes</td>
+<td>
+<em>String</em>, <em>Event</em>, <em>Array</em>
+</td>
+<td></td>
+<td>One or more space-delimited Eventi definitions, an Event instance, or an array of either (in which case you <em>must</em> specify a target argument).</td>
+</tr>
+<tr>
+<td>data</td>
+<td>No</td>
+<td></td>
+<td></td>
+<td>Any number of arguments that will be put in an Array and attached to all created events as the <code>data</code> property.</td>
+</tr>
+</tbody>
+</table><p><em>When passing events in an array, you *must</em> specify a target argument.</p>
 
-<ul>
-<li>simple event registration: <code>Eventi.on([target, ]'type', fn)</code>
-</li>
-<li>space delimited multiple registration: <code>Eventi.on([target, ]'first second third', fn)</code>
-</li>
-<li>filter by category and/or tag: <code>Eventi.on([target, ]"category:type#tag", fn)</code>
-</li>
-<li>bind data w/listener: <code>Eventi.on([target, ]'type', fn, data)</code>
-</li>
-<li>applying rich event data as listener arg(s): <code>Eventi.on([target, ]'type', function(e, arg, arg){})</code>
-</li>
-<li>implementation: one listener per target that gets registered for every handled type. the listener handles each event by looking amongst its handlers for those that match the event and executing them</li>
-</ul><h4>
-<a name="firejs-requires-corejs-uses-onjs" class="anchor" href="#firejs-requires-corejs-uses-onjs"><span class="octicon octicon-link"></span></a>fire.js (requires core.js, uses on.js)</h4>
+<p>Any attached data will be fed to the event listeners as additional arguments after the event itself and any data registered along with the listener itself.</p>
 
-<ul>
-<li>object or DOM custom event dispatch: <code>Eventi.fire(Node|object, 'type')</code>
-</li>
-<li>handler errors caught and thrown in next tick to avoid interrupting sibling handlers or hiding errors</li>
-<li>implicit global target: <code>Eventi.fire('type')</code> === `Eventi.fire(document || this, 'type')</li>
-<li>multiple target specification: <code>Eventi.fire(Array|NodeList, 'type')</code>
-</li>
-<li>fire with handler arguments <code>Eventi.fire([target, ]'type', data)</code>
-</li>
-<li>TODO: consider non-DOM propagation when typeof object.parent === "object"</li>
-</ul><h4>
-<a name="delegatejs-requires-onjs" class="anchor" href="#delegatejs-requires-onjs"><span class="octicon octicon-link"></span></a>delegate.js (requires on.js)</h4>
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="s1">'account:close'</span><span class="p">,</span> <span class="nx">accountId</span><span class="p">);</span>
+</pre></div>
 
-<ul>
-<li>alias Element.prototype.matches from the prefixed matchesSelector versions</li>
-<li>filter by selector (aka delegation): <code>Eventi.on([target, ]'type&lt;.selector&gt;', fn)</code>
-</li>
-</ul><h4>
-<a name="declarejs-requires-onjs-and-firejs" class="anchor" href="#declarejs-requires-onjs-and-firejs"><span class="octicon octicon-link"></span></a>declare.js (requires on.js and fire.js)</h4>
+<h4>
+<a name="eventiontarget-eventi-fn-data" class="anchor" href="#eventiontarget-eventi-fn-data"><span class="octicon octicon-link"></span></a>Eventi.on([target, ]eventi, fn[, data,...])</h4>
 
-<ul>
-<li>declare <code>data-eventi="submit /beforeunload=quit"</code> on a root or container element</li>
-<li>declare specific responses on descendent(s): <code>submit="validate&gt;save" quit="Utils.persist"</code>
-</li>
-<li>try to resolve attr values at call-time to either element or global function (declared event handler)</li>
-<li>otherwise, fire as application event (declared event mapping)</li>
-<li>impl should scan document for data-eventi attributes on DOMContentLoaded, register those listeners</li>
-<li>
-<code>click="..."</code> is globally supported by default using trigger.js' intelligent click/enter logic</li>
-</ul><h4>
-<a name="singletonjs-requires-firejs-and-onjs" class="anchor" href="#singletonjs-requires-firejs-and-onjs"><span class="octicon octicon-link"></span></a>singleton.js (requires fire.js and on.js)</h4>
+<p>Registers the specified function as an event listener for the specified event(s) on the specified target(s).</p>
 
-<ul>
-<li>singleton events (immediately call late listeners, ignore multiple firings)</li>
-<li>"listen" for them: <code>Eventi.on([target, ]'^type', fn)</code>
-</li>
-<li>fire them so they're remembered: <code>Eventi.fire([target, ]'^type', fn)</code>
-</li>
-<li>alias DOMContentLoaded to '^ready'</li>
-</ul><h4>
-<a name="keyjs-requires-onjs" class="anchor" href="#keyjs-requires-onjs"><span class="octicon octicon-link"></span></a>key.js (requires on.js)</h4>
+<table>
+<thead><tr>
+<th>Arguments</th>
+<th>Required</th>
+<th>Type(s)</th>
+<th>Default</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>target</td>
+<td>No</td>
+<td>
+<em>Object</em>, <em>Array</em>
+</td>
+<td>global/window</td>
+<td>A single target or array of them.</td>
+</tr>
+<tr>
+<td>eventi</td>
+<td>Yes</td>
+<td>
+<em>String</em>, <em>Array</em>
+</td>
+<td></td>
+<td>One or more space-delimited Eventi definitions or an array of them (in which case you <em>must</em> specify a target argument).</td>
+</tr>
+<tr>
+<td>fn</td>
+<td>Yes</td>
+<td><em>Function</em></td>
+<td></td>
+<td>The function to be called when a matching event hits the target(s).</td>
+</tr>
+<tr>
+<td>data</td>
+<td>No</td>
+<td>*</td>
+<td></td>
+<td>Any number of arguments that will be passed directly to the listener function as arguments (after the event argument).</td>
+</tr>
+</tbody>
+</table><p>The function argument will be called with the target as its context, the received event as the first argument, and data arguments registered with the listener as the next arguments, and any data arguments attached to the event itself after those.</p>
 
-<ul>
-<li>filter key events: <code>Eventi.on([target, ]'keyup[shift-a]', fn)</code>
-</li>
-</ul><h4>
-<a name="locationjs-requires-onjs-and-firejs" class="anchor" href="#locationjs-requires-onjs-and-firejs"><span class="octicon octicon-link"></span></a>location.js (requires on.js and fire.js)</h4>
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="s1">'account:open'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Event: type='</span><span class="o">+</span><span class="nx">e</span><span class="p">.</span><span class="nx">type</span><span class="o">+</span><span class="s1">' category='</span><span class="o">+</span><span class="nx">e</span><span class="p">.</span><span class="nx">category</span><span class="p">,</span> <span class="k">this</span><span class="cm">/* will be user */</span><span class="p">);</span> 
+<span class="p">});</span>
+</pre></div>
 
-<ul>
-<li>event-based routing: <code>Eventi.on('location@?view={view}', function(e, url, params){ console.log(params.view); })</code>
-</li>
-<li>event-based history.pushState: <code>Eventi.fire('location@?view={0}', ['foo'])</code>
-</li>
-<li>consistent event for all popstate/hashchange/pushstate changes: <code>Eventi.on('location', function(e){ console.log(e.location, e.oldLocation, e.srcEvent); })</code>
-</li>
-</ul><h4>
-<a name="offjs-requires-onjs" class="anchor" href="#offjs-requires-onjs"><span class="octicon octicon-link"></span></a>off.js (requires on.js)</h4>
+<h4>
+<a name="eventiontargets--eventifn-" class="anchor" href="#eventiontargets--eventifn-"><span class="octicon octicon-link"></span></a>Eventi.on([targets, ]{ eventi:fn,... })</h4>
 
-<ul>
-<li>simple listener removal: <code>Eventi.off([target, ]['type', ][fn])</code>
-</li>
-<li>multiple removal: <code>Eventi.off([target, ]['first second third', ][fn])</code>
-</li>
-<li>remove by category and/or tag: <code>Eventi.off([target, ]['category:type#tag', ][fn])</code>
-</li>
-</ul><h4>
-<a name="endjs-requires-onjs" class="anchor" href="#endjs-requires-onjs"><span class="octicon octicon-link"></span></a>end.js (requires on.js)</h4>
+<p>Overloading of <code>on()</code> for convenient registration of multiple listeners at once. Iterates over the object argument, registering key/value pairs as eventi/fn pairs.</p>
 
-<ul>
-<li>this will remove handlers once the specified condition is satisfied</li>
-<li>number of executions: <code>Eventi.on([target, ]'type$3', fn)</code>
-</li>
-<li>test ref for truthiness: <code>Eventi.on([target, ]'type$reference', fn)</code>
-</li>
-<li>call function for truthiness: <code>Eventi.on([target, ]'type$test.fn', fn)</code>
-</li>
-</ul><h4>
-<a name="sequencejs-requires-firejs" class="anchor" href="#sequencejs-requires-firejs"><span class="octicon octicon-link"></span></a>sequence.js (requires fire.js)</h4>
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s1">'account:open'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Event: type='</span><span class="o">+</span><span class="nx">e</span><span class="p">.</span><span class="nx">type</span><span class="o">+</span><span class="s1">' category='</span><span class="o">+</span><span class="nx">e</span><span class="p">.</span><span class="nx">category</span><span class="p">,</span> <span class="k">this</span><span class="cm">/* will be user */</span><span class="p">);</span> 
+    <span class="p">},</span>
+    <span class="s1">'account:close'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">accountId</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'User: '</span><span class="o">+</span><span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="o">+</span><span class="s1">' is closing account '</span><span class="o">+</span><span class="nx">accountId</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
 
-<ul>
-<li>fire controllable sequence of events: <code>Eventi.fire([target, ]'first,second'[, data...])</code>
-</li>
-<li>event sequence firing controls (w/async support via promises): <code>e.pauseSequence([promise])</code>,<code>e.resumeSequence()</code>, <code>e.isSequencePaused()</code>
-</li>
-</ul><h4>
-<a name="combojs-requires-onjs-and-offjs" class="anchor" href="#combojs-requires-onjs-and-offjs"><span class="octicon octicon-link"></span></a>combo.js (requires on.js and off.js)</h4>
+<h4>
+<a name="eventieventi-" class="anchor" href="#eventieventi-"><span class="octicon octicon-link"></span></a>eventi="eventi ..."</h4>
 
-<ul>
-<li>combo events (call after all specified events, then reset): <code>Eventi.on([target, ]'foo+bar', fn)</code>
-</li>
-<li>event sequences (ordered combos): <code>Eventi.on([target, ]'one,two,three', fn...)</code>
-</li>
-<li>configurable timeout for combo events: <code>Eventi.on([target, ]'one,two', fn, 1000)</code>
-</li>
-</ul><h4>
-<a name="aliasjs-requires-core-and-declarejs" class="anchor" href="#aliasjs-requires-core-and-declarejs"><span class="octicon octicon-link"></span></a>alias.js (requires core and declare.js)</h4>
+<p>Registers event listeners on the element that search between an Event's target and the listening element for an element with a handler attribute (e.g. <code>data-click="..."</code>) telling the listener how to handle the event.</p>
 
-<ul>
-<li>provide both global and local type specification with minimal API</li>
-<li>global: <code>Eventi.alias('type');</code> -&gt; <code>Eventi.on.type([target, ]handler)</code>
-</li>
-<li>local (after Eventi.fy(o)): <code>Eventi.alias(o, 'type', 'type2')</code> -&gt; <code>target.until.type2(1, handler)</code>
-</li>
-<li>obviously, aliases cannot have the same name as Function properties like 'call' or 'length'</li>
-</ul><h2>
-<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h2>
+<table>
+<thead><tr>
+<th>Attributes</th>
+<th>Required</th>
+<th>Content</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>eventi, data-eventi</td>
+<td>For all events except <code>click</code>
+</td>
+<td>Space-delimited Eventi definitions</td>
+<td>Defines listeners for an element.</td>
+</tr>
+<tr>
+<td>{alias}, data-{alias}</td>
+<td>No</td>
+<td>Element function, global function, Eventi definition</td>
+<td>Either a reference to the function to be called, an Eventi definition to be fired on the element, or nothing, in which case the alias is used as the content.</td>
+</tr>
+</tbody>
+</table><div class="highlight highlight-html"><pre><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"admin"</span> <span class="na">data-eventi=</span><span class="s">"/beforeunload=&gt;save keyup[delete]&lt;.account&gt;=&gt;delete"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;ul</span> <span class="na">class=</span><span class="s">"accounts"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;li</span> <span class="na">class=</span><span class="s">"account"</span> <span class="na">tabindex=</span><span class="s">"0"</span> <span class="na">delete=</span><span class="s">"account:close"</span><span class="nt">&gt;</span>Savings<span class="nt">&lt;/li&gt;</span>
+        ...
+    <span class="nt">&lt;/ul&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">click=</span><span class="s">"account:open"</span><span class="nt">&gt;</span>New Account<span class="nt">&lt;/button&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</pre></div>
 
-<ul>
-<li>documentation</li>
-<li>demo app/site</li>
-<li>integrations (jQuery, Visual Event 2, Capo, etc)</li>
-<li>consider limited grouping syntax for types with partial overlap: <code>group:{type#tag other$1}#tag2</code> but probably don't bother due to incompatibility w/aliasing and current parsing</li>
-<li>consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality. but resist doing it, as this could get out of hand...</li>
-</ul><h4>
-<a name="plan-for-jqueryeventijs" class="anchor" href="#plan-for-jqueryeventijs"><span class="octicon octicon-link"></span></a>Plan for jquery.eventi.js</h4>
+<h4>
+<a name="eventiofftargets-eventi-fn" class="anchor" href="#eventiofftargets-eventi-fn"><span class="octicon octicon-link"></span></a>Eventi.off([targets, ][eventi, ][fn])</h4>
 
-<ul>
-<li>add custom properties to $.event.props</li>
-<li>add namespace support to rich syntax (ick)</li>
-<li>listen for events in jQuery's manual bubbling system (ick again)</li>
-<li>wrap $.fn.trigger, $.fn.on, $.fn.off, and maybe $.fn.one to intercept calls with Eventi syntax</li>
-</ul><h4>
-<a name="visualjs" class="anchor" href="#visualjs"><span class="octicon octicon-link"></span></a>visual.js</h4>
+<p>Unregisters event listeners that match the specified event(s) and/or function on the specified target(s), or the global/window object, if none is specified.</p>
 
-<ul>
-<li>Integration for <a href="http://www.sprymedia.co.uk/article/Visual+Event+2">http://www.sprymedia.co.uk/article/Visual+Event+2</a>
-</li>
-</ul><h2>
+<table>
+<thead><tr>
+<th>Arguments</th>
+<th>Required</th>
+<th>Type(s)</th>
+<th>Default</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>target</td>
+<td>No</td>
+<td>
+<em>Object</em>, <em>Array</em>
+</td>
+<td>global/window</td>
+<td>A single target or array of them.</td>
+</tr>
+<tr>
+<td>eventi</td>
+<td>No</td>
+<td>
+<em>String</em>, <em>Array</em>
+</td>
+<td></td>
+<td>One or more space-delimited Eventi definitions (or portions thereof) or an array of them (in which case you must specify a target argument)</td>
+</tr>
+<tr>
+<td>fn</td>
+<td>No</td>
+<td><em>Function</em></td>
+<td></td>
+<td>The specific listener function to be removed.</td>
+</tr>
+</tbody>
+</table><div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">off</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="s1">'account:'</span><span class="p">);</span>
+</pre></div>
+
+<h4>
+<a name="eventialiascontext-eventi" class="anchor" href="#eventialiascontext-eventi"><span class="octicon octicon-link"></span></a>Eventi.alias([context, ]eventi,...)</h4>
+
+<p>Defines aliases for the events specified. It creates sub-functions for <code>on()</code>, <code>off()</code>, and <code>fire()</code> under the alias (or simple type if no alias is defined).</p>
+
+<table>
+<thead><tr>
+<th>Arguments</th>
+<th>Required</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>context</td>
+<td>No</td>
+<td><em>Object</em></td>
+<td>Eventi</td>
+<td>An object that has been run through Eventi.fy() whose methods you want the aliases set for.</td>
+</tr>
+<tr>
+<td>eventi</td>
+<td>Yes</td>
+<td><em>String</em></td>
+<td></td>
+<td>One or more event space-delimited Eventi definitions.</td>
+</tr>
+</tbody>
+</table><div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">alias</span><span class="p">(</span><span class="s1">'account:request#freeze=&gt;hold'</span><span class="p">);</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">.</span><span class="nx">hold</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">admin</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">admin</span><span class="p">.</span><span class="nx">id</span><span class="o">+</span><span class="s1">' is requesting freeze for '</span><span class="o">+</span><span class="nx">user</span><span class="p">.</span><span class="nx">id</span><span class="o">+</span><span class="s1">' accounts'</span><span class="p">);</span>  
+<span class="p">});</span>
+<span class="c1">//...</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">.</span><span class="nx">hold</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="nx">admin</span><span class="p">);</span>
+</pre></div>
+
+<h4>
+<a name="eventifytarget" class="anchor" href="#eventifytarget"><span class="octicon octicon-link"></span></a>Eventi.fy(target)</h4>
+
+<p>Convenience tool that simply defines <code>on()</code>, <code>off()</code>, and <code>fire()</code>, making the specified target object the context and target for those functions.</p>
+
+<table>
+<thead><tr>
+<th>Arguments</th>
+<th>Required</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr></thead>
+<tbody><tr>
+<td>context</td>
+<td>Yes</td>
+<td><em>Object</em></td>
+<td></td>
+<td>A target object you would like to call fire/on/off upon directly.</td>
+</tr></tbody>
+</table><div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">fy</span><span class="p">(</span><span class="nx">user</span><span class="p">);</span>
+<span class="nx">user</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'account:open'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Open new account for '</span><span class="o">+</span><span class="k">this</span><span class="cm">/* will be user */</span><span class="p">);</span> 
+<span class="p">});</span>
+</pre></div>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">fy</span><span class="p">(</span><span class="nx">Element</span><span class="p">.</span><span class="nx">prototype</span><span class="p">);</span><span class="c1">// lets you call Eventi functions on all DOM elements</span>
+</pre></div>
+
+<h2>
+<a name="eventi-syntax" class="anchor" href="#eventi-syntax"><span class="octicon octicon-link"></span></a>Eventi Syntax</h2>
+
+<h3>
+<a name="core---defining-whats-what" class="anchor" href="#core---defining-whats-what"><span class="octicon octicon-link"></span></a>Core - Defining What's What</h3>
+
+<h4>
+<a name="type" class="anchor" href="#type"><span class="octicon octicon-link"></span></a>Type</h4>
+
+<p>Example definition: <code>open</code></p>
+
+<p>This is the central, "action" portion in an Eventi definition. It is <em>not</em> optional in most definitions, with the exception of calls to <code>off()</code>. It is what you have left after you strip off all the other event and handler properties described below here. It is an Event instance's <code>type</code> property. This should typically be a simple verb, in present or past tense.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">e</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Eventi</span><span class="p">(</span><span class="s1">'open'</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">type</span><span class="p">);</span><span class="c1">// outputs 'open'</span>
+</pre></div>
+
+<h4>
+<a name="category" class="anchor" href="#category"><span class="octicon octicon-link"></span></a>Category:</h4>
+
+<p>Example definition: <code>account:open</code></p>
+
+<p>This is the "subject" option in an Eventi definition. The category always precedes the type and is delimited from it by a <code>:</code>. It is an Eventi instance's <code>category</code> property. This should typically be a simple noun, and represent the subject or owner of a set of events. It is good practice to provide a category for your events unless you specifically mean them to be broadly applied.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">e</span> <span class="o">=</span> <span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'account:open'</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">category</span><span class="p">);</span><span class="c1">// outputs 'account'</span>
+</pre></div>
+
+<h4>
+<a name="tags" class="anchor" href="#tags"><span class="octicon octicon-link"></span></a>#Tags</h4>
+
+<p>Example definition: <code>move#up#left</code></p>
+
+<p>These are the "adverb" or "adjective" portions of Eventi definitions. They always follow the type and are delimited from it and each other by <code>#</code>. When creating an Event, they are set together in an array on the instance as the <code>tags</code> property and each individual tag is set on the instance as a property with a value of <code>true</code>. Use these to distinguish related sub-types of events or provide simple annotations for the subject or object of an event.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'open#new'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">unverified</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">tags</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">' &amp; '</span><span class="p">));</span><span class="c1">// outputs 'new &amp; unverified'</span>
+  <span class="p">}</span>
+<span class="p">}).</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'open#new#unverified'</span><span class="p">);</span>
+</pre></div>
+
+<h4>
+<a name="detail" class="anchor" href="#detail"><span class="octicon octicon-link"></span></a>(Detail)</h4>
+
+<p>Example definition: <code>account:label(["verified","gold"])</code></p>
+
+<p>This is the "object" portion of an Eventi definition. It follows the type and is delimited by <code>(</code> and <code>)</code>. The contents may be either JSON (which will get parsed), a reference to a global value (which will be resolved), or an arbitrary string. The result is an instance's <code>detail</code> property. Use this to declaratively attach contextual information for an event at the moment it is created.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">user</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">name</span><span class="o">:</span> <span class="s2">"jdoe123"</span> <span class="p">};</span>
+<span class="kd">var</span> <span class="nx">e</span> <span class="o">=</span> <span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'like(user.name)'</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">detail</span><span class="p">);</span><span class="c1">// outputs 'jdoe123'</span>
+</pre></div>
+
+<h3>
+<a name="browser---environment-awareness" class="anchor" href="#browser---environment-awareness"><span class="octicon octicon-link"></span></a>Browser - Environment Awareness</h3>
+
+<h4>
+<a name="delegate" class="anchor" href="#delegate"><span class="octicon octicon-link"></span></a>&lt;.Delegate&gt;</h4>
+
+<p>Example definition: <code>cancel&lt;.transaction&gt;</code></p>
+
+<p>This specifies a selector for event delegation and is delimited by <code>&lt;</code> and <code>&gt;</code>. It instructs a listener to only react to events happening within the bounds of elements matching the specified selector and to use the matching element as the context for the handling function.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'change&lt;[type=checkbox]&gt;'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">type</span><span class="p">);</span><span class="c1">// always outputs 'checkbox'</span>
+<span class="p">});</span>
+</pre></div>
+
+<h4>
+<a name="key" class="anchor" href="#key"><span class="octicon octicon-link"></span></a>[Key]</h4>
+
+<p>Example definition: <code>keyup[delete]</code></p>
+
+<p>This specifies a key or combination thereof, by either keyCode or description, and is delimited by <code>[</code> and <code>]</code>. It instructs a listener to only react when the event has the appropriate keyCode/ctrlKey/metaKey/shiftKey/altKey properties. Particular keyCodes may be specified explicitly (e.g. <code>keydown[33]</code>), but many have been given English or symbolic equivalents for the sake of readable code (e.g. <code>keypress[z]</code>). These are stored in the <a href="https://github.com/esha/Eventi/blob/master/src/key.js#L12"><code>Eventi._.codes</code></a> object and are keyup-based values, so <code>keydown</code> and <code>keypress</code> definitions should <a href="http://unixpapa.com/js/key.html">be wary</a> of those outside ASCII. The other key-related event properties are set simply by giving them <code>-</code> as a suffix (e.g. <code>[shift-13]</code> -&gt; <code>e.shiftKey = true</code>, <code>[meta-]</code> -&gt; <code>e.metaKey = true</code>, etc). </p>
+
+<p>The [Key] syntax is also special in that it will provide <code>keyup</code> as the type for event listeners (for <code>on()</code> <em>only</em>) that have a [Key] specified, but no type. Typically, event listeners with no type are never executed.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">field</span><span class="p">,</span> <span class="s1">'[shift-enter]'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">shiftKey</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span><span class="p">);</span><span class="c1">// outputs 'true 13'</span>
+<span class="p">});</span>
+</pre></div>
+
+<h4>
+<a name="location" class="anchor" href="#location"><span class="octicon octicon-link"></span></a><a href="https://github.com/Location" class="user-mention">@Location</a>
+</h4>
+
+<p>Example definition: <code>keypress[escape]@/edit</code></p>
+
+<p>This specifies a url pattern that is matched against the current <code>window.location</code> to filter event listener execution.</p>
+
+<p>There are three types of <code>@</code> location values:</p>
+
+<p><code>@/vanilla#string</code> - Will be directly matched against the URL string retrieved from <code>window.location</code>.<br><code>@?mini={template}</code> -  Turns the sections in braces into wildcard matches (breaking on <code>\</code>,<code>?</code>, and <code>#</code>) whose values are gathered into a key/value object, passed as the 2nd argument to the event handler.<br><code>@`reg[ular]+Exp?`</code> -  For more complicated matching, use a regular expression. Use ` to delimit it. Handlers will receive the full match as the 2nd argument (after the event itself) and matching groups as subsequent arguments. Any handler or event data args will follow the location matching arguments.</p>
+
+<p>Like [Key], <a href="https://github.com/Location" class="user-mention">@Location</a> enables shorthand definitions by setting 'location' as the type for event listeners (for <code>on()</code> <em>only</em>) that have a location property, but no type property.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'save@#file={filename}'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">vals</span><span class="p">,</span> <span class="nx">folder</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Saved '</span><span class="o">+</span><span class="nx">vals</span><span class="p">.</span><span class="nx">filename</span><span class="o">+</span><span class="s1">' in '</span><span class="o">+</span><span class="nx">folder</span><span class="p">);</span><span class="c1">// outputs 'Saved image.png in /pics'</span>
+<span class="p">});</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">hash</span> <span class="o">=</span> <span class="s1">'file=image.png'</span><span class="p">;</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'save'</span><span class="p">,</span> <span class="s1">'/pics'</span><span class="p">);</span>
+</pre></div>
+
+<h5>
+<a name="locationlocation" class="anchor" href="#locationlocation"><span class="octicon octicon-link"></span></a>location@Location</h5>
+
+<p>Eventi also provides a unified <code>location</code> event that is dispatched on the <code>window</code> whenever the current location changes, whether via <code>hashchange</code> and <code>popstate</code> events or calls to <code>history.pushState</code> (which gets its own <code>pushstate</code> event as well). When registering a listener for a <code>location</code> event, the location is promptly tested (as if a <code>location</code> event was fired), allowing immediate execution of handlers for currently matching locations. Also, when a <code>location</code> type event is dispatched (e.g. <code>fire('location@/path')</code>), the <a href="https://github.com/Location" class="user-mention">@Location</a> will be used to update <code>window.location</code> via <code>history.pushState</code>.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="c1">// assume URL is http://esha.github.io/ to start</span>
+<span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="s1">''</span><span class="p">;</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'location'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">s</span> <span class="o">+=</span> <span class="s1">' '</span><span class="o">+</span><span class="nx">e</span><span class="p">.</span><span class="nx">location</span><span class="p">;</span>
+<span class="p">});</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">hash</span> <span class="o">=</span> <span class="s1">'hash'</span><span class="p">;</span>
+<span class="nx">history</span><span class="p">.</span><span class="nx">pushState</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span><span class="s1">'push it'</span><span class="p">,</span> <span class="s1">'?push'</span><span class="p">);</span>
+<span class="nx">history</span><span class="p">.</span><span class="nx">go</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">);</span><span class="c1">// popstate</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">s</span><span class="p">);</span><span class="c1">// outputs ' / /#hash /?push /#hash /'</span>
+</pre></div>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'@/login'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">match</span><span class="p">)</span> <span class="p">{</span><span class="c1">// will listen for 'location' type</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">type</span><span class="p">,</span> <span class="nx">match</span><span class="p">);</span><span class="c1">// outputs 'location login'</span>
+<span class="p">});</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'location@/login'</span><span class="p">);</span>
+</pre></div>
+
+<p><a href="https://github.com/Location" class="user-mention">@Location</a>'s mini-templates can work in reverse when updating the location via event. Just pass a key/value object back as the first data argument (either at listener registration or event firing).</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'location@?page={page}'</span><span class="p">,</span> <span class="p">{</span><span class="nx">page</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">search</span> <span class="o">===</span> <span class="s1">'?page=2'</span><span class="p">;</span> <span class="c1">// true</span>
+</pre></div>
+
+<p>Just to spell it out, the sum of these flexible and easy location features is a powerful event-based application router.</p>
+
+<h3>
+<a name="control---for-special-handling" class="anchor" href="#control---for-special-handling"><span class="octicon octicon-link"></span></a>Control - For Special Handling</h3>
+
+<h4>
+<a name="_nobubbles" class="anchor" href="#_nobubbles"><span class="octicon octicon-link"></span></a>_NoBubbles</h4>
+
+<p>Example definition: <code>_hide</code></p>
+
+<p>This simply tells the dispatching code not to let an event propogate beyond the immediate target. Include a <code>_</code> in the control characters at the start of an event definition to set the <code>bubbles</code> property to false.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'test'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Element events will never get here if they do not bubble.'</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">'hideme'</span><span class="p">),</span> <span class="s1">'_test'</span><span class="p">);</span>
+</pre></div>
+
+<h4>
+<a name="global" class="anchor" href="#global"><span class="octicon octicon-link"></span></a>/Global</h4>
+
+<p>Example definition: <code>/login</code></p>
+
+<p>This registers the listener on the global/window object but executes handler functions in the context for which they are registered. Include a <code>/</code> in the control characters at the start of an event definition to assign the listener globally.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="kd">var</span> <span class="nx">buttons</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="s1">'button,[type=submit]'</span><span class="p">);</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">buttons</span><span class="p">,</span> <span class="s1">'/ajaxStart'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">disabled</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+<span class="p">});</span>
+</pre></div>
+
+<h4>
+<a name="singleton" class="anchor" href="#singleton"><span class="octicon octicon-link"></span></a>^Singleton</h4>
+
+<p>Example definition: <code>^ready</code></p>
+
+<p>Including <code>^</code> in an event definition's control characters identifies it as a "singleton". The simplest way to explain these is that they are the event-equivalent of jQuery's ready() function. Once a singleton event is dispatched or received, it is remembered so that registered listeners execute no more than once and listeners registered after a singleton event is dispatched will be immediately executed with the remembered event. It's a once-for-all kind of deal. Events that go through <code>fire()</code> marked as singletons are automatically remembered for every target hit. When registering a listener for a singleton event that has not yet been fired, any matching event (marked singleton or not) will be remembered on the listener's target alone, for subsequent registrations. And yes, Eventi automatically watches for <code>DOMContentLoaded</code> and fires a <code>^ready</code> event on the document element.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">({</span>
+  <span class="s1">'^ready'</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">loadAsync</span><span class="p">(</span><span class="s1">'globalResource'</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">resource</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'^resource:loaded'</span><span class="p">,</span> <span class="nx">resource</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">},</span>
+  <span class="s1">'^resource:loaded'</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">resource</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// use resource here</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+<h4>
+<a name="end" class="anchor" href="#end"><span class="octicon octicon-link"></span></a>$End</h4>
+
+<p>Example definition: <code>login$1</code></p>
+
+<p>Not all event listeners are meant to last forever. You may declare a listener's end when registering it by appending a <code>$</code> and a condition to the event definition. The condition may be either a number (indicating the number of executions allowed), a reference to a value (either a property of the context or global/window), or a reference to a function that will return such a value. In the case of a value, you may also prefix it with <code>!</code> to reverse the condition. The "end declaration" follows all features of a definition except an alias. The most common is, of course, <code>$1</code> for single-use listeners.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">player</span><span class="p">,</span> <span class="s1">'respawn:$!livesLeft'</span><span class="p">,</span> <span class="nx">player</span><span class="p">.</span><span class="nx">respawn</span><span class="p">);</span>
+</pre></div>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'load$1'</span><span class="p">,</span> <span class="nx">Plugins</span><span class="p">.</span><span class="nx">init</span><span class="p">);</span>
+</pre></div>
+
+<h4>
+<a name="important" class="anchor" href="#important"><span class="octicon octicon-link"></span></a>!Important</h4>
+
+<p>Example definition: <code>!location</code></p>
+
+<p>A <code>!</code> control character in the front of an event definition is only relevant when you try to <code>off()</code> it. Listeners defined as "important" may only be unregistered by a fully-matching definition given to <code>off()</code>, including the <code>!</code>. This exists mostly to protect "internal" listeners (both Eventi's own and extensions) from being errantly unregistered.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'!demo'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'still here!'</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">off</span><span class="p">(</span><span class="s1">'demo'</span><span class="p">);</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'demo'</span><span class="p">);</span><span class="c1">// will output 'still here!'</span>
+</pre></div>
+
+<h4>
+<a name="alias" class="anchor" href="#alias"><span class="octicon octicon-link"></span></a>=&gt;Alias</h4>
+
+<p>Example definition: <code>account:notify#SMS(balance)=&gt;textme</code></p>
+
+<p>Aliases are used by either <code>alias()</code> or <code>data-eventi</code> definitions to provide a simple alias for safely and conveniently referencing event definitions (particularly complicated ones). These are <em>strongly recommended</em> for any complex definitions that are repeated in your JavaScript. And, of course, for <code>data-eventi</code> declarations, they are unavoidable.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">alias</span><span class="p">(</span><span class="s1">'/user:logout=&gt;shutdown'</span><span class="p">);</span>
+<span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">.</span><span class="nx">shutdown</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// look ma, no typos!</span>
+<span class="p">});</span>
+</pre></div>
+
+<h3>
+<a name="multiplicity---beyond-definition-boundaries" class="anchor" href="#multiplicity---beyond-definition-boundaries"><span class="octicon octicon-link"></span></a>Multiplicity - Beyond Definition Boundaries</h3>
+
+<p>The following syntax options are uber-syntax for working with multiple, <em>separate</em> definitions. No syntax features can be shared across definitions conjoined by spaces, commas, or plus symbols.</p>
+
+<h4>
+<a name="multiple-events" class="anchor" href="#multiple-events"><span class="octicon octicon-link"></span></a>"Multiple Events"</h4>
+
+<p>Example definition: <code>keyup[enter] blur</code></p>
+
+<p>Allows you to dispatch, register, unregister, or alias multiple event definitions in the same call.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">editor</span><span class="p">,</span> <span class="s1">'keyup[ctrl-s] blur submit'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="s1">'service:send local:save'</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+<h4>
+<a name="eventsequences" class="anchor" href="#eventsequences"><span class="octicon octicon-link"></span></a>"Event,Sequences"</h4>
+
+<p>Example definition: <code>validate,save</code></p>
+
+<p>Allows you to dispatch or listen for a connected, ordered sequence of events. This is another feature adapted from <a href="https://github.com/nbubna/trigger#declaring-event-sequences-is-easy">trigger (read this!)</a>. The concepts are the same, only the delimiter (now <code>,</code>) and the API given to sequenced events have changed:</p>
+
+<p><code>event.index</code> - The index of this Event in the sequence.<br><code>event.previousEvent</code> - The preceding Event instance (if any).<br><code>event.sequence</code> - The array of Eventi definitions in the sequence.<br><code>event.pauseSequence([promise])</code> - Pauses the firing of the sequence. If a Promise (or other "then-able" object) is given as argument, it will automatically resume upon successful resolution of the promise. This makes async event sequences very straightforward!<br><code>event.isSequencePaused()</code> - Returns a Boolean indicating if the sequence has been paused.<br><code>event.resumeSequence([index])</code> - Resumes a paused sequence at either the specified index or the next index in the sequence.  </p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'validate'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">asyncValidate</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">closest</span><span class="p">(</span><span class="s1">'form'</span><span class="p">));</span>
+  <span class="nx">e</span><span class="p">.</span><span class="nx">pauseSequence</span><span class="p">(</span><span class="nx">promise</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;form&gt;</span>
+...
+  <span class="nt">&lt;button</span> <span class="na">click=</span><span class="s">"validate,save,location@/home"</span><span class="nt">&gt;</span>Save and Quit<span class="nt">&lt;/button&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</pre></div>
+
+<p>Unlike <a href="https://github.com/nbubna/trigger">trigger</a>, Eventi also allows you to register listeners for event sequences as well. Such sequences can be fired as sequences (as above) or separately. You may also specify a time in milliseconds as the first data argument, in order to restrict the timeframe for sequence completion.</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">editor</span><span class="p">,</span> <span class="s1">'keyup[a],keyup[s],keyup[d],keyup[f]'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Fake typing!'</span><span class="p">);</span>
+<span class="p">},</span> <span class="mi">500</span><span class="p">);</span>
+</pre></div>
+
+<h4>
+<a name="comboevents" class="anchor" href="#comboevents"><span class="octicon octicon-link"></span></a>"Combo+Events"</h4>
+
+<p>Example definition: <code>scroll+click</code></p>
+
+<p>Allows you to listen for an unordered group of related events before executing the handler function. This is exactly like registering a listener for a sequence of events, except that the order in which the events are received is ignored (or irrelevant).</p>
+
+<div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">editor</span><span class="p">,</span> <span class="s1">'click+click+click'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">Eventi</span><span class="p">.</span><span class="nx">fire</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s1">'tripleclick'</span><span class="p">);</span>
+<span class="p">},</span> <span class="mi">200</span><span class="p">);</span>
+</pre></div>
+
+<p>And yes, you can mix combos and sequences. When doing so, sequences events will be sub-events of combos, not vice versa.</p>
+
+<h2>
 <a name="release-history" class="anchor" href="#release-history"><span class="octicon octicon-link"></span></a>Release History</h2>
 
 <ul>
-<li>2014-02-11 <a href="https://github.com/nbubna/Eventi/tree/0.5.0">v0.5.0</a> (alpha)</li>
-<li>2014-04-03 <a href="https://github.com/nbubna/Eventi/tree/1.0.0">v1.0.0</a> (beta)</li>
-<li>2014-04-04 <a href="https://github.com/nbubna/Eventi/tree/1.0.1">v1.0.1</a> (beta - IE fixes)</li>
+<li>2014-02-11 <a href="https://github.com/esha/Eventi/tree/0.5.0">v0.5.0</a> (alpha)</li>
+<li>2014-04-03 <a href="https://github.com/esha/Eventi/tree/1.0.0">v1.0.0</a> (beta)</li>
+<li>2014-04-04 <a href="https://github.com/esha/Eventi/tree/1.0.1">v1.0.1</a> (beta - IE fixes)</li>
+<li>2014-04-09 <a href="https://github.com/esha/Eventi/tree/1.0.2">v1.0.2</a> (beta - toString and location fix)</li>
+<li>2014-04-17 <a href="https://github.com/esha/Eventi/tree/1.1.0">v1.1.0</a> (beta - restructure artifacts, small improvements)</li>
+<li>2014-04-21 <a href="https://github.com/esha/Eventi/tree/1.2.0">v1.2.0</a> (beta - docs, space-delimited alias arguments, artifact changes, optional <code>data-</code> prefixes, combo fix)</li>
+<li>2014-04-22 <a href="https://github.com/esha/Eventi/tree/1.2.1">v1.2.1</a> (beta - docs, shorthand type for [key] and <a href="https://github.com/location" class="user-mention">@location</a>)</li>
 </ul>
         </section>
 
         <aside id="sidebar">
-          <a href="https://github.com/nbubna/Eventi/zipball/master" class="button">
+          <a href="https://github.com/esha/Eventi/zipball/master" class="button">
             <small>Download</small>
             .zip file
           </a>
-          <a href="https://github.com/nbubna/Eventi/tarball/master" class="button">
+          <a href="https://github.com/esha/Eventi/tarball/master" class="button">
             <small>Download</small>
             .tar.gz file
           </a>
 
-          <p class="repo-owner"><a href="https://github.com/nbubna/Eventi"></a> is maintained by <a href="https://github.com/nbubna">nbubna</a>.</p>
+          <p class="repo-owner"><a href="https://github.com/esha/Eventi"></a> is maintained by <a href="https://github.com/esha">esha</a>.</p>
 
           <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
         </aside>
