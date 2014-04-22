@@ -1,4 +1,4 @@
-/*! Eventi - v1.2.0 - 2014-04-21
+/*! Eventi - v1.2.0 - 2014-04-22
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 

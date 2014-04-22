@@ -1,4 +1,4 @@
-/*! Eventi - v1.2.0 - 2014-04-21
+/*! Eventi - v1.2.0 - 2014-04-22
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -487,6 +487,11 @@ for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
 'abcdefghijklmnopqrstuvwxyz 0123456789'.split('').forEach(function(c) {
     _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
 });
+Eventi.on(_, 'on:handler', function(e, handler) {
+    if (handler.event.keyCode && !handler.event.type) {
+        handler.event.type = 'keyup';
+    }
+});
 _.split.guard['@'] = '@';
 _.parsers.unshift([/@([^@]+)(@|$)/, function(event, handler, uri) {
     handler.location = uri;
@@ -570,6 +575,9 @@ if (global.history && global.location) {
     Eventi.on('!popstate !hashchange !pushstate', _.location)
     .on('!location', _.setLocation)
     .on(_, 'on:handler', function location(e, handler) {
+        if (handler.location && !handler.event.type) {
+            handler.event.type = 'location';
+        }
         if (handler.event.type === 'location') {
             // force global
             handler.global = true;
