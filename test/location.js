@@ -159,6 +159,15 @@
     history.pushState(null,'target', '#target');
   });
 
+  test('default type', function() {
+    Eventi.on('@#default', function(e) {
+      equal(e.type, 'location');
+      Eventi.off('location');
+      history.pushState(null, null, home);
+    });
+    history.pushState(null,'default','#default');
+  });
+
   module('Eventi location internals');
 
   test('internal api presence', function() {

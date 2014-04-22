@@ -57,6 +57,14 @@
     Eventi.fire("guard[]]");
   });
 
+  test('Eventi.on("[alt]", fn)', function() {
+    expect(1);
+    Eventi.on('[alt]', function(e) {
+      equal(e.type, 'keyup');
+    });
+    Eventi.fire('keyup[alt] other[alt]');
+  });
+
   test('internal api presence', function() {
     equal(typeof _.codes, "object", "_.codes");
     equal(_.split.guard['['], ']');

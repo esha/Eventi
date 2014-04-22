@@ -20,3 +20,8 @@ for (var f=1; f<13; f++){ _.codes['f'+f] = 111+f; }// function keys
 'abcdefghijklmnopqrstuvwxyz 0123456789'.split('').forEach(function(c) {
     _.codes[c] = c.toUpperCase().charCodeAt(0);// ascii keyboard
 });
+Eventi.on(_, 'on:handler', function(e, handler) {
+    if (handler.event.keyCode && !handler.event.type) {
+        handler.event.type = 'keyup';
+    }
+});

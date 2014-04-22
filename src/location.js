@@ -81,6 +81,9 @@ if (global.history && global.location) {
     Eventi.on('!popstate !hashchange !pushstate', _.location)
     .on('!location', _.setLocation)
     .on(_, 'on:handler', function location(e, handler) {
+        if (handler.location && !handler.event.type) {
+            handler.event.type = 'location';
+        }
         if (handler.event.type === 'location') {
             // force global
             handler.global = true;
