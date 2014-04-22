@@ -8,9 +8,9 @@ Download the [full][], [minified][min], or [server][server] versions. [![Build S
 [NPM][npm]: `npm install eventi`   
 [Component][component]: `component install esha/Eventi`  
 
-[full]: https://raw.github.com/esha/Eventi/master/dist/Eventi.js
-[min]: https://raw.github.com/esha/Eventi/master/dist/Eventi.min.js
-[server]: https://raw.github.com/esha/Eventi/master/dist/Eventi.server.js
+[full]: https://raw.github.com/esha/Eventi/master/dist/eventi.js
+[min]: https://raw.github.com/esha/Eventi/master/dist/eventi.min.js
+[server]: https://raw.github.com/esha/Eventi/master/dist/eventi.server.js
 [npm]: https://npmjs.org/package/eventi
 [bower]: http://bower.io/
 [component]: http://component.io/
@@ -209,19 +209,69 @@ Eventi.on('change<[type=checkbox]>', function(e) {
 
 Example definition: `keyup[delete]`
 
-This specifies a key or combination thereof, by either keyCode or description, and is delimited by `[` and `]`. It instructs a listener to only react to events that know
+This specifies a key or combination thereof, by either keyCode or description, and is delimited by `[` and `]`. It instructs a listener to only react when the event has the appropriate keyCode/ctrlKey/metaKey/shiftKey/altKey properties. Particular keyCodes may be specified explicitly (e.g. `keydown[33]`), but many have been given English or symbolic equivalents for the sake of readable code (e.g. `keypress[z]`). These are stored in the [`Eventi._.codes`](https://github.com/esha/Eventi/blob/master/src/key.js#L12) object and are keyup-based values, so `keydown` and `keypress` definitions should [be wary](http://unixpapa.com/js/key.html) of those outside ASCII. The other key-related event properties are set simply by giving them `-` as a suffix (e.g. `[shift-13]` -> `e.shiftKey = true`, `[meta-]` -> `e.metaKey = true`, etc). 
+
+The [Key] syntax is also special in that it will provide `keyup` as the type for event listeners (for `on()` *only*) that have a [Key] specified, but no type. Typically, event listeners with no type are never executed.
+
+```javascript
+Eventi.on(field, '[shift-enter]', function(e) {
+  console.log(e.shiftKey, e.keyCode);// outputs 'true 13'
+});
+```
 
 #### @Location
 
-Example definition: `location@/home`
+Example definition: `keypress[escape]@/edit`
 
-This specifies a url pattern that either blocks listener activation unless `window.location` matches or, when used in a definition for `fire()` will update `window.location` via `history.pushState`.
+This specifies a url pattern that is matched against the current `window.location` to filter event listener execution.
+
+There are three types of `@` location values:
+
+`@/vanilla#string` - Will be directly matched against the URL string retrieved from `window.location`.  
+`@?mini={template}` -  Turns the sections in braces into wildcard matches (breaking on `\`,`?`, and `#`) whose values are gathered into a key/value object, passed as the 2nd argument to the event handler.  
+```@`reg[ular]+Exp?` ``` -  For more complicated matching, use a regular expression. Use ` to delimit it. Handlers will receive the full match as the 2nd argument (after the event itself) and matching groups as subsequent arguments. Any handler or event data args will follow the location matching arguments.
+
+Like [Key], @Location enables shorthand definitions by setting 'location' as the type for event listeners (for `on()` *only*) that have a location property, but no type property.
 
 ```javascript
-Eventi.on('location@login', loginFn);
-Eventi.fire('location@?page=2');
+Eventi.on('save@#file={filename}', function(e, vals, folder) {
+  console.log('Saved '+vals.filename+' in '+folder);// outputs 'Saved image.png in /pics'
+});
+window.location.hash = 'file=image.png';
+Eventi.fire('save', '/pics');
 ```
 
+##### location@Location
+
+Eventi also provides a unified `location` event that is dispatched on the `window` whenever the current location changes, whether via `hashchange` and `popstate` events or calls to `history.pushState` (which gets its own `pushstate` event as well). When registering a listener for a `location` event, the location is promptly tested (as if a `location` event was fired), allowing immediate execution of handlers for currently matching locations. Also, when a `location` type event is dispatched (e.g. `fire('location@/path')`), the @Location will be used to update `window.location` via `history.pushState`.
+
+```javascript
+// assume URL is http://esha.github.io/ to start
+var s = '';
+Eventi.on('location', function(e) {
+  s += ' '+e.location;
+});
+window.location.hash = 'hash';
+history.pushState(null,'push it', '?push');
+history.go(-2);// popstate
+console.log(s);// outputs ' / /#hash /?push /#hash /'
+```
+
+```javascript
+Eventi.on('@/login', function(e, match) {// will listen for 'location' type
+  console.log(e.type, match);// outputs 'location login'
+});
+Eventi.fire('location@/login');
+```
+
+@Location's mini-templates can work in reverse when updating the location via event. Just pass a key/value object back as the first data argument (either at listener registration or event firing).
+
+```javascript
+Eventi.fire('location@?page={page}', {page:2});
+window.location.search === '?page=2'; // true
+```
+
+Just to spell it out, the sum of these flexible and easy location features is a powerful event-based application router.
 
 ### Control - For Special Handling
 
