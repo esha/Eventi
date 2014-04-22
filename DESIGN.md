@@ -1,16 +1,7 @@
 ## TODO
 * finish documentation
 * demo app/site/jsbin
-* jQuery integration
-* Capo integration
-* consider allowing ref/def handler arguments (i.e. declare.js support for JavaScript): `Eventi.on('keyup[ctrl-s]', 'service:save');
-* consider limited grouping syntax for types with partial overlap: `group:{type#tag other$1}#tag2` but probably don't bother due to incompatibility w/aliasing and current parsing
-* consider wildcard * syntax, to require a match field presence instead of equality, or possibly partial equality.
-* alternately, consider supporting `on('group:')`, as icky as the needed impl work might be
-* consider throttle/debounce syntax/support: `resize%200` (trailing), `resize%-200 (leading)`
-* consider allowing eventi/handler shorthand when target and listener are same element: `<form eventi="submit|validate,save">`
-* consider giving `alias(document.body, '...'')` calls in JavaScript the same effect as `<body eventi="...">`
-* consider allowing multiple def on batch: `Eventi.on({'foo bar':fnForFooOrBarNotCombo});
+* https://github.com/esha/Eventi/issues?state=open
 
 ## Motive
 
@@ -120,12 +111,3 @@
 #### debug.js (requires core.js and on.js)
 * provide easy access and printing of registered handlers
 * expose as a bookmarklet
-
-
-
-#### Plan for jquery.eventi.js
-* add custom properties to $.event.props
-* add namespace support to rich syntax (ick)
-* listen for events in jQuery's manual bubbling system (ick again)
-* wrap $.fn.trigger, $.fn.on, $.fn.off, and maybe $.fn.one to intercept calls with Eventi syntax
-
