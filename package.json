@@ -1,7 +1,7 @@
 {
   "name": "eventi",
   "title": "Eventi",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "homepage": "https://github.com/esha/Eventi",
   "author": {
     "name": "ESHA Research",
@@ -56,6 +56,7 @@
     "emitter",
     "pubsub",
     "signals",
-    "declarative"
+    "declarative",
+    "router"
   ]
 }

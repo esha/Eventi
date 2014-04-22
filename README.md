@@ -432,6 +432,7 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 * 2014-04-09 [v1.0.2][] (beta - toString and location fix)
 * 2014-04-17 [v1.1.0][] (beta - restructure artifacts, small improvements)
 * 2014-04-21 [v1.2.0][] (beta - docs, space-delimited alias arguments, artifact changes, optional `data-` prefixes, combo fix)
+* 2014-04-22 [v1.2.1][] (beta - docs, shorthand type for [key] and @location)
 
 [v0.5.0]: https://github.com/esha/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/esha/Eventi/tree/1.0.0
@@ -439,3 +440,4 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 [v1.0.2]: https://github.com/esha/Eventi/tree/1.0.2
 [v1.1.0]: https://github.com/esha/Eventi/tree/1.1.0
 [v1.2.0]: https://github.com/esha/Eventi/tree/1.2.0
+[v1.2.1]: https://github.com/esha/Eventi/tree/1.2.1

@@ -1,6 +1,6 @@
 {
   "name": "eventi",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "homepage": "https://github.com/esha/Eventi",
   "bugs": "https://github.com/esha/Eventi/issues",
   "authors": [
@@ -30,7 +30,8 @@
     "emitter",
     "pubsub",
     "signals",
-    "declarative"
+    "declarative",
+    "router"
   ],
   "license": "MIT",
   "ignore": [
