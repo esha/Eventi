@@ -64,14 +64,14 @@ a:hover {
 }
 
 header {
-  padding-top: 40px;
+  padding-top: 25px;
   padding-bottom: 40px;
   font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif; 
   background: #2e7bcf url(../images/header-bg.jpg) 0 0 repeat-x;
   border-bottom: solid 1px #275da1;
 }
 
-header h1 {
+header h1 a, header h1 a:hover {
   letter-spacing: -1px;
   font-size: 72px;
   color: #fff;
@@ -130,31 +130,36 @@ aside#sidebar p.repo-owner a {
 
 a.button {
   width: 134px;
-  height: 58px;
+  height: 67px;
   line-height: 1.2;
-  font-size: 23px;
-  color: #fff;
   padding-left: 68px;
-  padding-top: 22px;
+  padding-top: 13px;
   font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif; 
 }
 a.button small {
   display: block;
   font-size: 11px;
 }
-header a.button {
-  position: absolute;
-  right: 0;
-  top: 0;
-  background: transparent url(../images/github-button.png) 0 0 no-repeat;
-}
 aside a.button {
-  width: 138px;
-  padding-left: 64px;
   display: block;
+  padding: 0px;
+  font-size: 3.5em;
+}
+aside a.button small {
+  font-size: 0.3em;
+}
+header a.button {
+  display: block;
+  right: 0;
+  top: -5px;
+  position: absolute;
+  color: #fff;
   background: transparent url(../images/download-button.png) 0 0 no-repeat;
-  margin-bottom: 20px;
-  font-size: 21px;
+  margin-bottom: 5px;
+  font-size: 19px;
+}
+header a.button.server {
+  top: 85px;
 }
 
 code, pre {
@@ -207,6 +212,7 @@ table {
 
 th {
   font-weight: 500;
+  padding-right: 5px;
 }
 
 td {
@@ -231,26 +237,13 @@ form {
   color: #474747;
 } 
 
-#main-content h1:before {
-  content: "/";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -0.9em;
-}
-
 #main-content h2 {
   font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif; 
-  font-size: 22px;
+  font-size: 2em;
   font-weight: bold;
   margin-bottom: 8px;
   color: #474747;
 } 
-#main-content h2:before {
-  content: "//";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -1.5em;
-}
 
 #main-content h3 {
   font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif; 
@@ -260,51 +253,24 @@ form {
   margin-bottom: 8px;
   color: #474747;
 } 
- 
-#main-content h3:before {
-  content: "///";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -2em;
-}
 
 #main-content h4 {
-  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif; 
-  font-size: 15px;
-  font-weight: bold;
+  font-family: 'Helvetica Neue', Helvetica, Arial, serif; 
+  font-size: 1.5em;
   color: #474747;
 } 
-
-h4:before {
-  content: "////";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -2.8em;
-}
 
 #main-content h5 {
-  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif; 
-  font-size: 14px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, serif; 
+  font-size: 1.2em;
   color: #474747;
 } 
-h5:before {
-  content: "/////";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -3.2em;
-}
 
 #main-content h6 {
-  font-family: 'Architects Daughter', 'Helvetica Neue', Helvetica, Arial, serif; 
+  font-family: 'Helvetica Neue', Helvetica, Arial, serif; 
   font-size: .8em;
   color: #474747;
 } 
-h6:before {
-  content: "//////";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -3.7em;
-}
 
 p {
   margin-bottom: 20px;
@@ -444,6 +410,9 @@ footer a:hover {
   header a.button small {
     font-size: 13px;
     display: inline;
+  }
+  header a.button.server {
+    top: -5px;
   }
   #main-content,
   aside#sidebar {
