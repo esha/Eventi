@@ -1,6 +1,5 @@
 (function() {
 
-  var _ = Eventi._;
   module('Eventi frame');
 
   test('CustomEvent API/polyfill', function() {
@@ -12,10 +11,6 @@
     equal(ce.bubbles, true, "CustomEvent bubbles");
     equal(typeof ce.stopPropagation, "function", "CustomEvent stopPropagation");
     equal(typeof ce.stopImmediatePropagation, "function", "CustomEvent stopImmediatePropagation");
-  });
-
-  test('internal api presence', function() {
-    ok(_.version, "_.version");
   });
 
 }());
