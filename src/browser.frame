@@ -3,29 +3,21 @@
     "use strict";
 
     try {
-        new global.CustomEvent('test');
+        new CustomEvent('test');
     } catch (err) {
         // polyfill CustomEvent constructor
-        global.CustomEvent = document ? function CustomEvent(type, args) {
+        global.CustomEvent = function CustomEvent(type, args) {
             args = args || {};
             var e = document.createEvent('CustomEvent');
             e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
             return e;
-        } : function CustomEvent(type, args) {
-            args = args || {};
-            this.type = type;
-            this.bubbles = !!args.bubbles;
-            this.detail = args.detail;
-            this.timestamp = Date.now();
         };
-        if (!global.Event){ global.Event = global.CustomEvent; }
     }
 
 <%= content %>
-    _.version = "<%= pkg.version %>";
 
-    var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
-        sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    var sP = Event.prototype.stopPropagation || _.noop,
+        sIP = Event.prototype.stopImmediatePropagation || _.noop;
     CustomEvent.prototype.stopPropagation = function() {
         this.propagationStopped = true;
         sP.call(this);

@@ -15,16 +15,19 @@ module.exports = function(grunt) {
       files: ['dist']
     },
     frame: {
-      options: {
-        frame: 'src/Eventi.frame'
-      },
       dist: {
         dest: 'dist/<%= pkg.name %>.js',
+        options: {
+          frame: 'src/browser.frame'
+        },
         src: ['src/core.js','src/fire.js','src/on.js', 'src/alias.js',
               'src/delegate.js', 'src/declare.js', 'src/key.js', 'src/location.js',
               'src/off.js', 'src/singleton.js', 'src/end.js', 'src/sequence.js', 'src/combo.js']
       },
       server: {
+        options: {
+          frame: 'src/server.frame'
+        },
         dest: 'dist/<%= pkg.name %>.server.js',
         src: ['src/core.js','src/fire.js','src/on.js', 'src/alias.js',
               'src/off.js', 'src/singleton.js', 'src/end.js', 'src/sequence.js', 'src/combo.js']
@@ -55,6 +58,9 @@ module.exports = function(grunt) {
     qunit: {
       files: ['test/**/*.html']
     },
+    nodeunit: {
+      server: ['test/server/*.js']
+    },
     jshint: {
       gruntfile: {
         options: {
@@ -78,8 +84,14 @@ module.exports = function(grunt) {
         options: {
           jshintrc: 'test/.jshintrc'
         },
-        src: ['test/**/*.js']
+        src: ['test/*.js']
       },
+      nodetest: {
+        options: {
+          jshintrc: 'test/server/.jshintrc'
+        },
+        src: ['test/server/*.js']
+      }
     },
     watch: {
       gruntfile: {
@@ -105,8 +117,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-contrib-nodeunit');
 
   // Default task.
-  grunt.registerTask('default', ['jshint:src', 'clean', 'frame', 'jshint:dist', 'jshint:test', 'qunit', 'uglify', 'compress']);
+  grunt.registerTask('default', ['jshint:src', 'clean', 'frame', 'jshint:dist', 'jshint:test', 'qunit', 'nodeunit', 'uglify', 'compress']);
 
 };

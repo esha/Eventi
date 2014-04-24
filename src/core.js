@@ -1,5 +1,6 @@
 function Eventi(){ return _.create.apply(this, arguments); }
 var _ = {
+    version: "<%= pkg.version %>",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -70,7 +71,7 @@ var _ = {
     fn: function(name, dataIndex) {
         Eventi[name] = _.fns[name] = function wrapper(target) {
             var args = _.slice(arguments);
-            if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
+            if (!target || typeof target === "string" || target instanceof Event) {// ensure target
                 args.unshift(target = !this || this === Eventi ? _.global : this);
             }
             if (args.length > dataIndex) {// gather ...data the old way

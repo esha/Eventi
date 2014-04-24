@@ -1,4 +1,4 @@
-/*! Eventi - v1.2.1 - 2014-04-22
+/*! Eventi - v1.2.1 - 2014-04-24
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -6,26 +6,20 @@
     "use strict";
 
     try {
-        new global.CustomEvent('test');
+        new CustomEvent('test');
     } catch (err) {
         // polyfill CustomEvent constructor
-        global.CustomEvent = document ? function CustomEvent(type, args) {
+        global.CustomEvent = function CustomEvent(type, args) {
             args = args || {};
             var e = document.createEvent('CustomEvent');
             e.initCustomEvent(type, !!args.bubbles, !!args.cancelable, args.detail);
             return e;
-        } : function CustomEvent(type, args) {
-            args = args || {};
-            this.type = type;
-            this.bubbles = !!args.bubbles;
-            this.detail = args.detail;
-            this.timestamp = Date.now();
         };
-        if (!global.Event){ global.Event = global.CustomEvent; }
     }
 
 function Eventi(){ return _.create.apply(this, arguments); }
 var _ = {
+    version: "1.2.1",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -96,7 +90,7 @@ var _ = {
     fn: function(name, dataIndex) {
         Eventi[name] = _.fns[name] = function wrapper(target) {
             var args = _.slice(arguments);
-            if (!target || typeof target === "string" || target instanceof global.Event) {// ensure target
+            if (!target || typeof target === "string" || target instanceof Event) {// ensure target
                 args.unshift(target = !this || this === Eventi ? _.global : this);
             }
             if (args.length > dataIndex) {// gather ...data the old way
@@ -810,7 +804,7 @@ _.combo = {
             this.unfired[index] = '';
             this.events.push(e);
             if (!this.unfired.join('')) {
-                var event = new Eventi('combo:'+this.event.type);
+                var event = _.create('combo:'+this.event.type);
                 event.events = this.events;
                 event.text = this.text;
                 _.dispatch(this.target, event);
@@ -834,10 +828,9 @@ Eventi.on(_, 'on:handler', function comboHandler(e, handler) {
         handler.handlers.forEach(_.unhandle);
     }
 });
-    _.version = "1.2.1";
 
-    var sP = (global.Event && Event.prototype.stopPropagation) || _.noop,
-        sIP = (global.Event && Event.prototype.stopImmediatePropagation) || _.noop;
+    var sP = Event.prototype.stopPropagation || _.noop,
+        sIP = Event.prototype.stopImmediatePropagation || _.noop;
     CustomEvent.prototype.stopPropagation = function() {
         this.propagationStopped = true;
         sP.call(this);

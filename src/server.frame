@@ -1,0 +1,25 @@
+<%= banner %>
+(function(global, exports, document) {
+    "use strict";
+
+    var Event = exports.Event = function Event(type, args) {
+        args = args || {};
+        this.type = type;
+        this.bubbles = !!args.bubbles;
+        this.detail = args.detail;
+        this.timeStamp = Date.now();
+    },
+    CustomEvent = Event;// no difference for server
+
+    Event.prototype.stopPropagation = function() {
+        this.propagationStopped = true;
+    };
+    Event.prototype.stopImmediatePropagation = function() {
+        this.immediatePropagationStopped = true;
+    };
+
+<%= content %>
+
+    exports.Eventi = Eventi;
+
+})(global, exports, global.document);

@@ -52,7 +52,7 @@ _.combo = {
             this.unfired[index] = '';
             this.events.push(e);
             if (!this.unfired.join('')) {
-                var event = new Eventi('combo:'+this.event.type);
+                var event = _.create('combo:'+this.event.type);
                 event.events = this.events;
                 event.text = this.text;
                 _.dispatch(this.target, event);
