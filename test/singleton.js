@@ -34,7 +34,7 @@
 
   test('^once on once', function() {
     expect(5);
-    var target = Eventi.fy({});
+    var target = new Eventi();
     target.on('^once', function(e) {// early listener
       equal(e.type, 'once');
       ok(!e.singleton);

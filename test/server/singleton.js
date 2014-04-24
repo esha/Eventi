@@ -12,7 +12,7 @@ function test(name, fn) {
 
 test('^once on once', function(is) {
   is.expect(5);
-  var target = Eventi.fy({});
+  var target = new Eventi();
   target.on('^once', function(e) {// early listener
     is.equal(e.type, 'once');
     is.ok(!e.singleton);

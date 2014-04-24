@@ -27,8 +27,8 @@
     ok(typeof Eventi.off === "function", 'Eventi.off');
   });
 
-  test('Eventi.fy({}).off', function() {
-    equal(Eventi.fy({}).off, Eventi.off, 'should get off()');
+  test('new Eventi().off', function() {
+    equal(new Eventi().off, Eventi.off, 'should get off()');
   });
 
   test('Eventi.off(type)', function() {

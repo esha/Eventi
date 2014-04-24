@@ -27,8 +27,8 @@
     ok(typeof Eventi.on === "function", 'Eventi.on');
   });
 
-  test('Eventi.fy({}).on', function() {
-    equal(Eventi.fy({}).on, Eventi.on, 'should get on()');
+  test('new Eventi().on', function() {
+    equal(new Eventi().on, Eventi.on, 'should get on()');
   });
 
   test('Eventi.on(type,fn)', function() {

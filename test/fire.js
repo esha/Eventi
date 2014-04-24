@@ -28,8 +28,8 @@
     notEqual(Eventi.fire, _.fire, 'public fire != internal fire');
   });
 
-  test('Eventi.fy({}).fire', function() {
-    equal(Eventi.fy({}).fire, Eventi.fire, 'should get fire()');
+  test('new Eventi().fire', function() {
+    equal(new Eventi().fire, Eventi.fire, 'should get fire()');
   });
 
   test('Eventi.fire({}, "foo") is noop', function() {

@@ -21,8 +21,21 @@
         this.immediatePropagationStopped = true;
     };
 
-function Eventi(){ return _.create.apply(this, arguments); }
-var _ = {
+function Eventi(text){
+    if (typeof text === "string") {
+        return _.create.apply(_, arguments);
+    }
+    return Eventi.fy(this);
+}
+Eventi.toString = Eventi.prototype.toString = function(){ return 'Eventi, v'+_.version; };
+Eventi.fy = function fy(o) {
+    for (var p in _.fns) {
+        Object.defineProperty(o, p, {value:Eventi[p], writable:true, configurable:true});
+    }
+    return o;
+};
+
+var _ = Eventi._ = {
     version: "1.2.1",
     global: new Function('return this')(),
     noop: function(){},
@@ -156,14 +169,6 @@ var _ = {
             return parts;
         }
     }
-};
-Eventi.toString = function(){ return 'Eventi, v'+_.version; };
-Eventi._ = _;
-Eventi.fy = function fy(o) {
-    for (var p in _.fns) {
-        Object.defineProperty(o, p, {value:Eventi[p], writable:true, configurable:true});
-    }
-    return o;
 };
 
 _.parsers.unshift([/^(\W*)\//, function(event, handler, other) {

@@ -14,8 +14,8 @@ test('external api presence', function(is) {
   is.ok(typeof Eventi.off === "function", 'Eventi.off');
 });
 
-test('Eventi.fy({}).off', function(is) {
-  is.equal(Eventi.fy({}).off, Eventi.off, 'should get off()');
+test('new Eventi().off', function(is) {
+  is.equal(new Eventi().off, Eventi.off, 'should get off()');
 });
 
 test('Eventi.off(type)', function(is) {

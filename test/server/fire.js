@@ -16,8 +16,8 @@ test('external api presence', function(is) {
   is.notEqual(Eventi.fire, _.fire, 'public fire != internal fire');
 });
 
-test('Eventi.fy({}).fire', function(is) {
-  is.equal(Eventi.fy({}).fire, Eventi.fire, 'should get fire()');
+test('new Eventi().fire', function(is) {
+  is.equal(new Eventi().fire, Eventi.fire, 'should get fire()');
 });
 
 test('Eventi.fire({}, "foo") is noop', function(is) {

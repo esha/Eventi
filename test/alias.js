@@ -27,8 +27,8 @@
     ok(typeof Eventi.alias === "function", 'Eventi.alias');
   });
 
-  test('no Eventi.fy({}).alias', function() {
-    ok(!Eventi.fy({}).alias, 'should not get alias()');
+  test('no new Eventi().alias', function() {
+    ok(!new Eventi().alias, 'should not get alias()');
   });
 
   test('Eventi.alias("type") API additions', function() {
@@ -38,9 +38,9 @@
     }
   });
 
-  test('Eventi.alias(Eventi.fy({}), "local signal") API additions', function() {
+  test('Eventi.alias(new Eventi(), "local signal") API additions', function() {
     expect(7);
-    var o = Eventi.fy({});
+    var o = new Eventi();
     equal(o.fire.signal, undefined, 'should not have signal yet');
     Eventi.alias(o, 'local /test:signal=>alias');
     for (var p in _.fns) {
