@@ -499,13 +499,18 @@ _.parsers.unshift([/@([^@]+)(@|$)/, function(event, handler, uri) {
     }
 }]);
 if (global.history && global.location) {
-    var current;
-    _.pushState = history.pushState;
-    history.pushState = function() {
-        var ret = _.pushState.apply(this, arguments);
-        _.dispatch(_.global, new CustomEvent('pushstate'));
-        return ret;
+    var intercept = function(name) {
+        _[name] = history[name];
+        history[name] = function() {
+            var ret = _[name].apply(this, arguments);
+            _.dispatch(_.global, new CustomEvent('pushstate'));
+            return ret;
+        };
     };
+    intercept('pushState');
+    intercept('replaceState');
+
+    var current;
     _.location = function(e, uri) {
         uri = uri || decodeURI(location.pathname + location.search + location.hash);
         if (uri !== current) {

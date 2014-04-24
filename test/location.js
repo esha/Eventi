@@ -22,12 +22,12 @@
 
   var _ = Eventi._,
     home = location.pathname;
-  Eventi._.pushState.call(history, null,null,home);
+  Eventi._.replaceState.call(history, null,null,home);
 
   module('Eventi location', {
     teardown: function() {
       Eventi.off('location');
-      history.pushState(null,'teardown',home);
+      history.replaceState(null,'teardown',home);
     }
   });
 
@@ -49,7 +49,7 @@
       equal(match, 'Eventi.html');
       equal(file, 'Eventi');
       Eventi.off('location');
-      history.pushState(null,null,home);
+      history.replaceState(null,null,home);
     });
   });
 
@@ -71,7 +71,7 @@
       equal(match, 'test');
       equal(hdata, 'hdata');
       Eventi.off('location');
-      history.pushState(null,null,home);
+      history.replaceState(null,null,home);
     }, 'hdata');
   });
 
@@ -91,11 +91,11 @@
       if (e.srcEvent.type === 'popstate') {
         Eventi.off('location');
         ok(true, 'should get here via popstate');
-        history.pushState(null,null,home);
+        history.replaceState(null,null,home);
       }
     });
     history.pushState(null,null,'?search');
-    history.pushState(null,null,'?whatever');
+    history.replaceState(null,null,'?whatever');
     history.back();
   });*/
 
@@ -114,9 +114,9 @@
       ok(e.srcEvent, 'should have srcEvent');
       equal(e.srcEvent.type, 'pushstate','should be pushstate source');
       equal(e.location, location.pathname+'?search', 'should have correct e.location');
-      history.pushState(null,null,home);
+      history.replaceState(null,null,home);
     });
-    history.pushState(null,null,'?search');
+    history.replaceState(null,null,'?search');
   });
 
   test('location set via event', function() {
@@ -154,9 +154,9 @@
     Eventi.on(target, 'location@#target', function() {
       equal(this, target, 'should have target context');
       Eventi.off('location');
-      history.pushState(null,null,home);
+      history.replaceState(null,null,home);
     });
-    history.pushState(null,'target', '#target');
+    history.replaceState(null,'target', '#target');
   });
 
   test('default type', function() {
@@ -172,6 +172,7 @@
 
   test('internal api presence', function() {
     equal(typeof _.pushState, "function", "_.pushState");
+    equal(typeof _.replaceState, "function", "_.replaceState");
     equal(typeof _.location, "function", "_.location");
     equal(typeof _.keys, "function", "_.keys");
     equal(typeof _.setLocation, "function", "_.setLocation");
