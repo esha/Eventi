@@ -87,6 +87,22 @@
     Eventi.fire(target, Object.keys(handlers));
   });
 
+  test('focus/blur capture', function() {
+    expect(6);
+    var el = document.getElementById('focus'),
+      type = 'focus',
+    fn = function(e) {
+      equal(e.type, type);
+      equal(this, window);
+      equal(e.target, el);
+    };
+    Eventi.on('focus blur', fn);
+    el.focus();
+    type = 'blur';
+    el.blur();
+    Eventi.off('focus blur', fn);
+  });
+
   test('_.listener', function() {
     var o = {},
       listener = _.listener(o);
@@ -145,13 +161,14 @@
   });
 
   test('internal api presence', function() {
-    ok(_.on, "_.on");
-    ok(_.handler, "_.handler");
-    ok(_.listener, "_.listener");
-    ok(_.handle, "_.handle");
-    ok(_.execute, "_.execute");
-    ok(_.unhandle, "_.unhandle");
-    ok(_.matches, "_.matches");
+    equal(typeof _.on, "function", "_.on");
+    equal(typeof _.handler, "function", "_.handler");
+    equal(typeof _.listener, "function", "_.listener");
+    equal(Array.isArray(_.capture), true, "_.capture");
+    equal(typeof _.handle, "function", "_.handle");
+    equal(typeof _.execute, "function", "_.execute");
+    equal(typeof _.unhandle, "function", "_.unhandle");
+    equal(typeof _.matches, "function", "_.matches");
   });
 
 }());

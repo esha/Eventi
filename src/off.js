@@ -42,7 +42,7 @@ _.clean = function(type, filter, listener, target) {
         }
         if (!handlers.length) {
             if (target.removeEventListener) {
-                target.removeEventListener(type, listener);
+                target.removeEventListener(type, listener, _.capture.indexOf(type) >= 0);
             }
             delete listener.s[type];
         }

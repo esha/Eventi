@@ -39,11 +39,12 @@ _.handlers = function(target, type) {
     if (!handlers) {
         handlers = listener.s[type] = [];
         if (target.addEventListener) {
-            target.addEventListener(type, listener);
+            target.addEventListener(type, listener, _.capture.indexOf(type) >= 0);
         }
     }
     return handlers;
 };
+_.capture = ['focus','blur'];
 
 var _key = _._key = '_eventi'+Date.now();
 _.listener = function(target) {
