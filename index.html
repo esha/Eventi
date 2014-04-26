@@ -149,10 +149,10 @@
 <p>Overloading of <code>on()</code> for convenient registration of multiple listeners at once. Iterates over the object argument, registering key/value pairs as eventi/fn pairs.</p>
 
 <div class="highlight highlight-javascript"><pre><span class="nx">Eventi</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="nx">user</span><span class="p">,</span> <span class="p">{</span>
-    <span class="s1">'account:open'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="s1">'account:open'</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'Event: type='</span><span class="o">+</span><span class="nx">e</span><span class="p">.</span><span class="nx">type</span><span class="o">+</span><span class="s1">' category='</span><span class="o">+</span><span class="nx">e</span><span class="p">.</span><span class="nx">category</span><span class="p">,</span> <span class="k">this</span><span class="cm">/* will be user */</span><span class="p">);</span> 
     <span class="p">},</span>
-    <span class="s1">'account:close'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">accountId</span><span class="p">)</span> <span class="p">{</span>
+    <span class="s1">'account:close'</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">accountId</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'User: '</span><span class="o">+</span><span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="o">+</span><span class="s1">' is closing account '</span><span class="o">+</span><span class="nx">accountId</span><span class="p">);</span>
     <span class="p">}</span>
 <span class="p">});</span>
