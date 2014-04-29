@@ -33,6 +33,12 @@ module.exports = function(grunt) {
               'src/off.js', 'src/singleton.js', 'src/end.js', 'src/sequence.js', 'src/combo.js']
       },
     },
+    copy: {
+      jquery: {
+        src: 'src/jquery.js',
+        dest: 'dist/eventi.jquery.js'
+      }
+    },
     uglify: {
       options: {
         banner: '<%= banner %>'
@@ -44,6 +50,10 @@ module.exports = function(grunt) {
       debug: {
         src: 'src/debug.js',
         dest: 'dist/<%= pkg.name %>.debug.min.js'
+      },
+      jquery: {
+        src: 'src/jquery.js',
+        dest: 'dist/<%= pkg.name %>.jquery.min.js'
       }
     },
     compress: {
@@ -118,8 +128,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
   // Default task.
-  grunt.registerTask('default', ['jshint:src', 'clean', 'frame', 'jshint:dist', 'jshint:test', 'qunit', 'nodeunit', 'uglify', 'compress']);
+  grunt.registerTask('default', ['jshint:src', 'clean', 'frame', 'copy', 'jshint:dist', 'jshint:test', 'qunit', 'nodeunit', 'uglify', 'compress']);
 
 };

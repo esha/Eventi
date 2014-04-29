@@ -12,5 +12,14 @@
   "boss": true,
   "eqnull": true,
   "node": true,
-  "predef": ["Element","document","CustomEvent","Event","location","history"]
+  "predef": [
+    "Element",
+    "document",
+    "CustomEvent",
+    "Event",
+    "location",
+    "history",
+    "jQuery",
+    "window"
+  ]
 }
