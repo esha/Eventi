@@ -327,7 +327,7 @@ Example definition: `login$1`
 Not all event listeners are meant to last forever. You may declare a listener's end when registering it by appending a `$` and a condition to the event definition. The condition may be either a number (indicating the number of executions allowed), a reference to a value (either a property of the context or global/window), or a reference to a function that will return such a value. In the case of a value, you may also prefix it with `!` to reverse the condition. The "end declaration" follows all features of a definition except an alias. The most common is, of course, `$1` for single-use listeners.
 
 ```javascript
-Eventi.on(player, 'respawn:$!livesLeft', player.respawn);
+Eventi.on(player, 'death$!player.livesLeft', player.respawn);
 ```
 ```javascript
 Eventi.on('load$1', Plugins.init);
