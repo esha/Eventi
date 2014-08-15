@@ -1,4 +1,4 @@
-/*! Eventi - v1.3.1 - 2014-04-29
+/*! Eventi - v1.3.2 - 2014-08-15
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -32,7 +32,7 @@ Eventi.fy = function fy(o) {
 };
 
 var _ = Eventi._ = {
-    version: "1.3.1",
+    version: "1.3.2",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -307,6 +307,33 @@ _.matches = function(event, match) {
 };
 _.fn('on', 3);
 
+_.split.guard['<'] = '>';
+_.parsers.unshift([/<(.+)>/, function(event, handler, selector) {
+    handler.selector = selector;
+    if (_.delegate && event !== handler) {
+        _.filter(handler, _.delegate);
+    }
+}]);
+if (global.Element) {
+    _.delegate = function delegate(event, handler) {
+        this.target = _.closest(event.target, handler.selector);
+    };
+    _.closest = function(el, selector) {
+        while (el && el.matches) {
+            if (el.matches(selector)) {
+                return el;
+            }
+            el = el.parentNode;
+        }
+    };
+
+    var Ep = Element.prototype,
+        aS = 'atchesSelector';
+    if (!Ep['matches']) {
+        Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
+    }
+}   
+
 _.parsers.unshift([/=>(\w+)$/, function(event, handler, alias) {
     handler.alias = alias;
     if (handler !== event) {
@@ -338,33 +365,6 @@ Eventi.alias = function(context, text) {
 	}
 	return props;
 };
-_.split.guard['<'] = '>';
-_.parsers.unshift([/<(.+)>/, function(event, handler, selector) {
-    handler.selector = selector;
-    if (_.delegate && event !== handler) {
-        _.filter(handler, _.delegate);
-    }
-}]);
-if (global.Element) {
-    _.delegate = function delegate(event, handler) {
-        this.target = _.closest(event.target, handler.selector);
-    };
-    _.closest = function(el, selector) {
-        while (el && el.matches) {
-            if (el.matches(selector)) {
-                return el;
-            }
-            el = el.parentNode;
-        }
-    };
-
-    var Ep = Element.prototype,
-        aS = 'atchesSelector';
-    if (!Ep['matches']) {
-        Object.defineProperty(Ep, 'matches', {value:Ep['webkitM'+aS]||Ep['mozM'+aS]||Ep['msM'+aS]});
-    }
-}   
-
 if (document) {
     _.init = function init() {
         var nodes = document.querySelectorAll('[eventi],[data-eventi]');

@@ -435,6 +435,7 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 * 2014-04-22 [v1.2.1][] (beta - docs, shorthand type for [key] and @location)
 * 2014-04-24 [v1.3.0][] (beta - server fixes, nodeunit tests, dual Eventi ctor)
 * 2014-04-29 [v1.3.1][] (beta - jquery integration aid)
+* 2014-08-15 [v1.3.2][] (beta - swap alias/delegate parser order)
 
 [v0.5.0]: https://github.com/esha/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/esha/Eventi/tree/1.0.0
