@@ -20,8 +20,8 @@ module.exports = function(grunt) {
         options: {
           frame: 'src/browser.frame'
         },
-        src: ['src/core.js','src/fire.js','src/on.js', 'src/alias.js',
-              'src/delegate.js', 'src/declare.js', 'src/key.js', 'src/location.js',
+        src: ['src/core.js', 'src/fire.js', 'src/on.js', 'src/delegate.js',
+              'src/alias.js', 'src/declare.js', 'src/key.js', 'src/location.js',
               'src/off.js', 'src/singleton.js', 'src/end.js', 'src/sequence.js', 'src/combo.js']
       },
       server: {
