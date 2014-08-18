@@ -74,9 +74,9 @@ if (document) {
         return el.type === 'radio' || el.type === 'checkbox';
     };
     _.click = function(el, enter) {
-        // click attributes with non-false value override everything
+        // click attributes with non-false value override everything for clicks, but not enters
         var click = el.getAttribute('click');
-        if (click && click !== "false") {
+        if (!enter && click && click !== "false") {
             return 'noDefault';
         }
         // editables, select, textarea, non-button inputs all use click to alter focus w/o action

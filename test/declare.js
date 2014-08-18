@@ -195,15 +195,20 @@
     ok(enter('a'), 'a should translate enter to click');
     ok(enter('a', {click:false}), '[click=false] should never translate enter to click');
     ok(!enter('textarea'), 'textarea should not translate enter to click');
-    ok(enter('textarea', {click:true}), '[click=notfalse] should override other factors');
+    ok(!enter('textarea', {click:true}), '[click=notfalse] should not override on enter');
     ok(!enter('div', {contenteditable:true}), '[contenteditable] should not be clickable');
     ok(enter('select'), 'select should translate enter to click');
     ok(!enter('button'), 'button should not translate enter to click');
+    ok(!enter('button', {click:true}), 'button[click] should not translate enter to click');
     ok(enter('a'), 'a should translate enter to click when there\'s no href');
     ok(!enter('a', {href:'url'}), 'a[href] should not translate enter to click');
+    ok(!enter('a', {href:'url', click:true}), 'a[href][click] should not translate enter to click');
     ok(!enter('input', {type:'submit'}), 'input[type=submit] should not translate enter to click');
     ok(!enter('input', {type:'button'}), 'input[type=button] should not translate enter to click');
     ok(!enter('input', {type:'reset'}), 'input[type=reset] should not translate enter to click');
+    ok(!enter('input', {type:'submit', click:true}), 'input[type=submit][click] should not translate enter to click');
+    ok(!enter('input', {type:'button', click:true}), 'input[type=button][click] should not translate enter to click');
+    ok(!enter('input', {type:'reset', click:true}), 'input[type=reset][click] should not translate enter to click');
   });
 
 }());
