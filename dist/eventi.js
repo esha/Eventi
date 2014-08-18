@@ -1,4 +1,4 @@
-/*! Eventi - v1.3.2 - 2014-08-15
+/*! Eventi - v1.3.3 - 2014-08-18
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -32,7 +32,7 @@ Eventi.fy = function fy(o) {
 };
 
 var _ = Eventi._ = {
-    version: "1.3.2",
+    version: "1.3.3",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -441,9 +441,9 @@ if (document) {
         return el.type === 'radio' || el.type === 'checkbox';
     };
     _.click = function(el, enter) {
-        // click attributes with non-false value override everything
+        // click attributes with non-false value override everything for clicks, but not enters
         var click = el.getAttribute('click');
-        if (click && click !== "false") {
+        if (!enter && click && click !== "false") {
             return 'noDefault';
         }
         // editables, select, textarea, non-button inputs all use click to alter focus w/o action

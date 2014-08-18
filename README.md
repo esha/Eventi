@@ -436,6 +436,7 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 * 2014-04-24 [v1.3.0][] (beta - server fixes, nodeunit tests, dual Eventi ctor)
 * 2014-04-29 [v1.3.1][] (beta - jquery integration aid)
 * 2014-08-15 [v1.3.2][] (beta - swap alias/delegate parser order)
+* 2014-08-18 [v1.3.3][] (beta - fix click/enter handling in declare)
 
 [v0.5.0]: https://github.com/esha/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/esha/Eventi/tree/1.0.0
@@ -446,3 +447,5 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 [v1.2.1]: https://github.com/esha/Eventi/tree/1.2.1
 [v1.3.0]: https://github.com/esha/Eventi/tree/1.3.0
 [v1.3.1]: https://github.com/esha/Eventi/tree/1.3.1
+[v1.3.2]: https://github.com/esha/Eventi/tree/1.3.2
+[v1.3.3]: https://github.com/esha/Eventi/tree/1.3.3
