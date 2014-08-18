@@ -13,7 +13,7 @@ if (document) {
                 _.declare(target, mapping);
             }
         }
-        if (nodes.length || document.querySelectorAll('[click],[data-click]').length) {
+        if (nodes.length || document.querySelector('[click],[data-click]')) {
             Eventi.on('click keyup', _.check);
         }
     };
