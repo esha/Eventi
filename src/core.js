@@ -95,7 +95,7 @@ var _ = Eventi._ = {
                 args[1] = _.split.ter(args[1]);
             }
             var fn = _[name], ret;
-            if ('length' in target && target !== _.global) {// apply to each target
+            if (!target.nodeType && target !== _.global && 'length' in target) {// apply to each target
                 for (var i=0,m=target.length; i<m; i++) {
                     ret = fn.apply(args[0] = target[i], args);
                 }

@@ -203,6 +203,20 @@
     delete Eventi.test3;
   });
 
+  test('_.fn form target', function() {
+    expect(1);
+    var form = document.createElement('form');
+    form.appendChild(document.createElement('button'));
+    _.formTest = function(target) {
+        equal(target, form, 'target should be the form');
+    };
+    _.fn('formTest', 1);
+    Eventi.formTest(form);
+    delete _.formTest;
+    delete _.fns.formTest;
+    delete Eventi.formTest;
+  });
+
   test("_.split.ter", function() {
     deepEqual(_.split.ter('a b'), ['a','b']);
     deepEqual(_.split.ter('a( ) b()'), ['a( )','b()']);
