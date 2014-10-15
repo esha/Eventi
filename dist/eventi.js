@@ -1,4 +1,4 @@
-/*! Eventi - v1.3.4 - 2014-08-19
+/*! Eventi - v1.3.5 - 2014-10-15
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -32,7 +32,7 @@ Eventi.fy = function fy(o) {
 };
 
 var _ = Eventi._ = {
-    version: "1.3.4",
+    version: "1.3.5",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -537,7 +537,12 @@ if (global.history && global.location) {
                 }, uri);
             }
             if (uri !== current) {
-                history.pushState(null, null, encodeURI(uri));
+                if (e.location !== uri) {
+                    history.pushState(null, null, encodeURI(uri));
+                } else {
+                    _.pushState.call(history, null, null, encodeURI(uri));
+                    current = uri;
+                }
             }
         }
     };
@@ -554,7 +559,7 @@ if (global.history && global.location) {
         } else {
             re = re.replace(/([.*+?^=!:$(|\[\/\\])/g, "\\$1");// escape uri/regexp conflicts
             if (handler.keys = _.keys(re)) {
-                re = re.replace(/\{\w+\}/g, "([^\/?#]+)");
+                re = re.replace(/\{[\w@\-\.]+\}/g, "([^\/?#]+)");
             } else {
                 re.replace(/\{/g, '\\{');
             }
