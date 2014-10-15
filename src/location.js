@@ -43,7 +43,12 @@ if (global.history && global.location) {
                 }, uri);
             }
             if (uri !== current) {
-                history.pushState(null, null, encodeURI(uri));
+                if (e.location !== uri) {
+                    history.pushState(null, null, encodeURI(uri));
+                } else {
+                    _.pushState.call(history, null, null, encodeURI(uri));
+                    current = uri;
+                }
             }
         }
     };
@@ -60,7 +65,7 @@ if (global.history && global.location) {
         } else {
             re = re.replace(/([.*+?^=!:$(|\[\/\\])/g, "\\$1");// escape uri/regexp conflicts
             if (handler.keys = _.keys(re)) {
-                re = re.replace(/\{\w+\}/g, "([^\/?#]+)");
+                re = re.replace(/\{[\w@\-\.]+\}/g, "([^\/?#]+)");
             } else {
                 re.replace(/\{/g, '\\{');
             }
