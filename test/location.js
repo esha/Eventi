@@ -102,7 +102,7 @@
   test('all location listener', function() {
     expect(1);
     Eventi.on('location#all', function(e) {
-      equal(e.location, _.location(), 'should have current uri');
+      equal(e.location, _.getLocation(), 'should have current uri');
       Eventi.off('location#all');
     });
   });
@@ -120,17 +120,25 @@
   });
 
   test('location set via event', function() {
-    expect(5);
-    var uri = _.location(),
-      fired = false;
+    expect(8);
+    var oldLocation = _.getLocation(),
+        newLocation = oldLocation + '?view=foo',
+      locationEvent = false,
+      pushstateEvent = false;
     Eventi.on('location@?view={view}', function(e, match) {
-      equal(e.oldLocation, uri);
-      equal(e.location, location.pathname + '?view=foo');
+      equal(e.oldLocation, oldLocation);
+      equal(e.location, newLocation);
       equal(e.srcEvent && e.srcEvent.type, 'pushstate');
       equal(match.view, 'foo');
-      ok(!fired);
-      fired = true;
+      ok(!locationEvent, 'should only be handled once');
+      locationEvent = true;
       Eventi.off('location');
+    }).on('pushstate', function(e) {
+      ok(!e.location, 'no location with pushstate notifications');
+      equal(_.getLocation(), newLocation);
+      ok(!pushstateEvent, 'should only be handled once');
+      pushstateEvent = true;
+      Eventi.off('pushstate');
       history.pushState(null,null,home);
     });
     Eventi.fire('location', '?view={view}', {view:'foo'});
@@ -181,7 +189,7 @@
   });
 
   test('_.location', function() {
-    equal(_.location(), decodeURI(location.pathname+location.search+location.hash));
+    equal(_.getLocation(), decodeURI(location.pathname+location.search+location.hash));
   });
 
   test('_.keys', function() {
