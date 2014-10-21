@@ -1,6 +1,6 @@
 {
   "name": "eventi",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "homepage": "https://github.com/esha/Eventi",
   "bugs": "https://github.com/esha/Eventi/issues",
   "authors": [
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com:esha/Eventi.git"
   },
-  "main": "dist/eventi.min.js",
+  "main": "dist/eventi.js",
   "keywords": [
     "event",
     "custom",

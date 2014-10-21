@@ -1,4 +1,4 @@
-/*! Eventi - v1.3.5 - 2014-10-15
+/*! Eventi - v1.3.6 - 2014-10-21
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -36,7 +36,7 @@ Eventi.fy = function fy(o) {
 };
 
 var _ = Eventi._ = {
-    version: "1.3.5",
+    version: "1.3.6",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },

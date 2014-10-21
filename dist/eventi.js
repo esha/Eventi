@@ -1,4 +1,4 @@
-/*! Eventi - v1.3.5 - 2014-10-15
+/*! Eventi - v1.3.6 - 2014-10-21
 * https://github.com/esha/Eventi
 * Copyright (c) 2014 ESHA Research; Licensed MIT */
 
@@ -32,7 +32,7 @@ Eventi.fy = function fy(o) {
 };
 
 var _ = Eventi._ = {
-    version: "1.3.5",
+    version: "1.3.6",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -512,8 +512,8 @@ if (global.history && global.location) {
     intercept('replaceState');
 
     var current;
-    _.location = function(e, uri) {
-        uri = uri || decodeURI(location.pathname + location.search + location.hash);
+    _.location = function(e) {
+        var uri = _.getLocation();
         if (uri !== current) {
             _.dispatch(_.global, new Eventi('location', {
                 oldLocation: current,
@@ -521,28 +521,29 @@ if (global.history && global.location) {
                 srcEvent: e
             }));
         }
-        return current;
+    };
+    _.getLocation = function() {
+        return decodeURI(location.pathname + location.search + location.hash);
     };
     _.setLocation = function(e, uri, fill) {
-        if (typeof uri !== "string") {
-            fill = uri;
-            uri = e.location;
-        }
-        if (uri) {
-            var keys = _.keys(uri);
-            if (keys) {
-                uri = keys.reduce(function(s, key) {
-                    return s.replace(new RegExp('\\{'+key+'\\}',"g"),
-                                     fill[key] || location[key] || '');
-                }, uri);
+        // user-fired set events should not have oldLocation prop
+        if (!e.oldLocation) {
+            if (typeof uri !== "string") {
+                fill = uri;
+                uri = e.location;
             }
-            if (uri !== current) {
-                if (e.location !== uri) {
-                    history.pushState(null, null, encodeURI(uri));
-                } else {
-                    _.pushState.call(history, null, null, encodeURI(uri));
-                    current = uri;
+            if (uri) {
+                var keys = _.keys(uri);
+                if (keys) {
+                    uri = keys.reduce(function(s, key) {
+                        return s.replace(new RegExp('\\{'+key+'\\}',"g"),
+                                         fill[key] || location[key] || '');
+                    }, uri);
                 }
+                // don't share this event with other handlers
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                history.pushState(null, null, encodeURI(uri));
             }
         }
     };
@@ -582,20 +583,23 @@ if (global.history && global.location) {
             this.target = undefined;
         }
     };
-    Eventi.on('!popstate !hashchange !pushstate', _.location)
+    var historyTypes = ['popstate','hashchange','pushstate'];
+    Eventi.on('!'+(historyTypes.join(' !')), _.location)
     .on('!location', _.setLocation)
     .on(_, 'on:handler', function location(e, handler) {
-        if (handler.location && !handler.event.type) {
-            handler.event.type = 'location';
+        var type = handler.event.type;
+        if (handler.location && !type) {
+            type = handler.event.type = 'location';
         }
-        if (handler.event.type === 'location') {
-            // force global
+        if (type === 'location') {
             handler.global = true;
-            // try for current uri match immediately
+            // try immediately for current uri match
             if (!current) {
-                _.location();
+                current = _.getLocation();
             }
             _.execute(new Eventi('location',{location:current, srcEvent:e}), handler);
+        } else if (historyTypes.indexOf(type) >= 0) {
+            handler.global = true;
         }
     });
 }
