@@ -61,6 +61,7 @@
     expect(1);
     Eventi.on('[alt]', function(e) {
       equal(e.type, 'keyup');
+      Eventi.off('[alt]');
     });
     Eventi.fire('keyup[alt] other[alt]');
   });
