@@ -440,6 +440,7 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 * 2014-08-19 [v1.3.4][] (beta - properly handle form elements as targets)
 * 2014-10-15 [v1.3.5][] (beta - location event fixes)
 * 2014-10-20 [v1.3.6][] (beta - location event fix, use sourcemap friendly main file for bower package)
+* 2014-10-20 [v1.3.7][] (beta - add main entry to package.json)
 
 [v0.5.0]: https://github.com/esha/Eventi/tree/0.5.0
 [v1.0.0]: https://github.com/esha/Eventi/tree/1.0.0
@@ -455,3 +456,4 @@ And yes, you can mix combos and sequences. When doing so, sequences events will 
 [v1.3.4]: https://github.com/esha/Eventi/tree/1.3.4
 [v1.3.5]: https://github.com/esha/Eventi/tree/1.3.5
 [v1.3.6]: https://github.com/esha/Eventi/tree/1.3.6
+[v1.3.7]: https://github.com/esha/Eventi/tree/1.3.7
