@@ -7,6 +7,7 @@
     "name": "ESHA Research",
     "email": "nathan@esha.com"
   },
+  "main": "dist/eventi.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/esha/Eventi.git"
