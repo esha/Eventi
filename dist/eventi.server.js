@@ -1,6 +1,6 @@
-/*! Eventi - v1.3.7 - 2017-02-27
+/*! Eventi - v1.3.8 - 2017-03-28
 * https://github.com/esha/Eventi
-* Copyright (c) 2017 ESHA Research; Licensed MIT */
+* Copyright (c) 2017 ESHA Research; Licensed  */
 
 (function(global, exports, document) {
     "use strict";
@@ -21,6 +21,8 @@
         this.immediatePropagationStopped = true;
     };
 
+var _;
+
 function Eventi(text){
     if (typeof text === "string") {
         return _.create.apply(_, arguments);
@@ -35,8 +37,8 @@ Eventi.fy = function fy(o) {
     return o;
 };
 
-var _ = Eventi._ = {
-    version: "1.3.7",
+_ = Eventi._ = {
+    version: "1.3.8",
     global: new Function('return this')(),
     noop: function(){},
     slice: function(a, i){ return Array.prototype.slice.call(a, i); },
@@ -191,6 +193,7 @@ _.fireAll = function(target, events, props) {
     }
     return event;
 };
+var _key;// set in on.js
 _.dispatch = function(target, event, objectBubbling) {
     if (event.global){ target = _.global; }
     (target.dispatchEvent || target[_key] || _.noop).call(target, event);
@@ -251,7 +254,8 @@ _.handlers = function(target, type) {
 };
 _.capture = ['focus','blur'];
 
-var _key = _._key = '_eventi'+Date.now();
+// declared in fire.js
+_key = _._key = '_eventi'+Date.now();
 _.listener = function(target) {
     var listener = target[_key];
     if (!listener) {
