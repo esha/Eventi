@@ -167,6 +167,7 @@
   test('off:cleaned event', function() {
     expect(4);
     var target = {},
+      handler,
       type = 'offevent',
       fn = function(e, h) {
         if (h.event.type === type) {
@@ -176,7 +177,7 @@
         }
       };
     Eventi.on(target, type, function(){});
-    var handler = target[_._key].s[type][0];
+    handler = target[_._key].s[type][0];
     ok(handler, 'should be able to snag ref to handler');
     Eventi.on(_, 'off:cleaned', fn)
           .off(target, type)

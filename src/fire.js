@@ -18,6 +18,7 @@ _.fireAll = function(target, events, props) {
     }
     return event;
 };
+var _key;// set in on.js
 _.dispatch = function(target, event, objectBubbling) {
     if (event.global){ target = _.global; }
     (target.dispatchEvent || target[_key] || _.noop).call(target, event);

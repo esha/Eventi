@@ -1,3 +1,5 @@
+var _;
+
 function Eventi(text){
     if (typeof text === "string") {
         return _.create.apply(_, arguments);
@@ -12,7 +14,7 @@ Eventi.fy = function fy(o) {
     return o;
 };
 
-var _ = Eventi._ = {
+_ = Eventi._ = {
     version: "<%= pkg.version %>",
     global: new Function('return this')(),
     noop: function(){},

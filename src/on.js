@@ -46,7 +46,8 @@ _.handlers = function(target, type) {
 };
 _.capture = ['focus','blur'];
 
-var _key = _._key = '_eventi'+Date.now();
+// declared in fire.js
+_key = _._key = '_eventi'+Date.now();
 _.listener = function(target) {
     var listener = target[_key];
     if (!listener) {
